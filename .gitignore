@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Next.js and other build output
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# Local database and uploaded files (customer data, payment screenshots)
+.data/
+
+# Secrets: never commit these
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*secret*.json
+*credentials*.json
+service-account*.json
+
+# Logs
+*.log
+logs/
+
+# Deployment
+.vercel/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/

@@ -1,0 +1,34 @@
+{
+  "name": "zenix-wear",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "db:setup": "tsx --env-file-if-exists=.env.local scripts/db-setup.ts",
+    "admin:password": "tsx scripts/admin-password.ts",
+    "db:reset": "tsx --env-file-if-exists=.env.local scripts/db-reset.ts"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.5.15",
+    "jose": "^6.2.15",
+    "lucide-react": "^1.69.0",
+    "next": "^16.4.5",
+    "postgres": "^4.0.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "server-only": "^0.0.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.4",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "tailwindcss": "^4.3.4",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

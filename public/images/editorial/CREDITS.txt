@@ -1,0 +1,16 @@
+Placeholder editorial photography from Unsplash (unsplash.com/license), converted to graphite monochrome.
+Replace with real ZENIX campaign photography before launch.
+deadlift: https://unsplash.com/photos/1605296867304-46d5465a13f1
+deadlift-dark: https://unsplash.com/photos/1605296867724-fa87a8ef53fd
+pullup: https://unsplash.com/photos/1526506118085-60ce8714f8c5
+barbell-woman: https://unsplash.com/photos/1574680096145-d05b474e2155
+woman-portrait: https://unsplash.com/photos/1550345332-09e3ac987658
+gym-bw: https://unsplash.com/photos/1590487988256-9ed24133863e
+rack: https://unsplash.com/photos/1544033527-b192daee1f5b
+dumbbells: https://unsplash.com/photos/1576678927484-cc907957088c
+back: https://unsplash.com/photos/1434682881908-b43d0467b798
+seated: https://unsplash.com/photos/1579758629938-03607ccdbaba
+squat: https://unsplash.com/photos/1541534741688-6078c6bfb5c5
+lift-hands: https://unsplash.com/photos/1583454110551-21f2fa2afe61
+barbell-floor: https://unsplash.com/photos/1517836357463-d25dfeac3438
+curl: https://unsplash.com/photos/1581009146145-b5ef050c2e1e
