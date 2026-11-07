@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import { cardProps, facets, filterProducts, getCatalog, parseList, type ShopQuery } from '@/lib/catalog';
 import { getDictionary } from '@/lib/i18n/dictionaries';
-import type { Locale } from '@/lib/types';
+import { FITS, type Locale } from '@/lib/types';
 import { FilterSheet, FilterSidebar, SortSelect } from './Filters';
 import { ProductGrid } from './ProductGrid';
 
@@ -12,7 +12,7 @@ export type SearchParams = Record<string, string | string[] | undefined>;
 export function queryFromParams(sp: SearchParams): ShopQuery {
   const num = (v: string | string[] | undefined) => (typeof v === 'string' && /^\d+$/.test(v) ? Number(v) : undefined);
   return {
-    gender: parseList(sp.gender), size: parseList(sp.size), color: parseList(sp.color), fit: parseList(sp.fit), flags: parseList(sp.flags),
+    size: parseList(sp.size), color: parseList(sp.color), fit: parseList(sp.fit).filter((f) => (FITS as readonly string[]).includes(f)), flags: parseList(sp.flags),
     min: num(sp.min), max: num(sp.max), sort: typeof sp.sort === 'string' ? sp.sort : undefined,
   };
 }
@@ -25,7 +25,6 @@ export async function ShopView({ locale, sp, title, blurb, image, base, showSubn
   const scope = filterProducts(all, base);
   const list = filterProducts(all, { ...base, ...queryFromParams(sp), flags: [...(base.flags ?? []), ...parseList(sp.flags)] });
   const f = facets(scope);
-  const showFit = scope.some((p) => p.fit);
   const lp = (p: string) => `/${locale}${p}`;
 
   return (
@@ -51,10 +50,10 @@ export async function ShopView({ locale, sp, title, blurb, image, base, showSubn
         </nav>
       )}
       <div className="container-zx grid gap-8 py-5 pb-16 md:py-8 lg:grid-cols-[250px_1fr] xl:gap-12">
-        <Suspense><FilterSidebar facets={f} showFit={showFit} /></Suspense>
+        <Suspense><FilterSidebar facets={f} /></Suspense>
         <div className="min-w-0">
           <div className="mb-5 flex items-center justify-between gap-3">
-            <Suspense><FilterSheet facets={f} showFit={showFit} count={list.length} /></Suspense>
+            <Suspense><FilterSheet facets={f} count={list.length} /></Suspense>
             <p className="hidden text-[13px] text-muted lg:block" aria-live="polite">{list.length} {t.shop.results}</p>
             <Suspense><SortSelect /></Suspense>
           </div>

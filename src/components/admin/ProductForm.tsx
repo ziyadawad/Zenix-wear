@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Plus, Trash2 } from 'lucide-react';
 import { ImagePicker } from './ImagePicker';
 import { saveProduct, type ProductInput } from '@/app/admin/actions';
-import { CATEGORIES, FITS, GENDERS, SIZES, TAGS, type Collection, type Product } from '@/lib/types';
+import { CATEGORIES, FITS, SIZES, TAGS, type Collection, type Product } from '@/lib/types';
 import { cx, slugify } from '@/lib/utils';
 
 type ColorDraft = ProductInput['colors'][number];
@@ -124,7 +124,6 @@ export function ProductForm({ product, collections }: { product: Product | null;
           <div><label className="label" htmlFor="p-status">Visibility</label><select id="p-status" className="field" value={v.status} onChange={(e) => up('status', e.target.value as ProductInput['status'])}><option value="active">Live on the site</option><option value="draft">Draft (hidden)</option></select></div>
           <div><label className="label" htmlFor="p-cat">Category</label><select id="p-cat" className="field capitalize" value={v.category} onChange={(e) => up('category', e.target.value as ProductInput['category'])}>{CATEGORIES.map((c) => <option key={c} value={c}>{c.replace('-', ' ')}</option>)}</select></div>
           {v.category === 't-shirts' && <div><label className="label" htmlFor="p-fit">Fit</label><select id="p-fit" className="field capitalize" value={v.fit ?? ''} onChange={(e) => up('fit', (e.target.value || null) as ProductInput['fit'])}><option value="">None</option>{FITS.map((f) => <option key={f}>{f}</option>)}</select></div>}
-          <div><label className="label" htmlFor="p-gen">For</label><select id="p-gen" className="field capitalize" value={v.gender} onChange={(e) => up('gender', e.target.value as ProductInput['gender'])}>{GENDERS.map((g) => <option key={g}>{g}</option>)}</select></div>
           <div><label className="label" htmlFor="p-col">Collection</label><select id="p-col" className="field" value={v.collection ?? ''} onChange={(e) => up('collection', e.target.value || null)}><option value="">None</option>{collections.map((c) => <option key={c.slug} value={c.slug}>{c.nameEn}</option>)}</select></div>
           <fieldset>
             <legend className="label">Tags</legend>

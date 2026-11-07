@@ -48,7 +48,8 @@ export async function requestPasswordReset(email: string, locale: string): Promi
   if (c) {
     const token = await signResetToken(c.id, c.password_hash);
     const url = `${SITE_URL}/${locale === 'en' ? 'en' : 'ar'}/account/reset?token=${encodeURIComponent(token)}`;
-    await sendEmail(c.email, 'ZENIX WEAR: reset your password', `<p>Use this link within one hour to choose a new password:</p><p><a href="${url}">${url}</a></p><p>If you did not ask for this, ignore this email.</p>`);
+    if (locale === 'en') await sendEmail(c.email, 'ZENIX WEAR: reset your password', `<p>Use this link within one hour to choose a new password:</p><p><a href="${url}">${url}</a></p><p>If you did not ask for this, ignore this email.</p>`);
+    else await sendEmail(c.email, 'ZENIX WEAR: غيّر الباسورد', `<div dir="rtl"><p>دوس على اللينك ده في خلال ساعة عشان تختار باسورد جديد:</p><p><a href="${url}">${url}</a></p><p>لو مطلبتش كده، تجاهل الإيميل ده.</p></div>`);
   }
   return { ok: true }; // Same answer either way, so this can't be used to discover who has an account.
 }

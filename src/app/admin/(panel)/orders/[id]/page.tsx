@@ -13,11 +13,11 @@ import { OrderStatusControl, PaymentToggle } from '@/components/admin/SmallActio
 export const dynamic = 'force-dynamic';
 
 const MESSAGES: Record<string, (n: string, name: string) => string> = {
-  pending: (n, name) => `أهلًا ${name}، معاك ZENIX WEAR. استلمنا طلبك رقم ${n}. ممكن تأكد البيانات والعنوان؟`,
-  confirmed: (n, name) => `أهلًا ${name}، تم تأكيد طلبك رقم ${n} من ZENIX WEAR، وهيتشحن قريب.`,
-  shipped: (n, name) => `أهلًا ${name}، طلبك رقم ${n} من ZENIX WEAR اتشحن وفي الطريق ليك. المندوب هيتصل بيك قبل التوصيل.`,
-  delivered: (n, name) => `أهلًا ${name}، طلبك رقم ${n} وصلك؟ نتمنى يكون عجبك. شكرًا لاختيارك ZENIX WEAR.`,
-  cancelled: (n, name) => `أهلًا ${name}، بخصوص طلبك رقم ${n} من ZENIX WEAR: تم إلغاء الطلب.`,
+  pending: (n, name) => `أهلًا ${name}، معاك ZENIX WEAR. الأوردر رقم ${n} وصلنا. ممكن تأكدلنا البيانات والعنوان؟`,
+  confirmed: (n, name) => `أهلًا ${name}، الأوردر رقم ${n} من ZENIX WEAR اتأكد، وهيتشحن قريب.`,
+  shipped: (n, name) => `أهلًا ${name}، الأوردر رقم ${n} من ZENIX WEAR اتشحن وفي الطريق ليك. المندوب هيكلمك قبل ما يوصل.`,
+  delivered: (n, name) => `أهلًا ${name}، الأوردر رقم ${n} وصلك؟ يارب يكون عجبك. شكرًا إنك اخترت ZENIX WEAR.`,
+  cancelled: (n, name) => `أهلًا ${name}، بخصوص الأوردر رقم ${n} من ZENIX WEAR: الأوردر اتلغى.`,
 };
 
 export default async function OrderDetail({ params }: { params: Promise<{ id: string }> }) {

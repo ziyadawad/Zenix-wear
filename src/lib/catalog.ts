@@ -1,6 +1,7 @@
 import 'server-only';
 import { unstable_cache } from 'next/cache';
 import { db, type Row } from './db';
+import { FITS } from './types';
 import type { Collection, Product, Review, ShippingRate, SiteContent, SiteSettings } from './types';
 import { DEFAULT_CONTENT, DEFAULT_SETTINGS } from './db/seed';
 import { effectivePrice, sizesOf, sortSizes, stockOf, totalStock } from './utils';
@@ -78,7 +79,7 @@ export const getProductReviews = unstable_cache(
 
 // ---- Filtering ------------------------------------------------------------------------------
 export interface ShopQuery {
-  category?: string; collection?: string; gender?: string[]; size?: string[]; color?: string[];
+  category?: string; collection?: string; size?: string[]; color?: string[];
   fit?: string[]; min?: number; max?: number; flags?: string[]; sort?: string; q?: string;
 }
 export const parseList = (v: string | string[] | undefined) => (Array.isArray(v) ? v : v ? v.split(',') : []).filter(Boolean);
@@ -88,7 +89,6 @@ export function filterProducts(all: Product[], f: ShopQuery): Product[] {
   const out = all.filter((p) => {
     if (f.category && p.category !== f.category) return false;
     if (f.collection && p.collection !== f.collection) return false;
-    if (f.gender?.length && !f.gender.includes(p.gender)) return false;
     if (f.fit?.length && !f.fit.includes(p.fit ?? '')) return false;
     if (f.color?.length && !p.colors.some((c) => f.color!.includes(c.id))) return false;
     if (f.size?.length && !f.size.some((s) => p.colors.some((c) => stockOf(p, c.id, s) > 0))) return false;
@@ -116,7 +116,15 @@ export function facets(all: Product[]) {
   for (const p of all) for (const c of p.colors) colors.set(c.id, { id: c.id, nameAr: c.nameAr, nameEn: c.nameEn, hex: c.hex });
   const sizes = sortSizes(all.flatMap((p) => sizesOf(p)));
   const prices = all.map(effectivePrice);
-  return { colors: [...colors.values()], sizes, minPrice: Math.min(...prices, 0), maxPrice: Math.max(...prices, 0) };
+  // Only offer filters that can match something on this page.
+  const fits = FITS.filter((fit) => all.some((p) => p.fit === fit));
+  const flags = [
+    all.some((p) => p.tags.includes('new')) && 'new',
+    all.some((p) => p.tags.includes('best-seller')) && 'best',
+    all.some((p) => p.salePrice != null && p.salePrice < p.price) && 'sale',
+    all.some((p) => totalStock(p) > 0) && 'in-stock',
+  ].filter((x): x is string => !!x);
+  return { colors: [...colors.values()], sizes, fits: fits as string[], flags, minPrice: prices.length ? Math.min(...prices) : 0, maxPrice: prices.length ? Math.max(...prices) : 0 };
 }
 
 /** Drops fields a card doesn't need, so grids stay light on the wire. */

@@ -6,8 +6,9 @@ export const isLocale = (v: string): v is Locale => (LOCALES as readonly string[
 export const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', 'ONE'] as const;
 export const CATEGORIES = ['t-shirts', 'tanks', 'shorts', 'socks', 'accessories'] as const;
 export type Category = (typeof CATEGORIES)[number];
-export const FITS = ['regular', 'oversized', 'compression'] as const;
-export const GENDERS = ['men', 'women', 'unisex'] as const;
+export const FITS = ['regular', 'compression'] as const;
+/** The brand is men only for now. To add a section: extend this list, then add a filter and an admin field. */
+export const GENDERS = ['men'] as const;
 export const TAGS = ['new', 'best-seller', 'limited', 'sale'] as const;
 export type Tag = (typeof TAGS)[number];
 

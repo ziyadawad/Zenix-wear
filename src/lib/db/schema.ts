@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS products (
   sale_price int CHECK (sale_price IS NULL OR sale_price >= 0),
   category text NOT NULL,
   fit text,
-  gender text NOT NULL DEFAULT 'unisex',
+  gender text NOT NULL DEFAULT 'men',
   collection text REFERENCES collections(slug) ON DELETE SET NULL,
   tags jsonb NOT NULL DEFAULT '[]',
   colors jsonb NOT NULL DEFAULT '[]',

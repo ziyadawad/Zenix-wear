@@ -7,7 +7,7 @@ import { cx, toLatinDigits } from '@/lib/utils';
 
 export interface Facets {
   colors: { id: string; nameAr: string; nameEn: string; hex: string }[];
-  sizes: string[]; minPrice: number; maxPrice: number; fits?: boolean;
+  sizes: string[]; fits: string[]; flags: string[]; minPrice: number; maxPrice: number;
 }
 
 function useParamsEditor() {
@@ -70,7 +70,7 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
   );
 }
 
-function FilterBody({ facets, showFit }: { facets: Facets; showFit: boolean }) {
+function FilterBody({ facets }: { facets: Facets }) {
   const { t, locale } = useI18n();
   const { sp, list, toggle, setMany } = useParamsEditor();
   const [min, setMin] = useState(sp.get('min') ?? '');
@@ -90,6 +90,7 @@ function FilterBody({ facets, showFit }: { facets: Facets; showFit: boolean }) {
     );
   };
 
+  const sizes = facets.sizes.filter((s) => s !== 'ONE');
   const commitPrice = () => {
     const clean = (v: string) => toLatinDigits(v).replace(/\D/g, '');
     setMany({ min: clean(min), max: clean(max) });
@@ -97,33 +98,31 @@ function FilterBody({ facets, showFit }: { facets: Facets; showFit: boolean }) {
 
   return (
     <div>
-      <Group title={t.shop.availability}>
-        {check('flags', 'new', t.shop.flagNew)}
-        {check('flags', 'best', t.shop.flagBest)}
-        {check('flags', 'sale', t.shop.flagSale)}
-        {check('flags', 'in-stock', t.shop.flagInStock)}
-      </Group>
-      <Group title={t.shop.gender}>
-        {check('gender', 'men', t.genders.men)}
-        {check('gender', 'women', t.genders.women)}
-        {check('gender', 'unisex', t.genders.unisex)}
-      </Group>
-      {showFit && (
-        <Group title={t.shop.fit}>
-          {check('fit', 'regular', t.fits.regular)}
-          {check('fit', 'oversized', t.fits.oversized)}
-          {check('fit', 'compression', t.fits.compression)}
+      {facets.flags.length > 0 && (
+        <Group title={t.shop.availability}>
+          {facets.flags.includes('new') && check('flags', 'new', t.shop.flagNew)}
+          {facets.flags.includes('best') && check('flags', 'best', t.shop.flagBest)}
+          {facets.flags.includes('sale') && check('flags', 'sale', t.shop.flagSale)}
+          {facets.flags.includes('in-stock') && check('flags', 'in-stock', t.shop.flagInStock)}
         </Group>
       )}
-      <Group title={t.shop.size}>
-        <div className="flex flex-wrap gap-1.5" dir="ltr">
-          {facets.sizes.filter((s) => s !== 'ONE').map((s) => {
-            const on = list('size').includes(s);
-            return <button key={s} type="button" aria-pressed={on} onClick={() => toggle('size', s)} className={cx('h-11 min-w-11 border px-2 text-xs transition-colors', on ? 'border-white bg-white text-black' : 'border-line-strong hover:border-white')}>{s}</button>;
-          })}
-        </div>
-      </Group>
-      <Group title={t.shop.color}>
+      {facets.fits.length > 1 && (
+        <Group title={t.shop.fit}>
+          {facets.fits.includes('regular') && check('fit', 'regular', t.fits.regular)}
+          {facets.fits.includes('compression') && check('fit', 'compression', t.fits.compression)}
+        </Group>
+      )}
+      {sizes.length > 0 && (
+        <Group title={t.shop.size}>
+          <div className="flex flex-wrap gap-1.5" dir="ltr">
+            {sizes.map((s) => {
+              const on = list('size').includes(s);
+              return <button key={s} type="button" aria-pressed={on} onClick={() => toggle('size', s)} className={cx('h-11 min-w-11 border px-2 text-xs transition-colors', on ? 'border-white bg-white text-black' : 'border-line-strong hover:border-white')}>{s}</button>;
+            })}
+          </div>
+        </Group>
+      )}
+      {facets.colors.length > 1 && <Group title={t.shop.color}>
         <div className="flex flex-wrap gap-1">
           {facets.colors.map((c) => {
             const on = list('color').includes(c.id);
@@ -135,22 +134,22 @@ function FilterBody({ facets, showFit }: { facets: Facets; showFit: boolean }) {
             );
           })}
         </div>
-      </Group>
-      <Group title={t.shop.price}>
+      </Group>}
+      {facets.maxPrice > facets.minPrice && <Group title={t.shop.price}>
         <form className="flex items-center gap-2" onSubmit={(e) => { e.preventDefault(); commitPrice(); }}>
           <input inputMode="numeric" aria-label={t.shop.from} placeholder={String(facets.minPrice)} value={min} onChange={(e) => setMin(e.target.value)} onBlur={commitPrice} className="field !min-h-11 !py-1" dir="ltr" />
           <span className="text-muted">–</span>
           <input inputMode="numeric" aria-label={t.shop.to} placeholder={String(facets.maxPrice)} value={max} onChange={(e) => setMax(e.target.value)} onBlur={commitPrice} className="field !min-h-11 !py-1" dir="ltr" />
           <button type="submit" className="sr-only">OK</button>
         </form>
-      </Group>
+      </Group>}
     </div>
   );
 }
 
-const FILTER_KEYS = ['gender', 'size', 'color', 'fit', 'min', 'max', 'flags'];
+const FILTER_KEYS = ['size', 'color', 'fit', 'min', 'max', 'flags'];
 
-export function FilterSidebar({ facets, showFit }: { facets: Facets; showFit: boolean }) {
+export function FilterSidebar({ facets }: { facets: Facets }) {
   const { t } = useI18n();
   const { sp, clear } = useParamsEditor();
   const active = FILTER_KEYS.some((k) => sp.has(k));
@@ -160,12 +159,12 @@ export function FilterSidebar({ facets, showFit }: { facets: Facets; showFit: bo
         <h2 className="eyebrow">{t.shop.filters}</h2>
         {active && <button className="text-xs text-muted underline underline-offset-4" onClick={clear}>{t.shop.clear}</button>}
       </div>
-      <FilterBody facets={facets} showFit={showFit} />
+      <FilterBody facets={facets} />
     </aside>
   );
 }
 
-export function FilterSheet({ facets, showFit, count }: { facets: Facets; showFit: boolean; count: number }) {
+export function FilterSheet({ facets, count }: { facets: Facets; count: number }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const { sp, clear } = useParamsEditor();
@@ -187,7 +186,7 @@ export function FilterSheet({ facets, showFit, count }: { facets: Facets; showFi
               <h2 className="eyebrow">{t.shop.filters}</h2>
               <button className="icon-btn -me-3" aria-label={t.nav.close} onClick={() => setOpen(false)} autoFocus><X size={22} strokeWidth={1.25} /></button>
             </div>
-            <div className="flex-1 overflow-y-auto px-4"><FilterBody facets={facets} showFit={showFit} /></div>
+            <div className="flex-1 overflow-y-auto px-4"><FilterBody facets={facets} /></div>
             <div className="flex flex-none gap-2 border-t border-line p-3 pb-[calc(env(safe-area-inset-bottom)+12px)]">
               <button className="btn btn-ghost !px-4" onClick={clear}>{t.shop.clear}</button>
               <button className="btn btn-primary flex-1" onClick={() => setOpen(false)}>{t.shop.apply} ({count})</button>

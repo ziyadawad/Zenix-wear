@@ -16,7 +16,7 @@ export default async function About({ params }: { params: Promise<{ locale: Loca
   return (
     <>
       <section className="relative flex min-h-[72svh] items-end overflow-hidden bg-black">
-        <Image src="/images/editorial/pullup.webp" alt="" fill preload fetchPriority="high" loading="eager" sizes="(max-width:767px) 220vw, 100vw" quality={70} className="object-cover object-[50%_25%] opacity-70" />
+        <Image src="/images/editorial/seated.webp" alt="" fill preload fetchPriority="high" loading="eager" sizes="(max-width:767px) 220vw, 100vw" quality={70} className="object-cover object-[50%_25%] opacity-70" />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/20" />
         <div className="container-zx relative pb-12 md:pb-20">
           <p className="eyebrow mb-5">{t.eyebrow}</p>

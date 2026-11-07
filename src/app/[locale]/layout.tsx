@@ -28,9 +28,9 @@ export const viewport: Viewport = { themeColor: '#000000', width: 'device-width'
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const ar = locale === 'ar';
-  const title = ar ? 'ZENIX WEAR | ملابس رياضية فاخرة في مصر' : 'ZENIX WEAR | Premium Sportswear in Egypt';
+  const title = ar ? 'ZENIX WEAR | لبس رياضي فاخر في مصر' : 'ZENIX WEAR | Premium Sportswear in Egypt';
   const description = ar
-    ? 'عقل هادي، وأداء في القمة. تيشيرتات وملابس جيم فاخرة، توصيل لكل مصر والدفع عند الاستلام.'
+    ? 'دماغ هادية، وأداء في القمة. تيشيرتات ولبس جيم فاخر، بنوصل لكل مصر والدفع عند الاستلام.'
     : 'Calm Mind. Peak Performance. Premium t-shirts and gym wear, delivered across Egypt with cash on delivery.';
   return {
     metadataBase: new URL(SITE_URL),

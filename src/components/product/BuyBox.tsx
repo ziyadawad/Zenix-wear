@@ -173,7 +173,6 @@ function NotifyMe({ colorId, size }: { colorId: string; size: string }) {
 
 const TABLES: Record<string, { cols: ('chest' | 'length' | 'shoulder' | 'waist' | 'inseam' | 'footLabel')[]; rows: Record<string, (number | string)[]> }> = {
   regular: { cols: ['chest', 'length', 'shoulder'], rows: { XS: [92, 66, 42], S: [98, 69, 44], M: [104, 71, 46], L: [110, 73, 48], XL: [116, 75, 50], XXL: [122, 77, 52], '3XL': [128, 79, 54] } },
-  oversized: { cols: ['chest', 'length', 'shoulder'], rows: { XS: [106, 66, 52], S: [112, 69, 54], M: [118, 71, 56], L: [124, 73, 58], XL: [130, 75, 60], XXL: [136, 77, 62], '3XL': [142, 79, 64] } },
   compression: { cols: ['chest', 'length', 'shoulder'], rows: { XS: [84, 62, 39], S: [90, 64, 41], M: [96, 66, 43], L: [102, 68, 45], XL: [108, 70, 47], XXL: [114, 72, 49], '3XL': [120, 74, 51] } },
   shorts: { cols: ['waist', 'length', 'inseam'], rows: { XS: [66, 41, 11], S: [72, 43, 12], M: [78, 45, 13], L: [84, 47, 14], XL: [90, 49, 15], XXL: [96, 51, 16], '3XL': [102, 53, 17] } },
   socks: { cols: ['footLabel'], rows: { S: ['36-39'], M: ['40-43'], L: ['44-47'] } },
