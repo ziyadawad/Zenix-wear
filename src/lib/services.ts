@@ -2,15 +2,18 @@ import 'server-only';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { get, put } from '@vercel/blob';
 import type { Order } from './types';
 import { formatMoney, SITE_URL } from './utils';
 
 // ---- Image storage ----------------------------------------------------------------------------
-// Local: .data/uploads, served by /api/media. Production: Supabase Storage.
+// Local: .data/uploads. Production: one private Vercel Blob store (access is fixed per store, and
+// payment screenshots must never be public). Both serve through this app: /api/media for public
+// images, the admin-only proof route for private ones. The folder keeps the two apart.
 const MAX_BYTES = 5 * 1024 * 1024;
-const PUBLIC_BUCKET = 'zenix-media';
-const PRIVATE_BUCKET = 'zenix-private';
-export const LOCAL_UPLOADS = path.join(process.cwd(), '.data', 'uploads');
+const LOCAL_UPLOADS = path.join(process.cwd(), '.data', 'uploads');
+export type ImageVisibility = 'public' | 'private';
+export const blobConfigured = () => !!(process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID);
 
 /** Checks the file's real signature. The browser-supplied type and name are never trusted, and SVG is refused. */
 function sniffImage(b: Buffer): { ext: string; type: string } | null {
@@ -23,7 +26,7 @@ function sniffImage(b: Buffer): { ext: string; type: string } | null {
 export class UploadError extends Error {}
 
 /** `visibility: 'private'` is for payment screenshots: they are only readable through the admin-only route. */
-export async function saveImage(file: File, visibility: 'public' | 'private'): Promise<string> {
+export async function saveImage(file: File, visibility: ImageVisibility): Promise<string> {
   if (!file || file.size === 0) throw new UploadError('empty');
   if (file.size > MAX_BYTES) throw new UploadError('too-large');
   const buf = Buffer.from(await file.arrayBuffer());
@@ -31,35 +34,26 @@ export async function saveImage(file: File, visibility: 'public' | 'private'): P
   if (!kind) throw new UploadError('bad-type');
   const name = `${crypto.randomUUID()}.${kind.ext}`;
 
-  if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    const bucket = visibility === 'public' ? PUBLIC_BUCKET : PRIVATE_BUCKET;
-    const res = await fetch(`${process.env.SUPABASE_URL}/storage/v1/object/${bucket}/${name}`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': kind.type, 'Cache-Control': 'max-age=31536000' },
-      body: buf,
-    });
-    if (!res.ok) throw new UploadError(`storage-${res.status}`);
-    return visibility === 'public' ? `${process.env.SUPABASE_URL}/storage/v1/object/public/${bucket}/${name}` : `private:${name}`;
+  if (blobConfigured()) {
+    await put(`${visibility}/${name}`, buf, { access: 'private', contentType: kind.type, addRandomSuffix: false });
+  } else {
+    if (process.env.VERCEL) throw new UploadError('storage-not-configured');
+    const dir = path.join(LOCAL_UPLOADS, visibility);
+    await fs.mkdir(dir, { recursive: true });
+    await fs.writeFile(path.join(dir, name), buf);
   }
-  if (process.env.VERCEL) throw new UploadError('storage-not-configured');
-  const dir = path.join(LOCAL_UPLOADS, visibility);
-  await fs.mkdir(dir, { recursive: true });
-  await fs.writeFile(path.join(dir, name), buf);
   return visibility === 'public' ? `/api/media/${name}` : `private:${name}`;
 }
 
-export async function readPrivateImage(ref: string): Promise<{ body: Uint8Array; type: string } | null> {
-  const name = ref.replace(/^private:/, '');
+export async function readImage(visibility: ImageVisibility, name: string): Promise<{ body: Uint8Array; type: string } | null> {
   if (!/^[0-9a-f-]{36}\.(jpg|png|webp)$/.test(name)) return null;
   const type = name.endsWith('png') ? 'image/png' : name.endsWith('webp') ? 'image/webp' : 'image/jpeg';
-  if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    const res = await fetch(`${process.env.SUPABASE_URL}/storage/v1/object/${PRIVATE_BUCKET}/${name}`, {
-      headers: { Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}` },
-    });
-    return res.ok ? { body: new Uint8Array(await res.arrayBuffer()), type } : null;
+  if (blobConfigured()) {
+    const res = await get(`${visibility}/${name}`, { access: 'private' });
+    return res?.statusCode === 200 ? { body: new Uint8Array(await new Response(res.stream).arrayBuffer()), type } : null;
   }
   try {
-    return { body: await fs.readFile(path.join(LOCAL_UPLOADS, 'private', name)), type };
+    return { body: await fs.readFile(path.join(LOCAL_UPLOADS, visibility, name)), type };
   } catch {
     return null;
   }

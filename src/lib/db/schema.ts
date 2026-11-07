@@ -148,7 +148,7 @@ CREATE TABLE IF NOT EXISTS messages (
 
 CREATE TABLE IF NOT EXISTS rate_limits (key text PRIMARY KEY, count int NOT NULL, reset_at timestamptz NOT NULL);
 
--- Supabase exposes the public schema over its REST API. This app connects directly as the
--- table owner, so RLS with no policies blocks that API without affecting the site.
+-- Hosted Postgres can expose the public schema over a REST API. This app connects directly as
+-- the table owner, so RLS with no policies blocks that API without affecting the site.
 ${TABLES.map((t) => `ALTER TABLE ${t} ENABLE ROW LEVEL SECURITY;`).join('\n')}
 `;

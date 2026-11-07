@@ -24,15 +24,14 @@ To go back to a clean starter catalogue, stop the server and run `npm run db:res
 
 ## Go live (about 30 minutes)
 
-### 1. Supabase (database and photo storage)
-1. Create a project at [supabase.com](https://supabase.com). Choose an EU region such as Frankfurt, which is close to Egypt and to the server region set in `vercel.json`.
-2. Under **Connect**, copy the **Transaction pooler** connection string (port 6543). This is `DATABASE_URL`.
-3. Under **Project Settings > API**, copy the project URL (`SUPABASE_URL`) and the `service_role` key (`SUPABASE_SERVICE_ROLE_KEY`). Keep that key private.
-4. Put those three values in `.env.local`, then run:
+### 1. Neon (database) and Vercel Blob (photo storage)
+1. In your Vercel project, open **Storage** and connect a Neon Postgres database. Choose an EU region such as Frankfurt, which is close to Egypt and to the server region set in `vercel.json`. This adds `DATABASE_URL`.
+2. Still in **Storage**, create a **Blob** store, set its access to **Private**, and connect it to the project. A store's access cannot be changed later. Uploads need a private store because payment screenshots are kept there; product photos are served publicly by the site through `/api/media`.
+3. To set up a new, empty database, put `DATABASE_URL` in `.env.local` and run:
    ```bash
    npm run db:setup
    ```
-   This creates the tables, the starter catalogue and two photo buckets. Afterwards, remove `DATABASE_URL` from `.env.local` if you want to keep using the local database for development.
+   This creates the tables and the starter catalogue. Afterwards, remove `DATABASE_URL` from `.env.local` if you want to keep using the local database for development. While it is set, `npm run dev` works on the live database.
 
 ### 2. Admin password and session secret
 ```bash

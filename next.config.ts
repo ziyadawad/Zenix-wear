@@ -1,14 +1,5 @@
 import type { NextConfig } from 'next';
 
-const remotePatterns: NonNullable<NonNullable<NextConfig['images']>['remotePatterns']> = [];
-if (process.env.SUPABASE_URL) {
-  remotePatterns.push({
-    protocol: 'https',
-    hostname: new URL(process.env.SUPABASE_URL).hostname,
-    pathname: '/storage/v1/object/public/**',
-  });
-}
-
 const securityHeaders = [
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
@@ -28,7 +19,6 @@ const config: NextConfig = {
     deviceSizes: [480, 828, 1200, 1920],
     imageSizes: [96, 256],
     minimumCacheTTL: 60 * 60 * 24 * 30,
-    remotePatterns,
   },
   experimental: { serverActions: { bodySizeLimit: '6mb' } },
   async headers() {

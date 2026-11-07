@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.15",
+    "@vercel/blob": "^2.8.2",
     "jose": "^6.2.15",
     "lucide-react": "^1.69.0",
     "next": "^16.4.5",
@@ -30,5 +31,10 @@
     "tailwindcss": "^4.3.4",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
+  },
+  "overrides": {
+    "@vercel/cli-config": {
+      "zod": "$zod"
+    }
   }
 }

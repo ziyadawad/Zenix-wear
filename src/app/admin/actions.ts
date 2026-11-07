@@ -40,7 +40,7 @@ export async function uploadImage(form: FormData): Promise<{ url?: string; error
     if (e instanceof UploadError) {
       if (e.message === 'too-large') return { error: 'Image must be under 5 MB.' };
       if (e.message === 'bad-type') return { error: 'Use a JPG, PNG or WEBP image.' };
-      if (e.message === 'storage-not-configured') return { error: 'Image storage is not configured. Set the Supabase variables.' };
+      if (e.message === 'storage-not-configured') return { error: 'Image storage is not configured. Connect a Vercel Blob store to this project.' };
       return { error: `Upload failed (${e.message}).` };
     }
     console.error(e);

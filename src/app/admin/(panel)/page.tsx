@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { requireAdmin } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { emailConfigured, paymobEnabled } from '@/lib/services';
+import { blobConfigured, emailConfigured, paymobEnabled } from '@/lib/services';
 import { getSettings } from '@/lib/catalog';
 import { Card, egp, PageHead, StatusBadge, when } from '@/components/admin/ui';
 import { RemoveDemoButton } from '@/components/admin/SmallActions';
@@ -36,7 +36,7 @@ export default async function Dashboard() {
 
   const checks: { ok: boolean; label: string }[] = [
     { ok: !!process.env.DATABASE_URL, label: 'Production database connected (DATABASE_URL)' },
-    { ok: !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY), label: 'Image storage connected (Supabase)' },
+    { ok: blobConfigured(), label: 'Image storage connected (Vercel Blob)' },
     { ok: emailConfigured(), label: 'New-order emails switched on (RESEND_API_KEY)' },
     { ok: (process.env.NEXT_PUBLIC_SITE_URL ?? '').startsWith('https://'), label: 'Live domain set (NEXT_PUBLIC_SITE_URL)' },
     { ok: demo === 0, label: `Sample reviews removed (${demo} left)` },

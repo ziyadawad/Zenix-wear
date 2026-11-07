@@ -12,7 +12,7 @@ interface Driver extends Queryable {
   close(): Promise<void>;
 }
 
-/** Production: any Postgres, e.g. Supabase via its transaction pooler. */
+/** Production: any Postgres, e.g. Neon. */
 async function postgresDriver(url: string): Promise<Driver> {
   const { default: postgres } = await import('postgres');
   const sql = postgres(url, {
