@@ -33,21 +33,30 @@ export function BottomNav() {
   const cart = useCart();
   const wish = useWishlist();
   const count = cartCount(cart);
-  if (pathname.endsWith('/checkout')) return null;
-  const isHome = pathname === `/${locale}`;
-  const item = 'flex flex-1 flex-col items-center justify-center gap-[3px] text-[10px] min-h-[60px] rtl:text-[11px] relative';
+  const p = pathname.replace(new RegExp(`^/${locale}(?=/|$)`), '') || '/';
+  const under = (...sections: string[]) => sections.some((s) => p === s || p.startsWith(`${s}/`));
+  const active = {
+    home: p === '/',
+    shop: under('/shop', '/product', '/new-drops', '/collections'),
+    search: under('/search'),
+    wishlist: under('/wishlist'),
+    cart: under('/cart', '/checkout'),
+  };
+  const item = (on: boolean) => cx('relative flex min-h-[60px] flex-1 flex-col items-center justify-center gap-[3px] text-[10px] rtl:text-[11px]', on ? 'font-medium text-white' : 'text-muted');
+  const mark = (on: boolean) => on && <span className="absolute inset-x-1/4 top-0 h-0.5 bg-white" aria-hidden="true" />;
+  const stroke = (on: boolean) => (on ? 1.75 : 1.25);
   return (
     <nav aria-label={t.nav.menu} className="no-print fixed inset-x-0 bottom-0 z-50 flex border-t border-line bg-black pb-[env(safe-area-inset-bottom)] md:hidden">
-      <Link href={lp('/')} className={cx(item, !isHome && 'text-muted')}><Home size={20} strokeWidth={1.25} />{t.nav.home}</Link>
-      <Link href={lp('/shop')} className={cx(item, !pathname.startsWith(lp('/shop')) && 'text-muted')}><Store size={20} strokeWidth={1.25} />{t.nav.shop}</Link>
-      <button className={cx(item, 'text-muted')} onClick={() => searchUi.set(true)}><Search size={20} strokeWidth={1.25} />{t.nav.search}</button>
-      <Link href={lp('/wishlist')} className={cx(item, !pathname.startsWith(lp('/wishlist')) && 'text-muted')}>
-        <span className="relative"><Heart size={20} strokeWidth={1.25} />{wish.length > 0 && <span className="absolute -end-1 -top-0.5 size-1.5 rounded-full bg-white" />}</span>
+      <Link href={lp('/')} aria-current={active.home ? 'page' : undefined} className={item(active.home)}>{mark(active.home)}<Home size={20} strokeWidth={stroke(active.home)} />{t.nav.home}</Link>
+      <Link href={lp('/shop')} aria-current={active.shop ? 'page' : undefined} className={item(active.shop)}>{mark(active.shop)}<Store size={20} strokeWidth={stroke(active.shop)} />{t.nav.shop}</Link>
+      <button className={item(active.search)} onClick={() => searchUi.set(true)}>{mark(active.search)}<Search size={20} strokeWidth={stroke(active.search)} />{t.nav.search}</button>
+      <Link href={lp('/wishlist')} aria-current={active.wishlist ? 'page' : undefined} className={item(active.wishlist)}>{mark(active.wishlist)}
+        <span className="relative"><Heart size={20} strokeWidth={stroke(active.wishlist)} />{wish.length > 0 && <span className="absolute -end-1 -top-0.5 size-1.5 rounded-full bg-white" />}</span>
         {t.nav.wishlist}
       </Link>
-      <button className={cx(item, 'text-muted')} onClick={() => cartUi.set(true)}>
+      <button className={item(active.cart)} onClick={() => cartUi.set(true)}>{mark(active.cart)}
         <span className="relative">
-          <ShoppingBag size={20} strokeWidth={1.25} />
+          <ShoppingBag size={20} strokeWidth={stroke(active.cart)} />
           {count > 0 && <span className="absolute -end-2 -top-1.5 flex size-4 items-center justify-center rounded-full bg-white text-[9px] font-semibold text-black">{count}</span>}
         </span>
         {t.nav.cart}

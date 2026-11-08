@@ -91,7 +91,17 @@ Everything can be replaced from the admin. Recommended sizes: products 1200×150
 
 The logos in `public/brand/` were cut from the supplied JPEGs. The wordmark source is only 831 px wide: if you have a vector (SVG) or high-resolution version, replace `wordmark.webp` for sharper rendering on large screens.
 
-Placeholder editorial photos are from Unsplash (see `public/images/editorial/CREDITS.txt`). The non-tee product images are generated illustrations.
+Placeholder editorial photos are from Unsplash (see `public/images/editorial/CREDITS.txt`); none of them show people. All product images are generated product-only illustrations (`npm run photos:tees` re-renders the T-shirts).
+
+### Photos of people
+
+The site shows no photos of people except the three approved ones. To add or replace them:
+
+1. Put `photo-1.jpg` (hero), `photo-2.jpg` (T-shirts tile) and `photo-4.jpg` (About page) in `public/approved-photos/`.
+2. Run `npm run photos:approved`. It removes the Snapchat caption from photo-4, applies the dark brand grade, writes WebP copies to `public/images/approved/`, moves the originals out of `public/` into the git-ignored `approved-photos-originals/` and switches the site to the new photos.
+3. Open `approved-photos-originals/preview.jpg` to check the photo-4 crop. If any of the caption is left, re-run with `--photo4-crop=0.75` (the share of the height to keep).
+
+Until a photo is processed, its place shows a product shot or the dark brand background, never an empty box. Do not upload other photos of people from the admin.
 
 ## Project map
 

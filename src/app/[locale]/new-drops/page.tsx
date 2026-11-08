@@ -14,5 +14,5 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: L
 export default async function NewDrops({ params, searchParams }: { params: Promise<{ locale: Locale }>; searchParams: Promise<SearchParams> }) {
   const { locale } = await params;
   const t = getDictionary(locale);
-  return <ShopView locale={locale} sp={await searchParams} title={t.nav.newDrops} blurb={t.categoryBlurb.new} image="/images/hero/lineup.webp" base={{ flags: ['new'], sort: 'newest' }} showSubnav={false} />;
+  return <ShopView locale={locale} sp={await searchParams} title={t.nav.newDrops} blurb={t.categoryBlurb.new} image="/images/products/tee-lineup.webp" base={{ flags: ['new'], sort: 'newest' }} showSubnav={false} />;
 }

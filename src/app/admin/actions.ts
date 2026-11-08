@@ -190,7 +190,7 @@ export async function saveShipping(fees: Record<string, number>): Promise<{ ok: 
 const localized = z.object({ ar: z.string().trim().max(200), en: z.string().trim().max(200) });
 const contentSchema = z.object({
   hero: z.array(z.object({
-    id: z.string().max(60), kind: z.enum(['figure', 'cover']), image: imageUrl, video: z.string().max(600).optional(),
+    id: z.string().max(60), kind: z.enum(['brand', 'figure', 'cover']), image: z.union([z.literal(''), imageUrl]), video: z.string().max(600).optional(),
     headlineAr: z.string().max(120), headlineEn: z.string().max(120), subAr: z.string().max(240), subEn: z.string().max(240),
   })).min(1).max(6),
   announcements: z.array(localized).max(8),

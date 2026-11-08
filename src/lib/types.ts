@@ -82,8 +82,8 @@ export interface Review {
 
 export interface HeroSlide {
   id: string;
-  /** "figure" for a transparent cutout of an athlete; "cover" for a full-bleed photo. */
-  kind: 'figure' | 'cover';
+  /** "brand": dark background with the logo (uses the approved hero photo when there is one); "cover": full-bleed photo; "figure": transparent cutout. */
+  kind: 'brand' | 'figure' | 'cover';
   image: string;
   video?: string;
   headlineAr: string; headlineEn: string;

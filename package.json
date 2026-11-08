@@ -9,7 +9,9 @@
     "typecheck": "tsc --noEmit",
     "db:setup": "tsx --env-file-if-exists=.env.local scripts/db-setup.ts",
     "admin:password": "tsx scripts/admin-password.ts",
-    "db:reset": "tsx --env-file-if-exists=.env.local scripts/db-reset.ts"
+    "db:reset": "tsx --env-file-if-exists=.env.local scripts/db-reset.ts",
+    "photos:approved": "node scripts/approved-photos.mjs",
+    "photos:tees": "node scripts/render-tee-shots.mjs"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.15",

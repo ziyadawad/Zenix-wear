@@ -50,13 +50,20 @@ async function pgliteDriver(): Promise<Driver> {
 const store = globalThis as unknown as { __zenixDb?: Promise<Driver> };
 
 async function init(): Promise<Driver> {
+  const { migrate } = await import('./migrations');
   const url = process.env.DATABASE_URL;
-  if (url) return postgresDriver(url);
+  if (url) {
+    const driver = await postgresDriver(url);
+    // Tables come from `npm run db:setup`; later changes (new columns and tables) apply themselves here.
+    await migrate(driver);
+    return driver;
+  }
   if (process.env.VERCEL) throw new Error('DATABASE_URL is not set. The embedded database cannot run on Vercel.');
   const driver = await pgliteDriver();
   await driver.exec(SCHEMA_SQL);
   const { seedIfEmpty } = await import('./seed');
   await seedIfEmpty(driver);
+  await migrate(driver);
   return driver;
 }
 

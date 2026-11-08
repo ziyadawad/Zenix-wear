@@ -3,8 +3,25 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useI18n } from '../layout/I18nProvider';
+import { OrbitMark } from './Bits';
 import type { HeroSlide } from '@/lib/types';
+import { APPROVED_PHOTOS } from '@/lib/approved-photos';
 import { cx } from '@/lib/utils';
+
+/** Approved hero photo under a dark overlay; without one, a dark chrome gradient. Never a broken image. */
+function BrandBackground({ eager }: { eager: boolean }) {
+  const photo = APPROVED_PHOTOS.hero;
+  return (
+    <>
+      <div className="absolute inset-0" style={{ background: 'radial-gradient(70% 60% at 50% 38%, #2b2b2b 0%, #111 52%, #000 100%)' }} />
+      {photo ? (
+        <Image src={photo.src} alt="" fill preload={eager} fetchPriority={eager ? 'high' : 'auto'} loading={eager ? 'eager' : 'lazy'} sizes="100vw" quality={75} className="object-cover opacity-80" style={{ objectPosition: photo.position }} />
+      ) : (
+        <div className="brand-sheen absolute inset-0" aria-hidden="true" />
+      )}
+    </>
+  );
+}
 
 export function Hero({ slides }: { slides: HeroSlide[] }) {
   const { t, locale, lp } = useI18n();
@@ -31,9 +48,13 @@ export function Hero({ slides }: { slides: HeroSlide[] }) {
       {slides.map((s, idx) => {
         if (idx !== 0 && !loadAll) return null;
         const on = idx === i;
+        // A slide without its own photo or video shows the brand background (the approved hero photo, if any).
+        const brand = !s.video && (s.kind === 'brand' || !s.image);
         return (
           <div key={s.id} aria-hidden={!on} className={cx('absolute inset-0 transition-opacity duration-[1400ms]', on ? 'opacity-100' : 'opacity-0')}>
-            {s.video ? (
+            {brand ? (
+              <BrandBackground eager={idx === 0} />
+            ) : s.video ? (
               <video src={s.video} poster={s.image} autoPlay muted loop playsInline className="absolute inset-0 size-full object-cover" />
             ) : s.kind === 'figure' ? (
               <>
@@ -48,13 +69,17 @@ export function Hero({ slides }: { slides: HeroSlide[] }) {
           </div>
         );
       })}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/25 to-black/30 md:bg-gradient-to-r md:from-black/85 md:via-black/30 md:to-transparent md:rtl:bg-gradient-to-l" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-black/55" />
+      <div className="absolute inset-0" style={{ background: 'radial-gradient(55% 55% at 50% 45%, rgba(0,0,0,.6) 0%, rgba(0,0,0,0) 100%)' }} />
 
-      <div className="container-zx relative flex h-full flex-col justify-end pb-[calc(var(--bottom-nav)+76px)] pt-[var(--hh)] md:justify-center md:pb-0">
-        <div key={active.id} className="max-w-[820px] text-center md:max-w-[52%] md:text-start">
-          <h1 className="display slide-rise text-[clamp(2.1rem,5.6vw,5.6rem)] md:rtl:text-[clamp(2.1rem,4.6vw,4.8rem)]">{locale === 'ar' ? active.headlineAr : active.headlineEn}</h1>
-          <p className="slide-rise mx-auto mt-4 max-w-[46ch] text-sm leading-relaxed text-silver md:mx-0 md:mt-6 md:text-base" style={{ '--d': '.3s' } as React.CSSProperties}>{locale === 'ar' ? active.subAr : active.subEn}</p>
-          <div className="slide-rise mt-6 flex gap-2 md:mt-10 md:gap-3" style={{ '--d': '.45s' } as React.CSSProperties}>
+      <div className="container-zx relative flex h-full flex-col items-center justify-center pb-[calc(var(--bottom-nav)+64px)] pt-[var(--hh)] text-center md:pb-16">
+        {/* Outside the keyed block below, so the logo keeps turning when the slide changes. */}
+        <h1 className="w-[min(62vw,34svh)] md:w-[min(30vw,50svh,440px)]">
+          <OrbitMark hero sizes="(min-width:768px) 440px, 62vw" />
+        </h1>
+        <div key={active.id} className="w-full max-w-[640px]">
+          <p className="slide-rise mx-auto mt-6 max-w-[46ch] text-sm leading-relaxed text-silver md:mt-8 md:text-base" style={{ '--d': '.2s' } as React.CSSProperties}>{locale === 'ar' ? active.subAr : active.subEn}</p>
+          <div className="slide-rise mt-6 flex justify-center gap-2 md:mt-8 md:gap-3" style={{ '--d': '.35s' } as React.CSSProperties}>
             <Link href={lp('/shop/t-shirts')} className="btn btn-primary min-w-0 flex-1 !px-2 md:flex-none md:!px-8 md:min-w-[220px]">{t.home.shopTshirts}</Link>
             <Link href={lp('/new-drops')} className="btn btn-ghost min-w-0 flex-1 !px-2 md:flex-none md:!px-8 md:min-w-[190px]">{t.home.newDrop}</Link>
           </div>
@@ -62,7 +87,7 @@ export function Hero({ slides }: { slides: HeroSlide[] }) {
       </div>
 
       {n > 1 && (
-        <div className="absolute bottom-[calc(var(--bottom-nav)+18px)] start-1/2 flex -translate-x-1/2 rtl:translate-x-1/2 md:bottom-8 md:start-14 md:translate-x-0 md:rtl:translate-x-0">
+        <div className="absolute bottom-[calc(var(--bottom-nav)+18px)] start-1/2 flex -translate-x-1/2 rtl:translate-x-1/2 md:bottom-6">
           {slides.map((s, idx) => (
             <button key={s.id} aria-label={`${idx + 1} / ${n}`} aria-current={idx === i} onClick={() => setI(idx)} className="flex h-11 w-11 items-center px-1">
               <span className={cx('h-px w-full transition-colors duration-500', idx === i ? 'bg-white' : 'bg-white/30')} />

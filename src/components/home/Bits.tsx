@@ -26,12 +26,19 @@ export function SectionHead({ id, title, link, center, withArrowSpace }: { id: s
   );
 }
 
-/** The attached logo, split into the Z and its ring so they can move separately. Geometry is untouched. */
-export function OrbitMark({ className }: { className?: string }) {
+/**
+ * The attached logo, split into the Z and its ring so they can move separately. Geometry is untouched.
+ * `hero` loads it straight away at full quality and adds the ZENIX word, cut from the same logo file.
+ */
+export function OrbitMark({ className, hero, sizes }: { className?: string; hero?: boolean; sizes?: string }) {
+  const img = hero ? ({ loading: 'eager', quality: 90, sizes } as const) : ({ loading: 'lazy' } as const);
   return (
     <div className={cx('relative', className)} style={{ perspective: 900 }} dir="ltr">
-      <Image src="/brand/z-ring.webp" alt="" width={694} height={427} loading="lazy" className="orbit-ring absolute inset-0 h-auto w-full" />
-      <Image src="/brand/z-only.webp" alt="ZENIX" width={694} height={427} loading="lazy" className="orbit-z relative h-auto w-full" />
+      <div className="relative">
+        <Image src="/brand/z-ring.webp" alt="" width={694} height={427} {...img} className="orbit-ring absolute inset-0 h-auto w-full" />
+        <Image src="/brand/z-only.webp" alt="ZENIX" width={694} height={427} {...img} className="orbit-z relative h-auto w-full" />
+      </div>
+      {hero && <Image src="/brand/z-word.webp" alt="" width={694} height={88} {...img} className="h-auto w-full" />}
     </div>
   );
 }

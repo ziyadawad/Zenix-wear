@@ -3,6 +3,7 @@
 import { SCHEMA_SQL } from '../src/lib/db/schema';
 import { seedIfEmpty } from '../src/lib/db/seed';
 import { openDriver } from '../src/lib/db/index';
+import { migrate } from '../src/lib/db/migrations';
 
 async function main() {
   const driver = await openDriver();
@@ -11,6 +12,8 @@ async function main() {
     console.log('Schema ready.');
   }
   console.log((await seedIfEmpty(driver)) ? 'Starter catalogue added.' : 'Database already has data; seed skipped.');
+  await migrate(driver);
+  console.log('Migrations up to date.');
   await driver.close();
 }
 main().catch((e) => { console.error(e); process.exit(1); });

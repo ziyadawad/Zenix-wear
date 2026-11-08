@@ -12,6 +12,10 @@ next-env.d.ts
 # Local database and uploaded files (customer data, payment screenshots)
 .data/
 
+# Original photos of people stay private: only the processed copies in public/images/approved/ ship.
+/public/approved-photos/
+/approved-photos-originals/
+
 # Secrets: never commit these
 .env
 .env.*

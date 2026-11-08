@@ -6,8 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Heart, Menu, Search, ShoppingBag, User, X } from 'lucide-react';
 import { useI18n } from './I18nProvider';
 import { cartCount, cartUi, menuUi, searchUi, useCart, useWishlist } from '@/lib/client/store';
-import { cx } from '@/lib/utils';
-import { CONTACT } from '@/lib/utils';
+import { CONTACT, cx, isNavActive } from '@/lib/utils';
 
 const STROKE = 1.25;
 
@@ -35,14 +34,15 @@ export function Header() {
   }, []);
   useEffect(() => { setQs(window.location.search); menuUi.set(false); }, [pathname]);
 
-  const links = [
-    { href: lp('/shop'), label: t.nav.shop },
-    { href: lp('/shop/t-shirts'), label: t.nav.tshirts },
-    { href: lp('/new-drops'), label: t.nav.newDrops },
-    { href: lp('/collections'), label: t.nav.collections },
-    { href: lp('/about'), label: t.nav.about },
-    { href: lp('/contact'), label: t.nav.contact },
-  ];
+  const links = ([
+    ['/', t.nav.home],
+    ['/shop', t.nav.shop],
+    ['/shop/t-shirts', t.nav.tshirts],
+    ['/new-drops', t.nav.newDrops],
+    ['/collections', t.nav.collections],
+    ['/about', t.nav.about],
+    ['/contact', t.nav.contact],
+  ] as const).map(([section, label]) => ({ href: lp(section), label, active: isNavActive(pathname, locale, section) }));
 
   return (
     <>
@@ -52,12 +52,14 @@ export function Header() {
       >
         <div className="container-zx grid h-full grid-cols-[1fr_auto_1fr] items-center">
           <div className="flex items-center">
-            <button className="icon-btn -ms-3 min-[1400px]:hidden" aria-label={t.nav.menu} onClick={() => menuUi.set(true)}>
+            <button className="icon-btn -ms-3 xl:hidden" aria-label={t.nav.menu} onClick={() => menuUi.set(true)}>
               <Menu size={22} strokeWidth={STROKE} />
             </button>
-            <nav aria-label={t.nav.menu} className="hidden items-center gap-5 min-[1400px]:flex 2xl:gap-7">
+            {/* Phones have Home in the bottom bar. Tablets and small laptops have no full menu, so it sits here. */}
+            <Link href={lp('/')} aria-current={isHome ? 'page' : undefined} className={cx('link-underline hidden whitespace-nowrap text-[11px] tracking-[.1em] uppercase transition-opacity hover:opacity-100 md:inline-block xl:hidden rtl:text-[14px] rtl:tracking-normal', !isHome && 'opacity-70')}>{t.nav.home}</Link>
+            <nav aria-label={t.nav.menu} className="hidden items-center gap-3.5 xl:flex min-[1400px]:gap-5 2xl:gap-7">
               {links.map((l) => (
-                <Link key={l.href} href={l.href} className={cx('link-underline whitespace-nowrap text-[11px] tracking-[.14em] uppercase rtl:text-[14px] rtl:tracking-normal', pathname.startsWith(l.href) && 'opacity-60')}>
+                <Link key={l.href} href={l.href} aria-current={l.active ? 'page' : undefined} className={cx('link-underline whitespace-nowrap text-[11px] tracking-[.08em] uppercase transition-opacity hover:opacity-100 min-[1400px]:tracking-[.14em] rtl:text-[14px] rtl:tracking-normal', !l.active && 'opacity-70')}>
                   {l.label}
                 </Link>
               ))}
@@ -90,7 +92,7 @@ export function Header() {
   );
 }
 
-function MobileMenu({ links }: { links: { href: string; label: string }[] }) {
+function MobileMenu({ links }: { links: { href: string; label: string; active: boolean }[] }) {
   const { t, lp, locale } = useI18n();
   const open = menuUi.use();
   const pathname = usePathname();
@@ -110,7 +112,7 @@ function MobileMenu({ links }: { links: { href: string; label: string }[] }) {
         <ul>
           {links.map((l, i) => (
             <li key={l.href} className="slide-rise border-b border-line" style={{ '--d': `${i * 55}ms` } as React.CSSProperties}>
-              <Link href={l.href} className="display block py-5 text-[26px]" onClick={() => menuUi.set(false)}>{l.label}</Link>
+              <Link href={l.href} aria-current={l.active ? 'page' : undefined} className={cx('display block py-5 text-[26px]', !l.active && 'text-muted')} onClick={() => menuUi.set(false)}>{l.label}</Link>
             </li>
           ))}
         </ul>

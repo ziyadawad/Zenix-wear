@@ -42,8 +42,6 @@ export function ContentForm({ initial, collections, products }: { initial: SiteC
               <div className="max-w-[200px]"><p className="label">Photo</p><ImagePicker max={1} label="Upload" images={s.image ? [s.image] : []} onChange={(a) => upSlide(i, { image: a[0] ?? '', kind: a[0] && a[0] !== s.image ? 'cover' : s.kind })} /></div>
               <div><label className="label" htmlFor={`h-v-${i}`}>Video link instead of photo (optional, .mp4)</label><input id={`h-v-${i}`} type="url" className="field" placeholder="https://" value={s.video ?? ''} onChange={(e) => upSlide(i, { video: e.target.value || undefined })} /></div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <div><label className="label" htmlFor={`h-he-${i}`}>Headline (EN)</label><input id={`h-he-${i}`} className="field" value={s.headlineEn} onChange={(e) => upSlide(i, { headlineEn: e.target.value })} /></div>
-                <div><label className="label" htmlFor={`h-ha-${i}`}>Headline (AR)</label><input id={`h-ha-${i}`} dir="rtl" className="field" value={s.headlineAr} onChange={(e) => upSlide(i, { headlineAr: e.target.value })} /></div>
                 <div><label className="label" htmlFor={`h-se-${i}`}>Sub-line (EN)</label><input id={`h-se-${i}`} className="field" value={s.subEn} onChange={(e) => upSlide(i, { subEn: e.target.value })} /></div>
                 <div><label className="label" htmlFor={`h-sa-${i}`}>Sub-line (AR)</label><input id={`h-sa-${i}`} dir="rtl" className="field" value={s.subAr} onChange={(e) => upSlide(i, { subAr: e.target.value })} /></div>
               </div>

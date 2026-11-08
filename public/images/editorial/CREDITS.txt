@@ -1,8 +1,5 @@
 Placeholder editorial photography from Unsplash (unsplash.com/license), converted to graphite monochrome.
-Replace with real ZENIX campaign photography before launch.
+None of these show people. Replace with real ZENIX product photography when available.
 gym-bw: https://unsplash.com/photos/1590487988256-9ed24133863e
 rack: https://unsplash.com/photos/1544033527-b192daee1f5b
 dumbbells: https://unsplash.com/photos/1576678927484-cc907957088c
-seated: https://unsplash.com/photos/1579758629938-03607ccdbaba
-lift-hands: https://unsplash.com/photos/1583454110551-21f2fa2afe61
-barbell-floor: https://unsplash.com/photos/1517836357463-d25dfeac3438
