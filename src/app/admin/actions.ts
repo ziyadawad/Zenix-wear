@@ -3,7 +3,9 @@ import { revalidatePath, updateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { db, newId } from '@/lib/db';
-import { checkAdminCredentials, clientIp, endAdminSession, rateLimit, requireAdmin, startAdminSession } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
+import { currentActor } from '@/lib/dashboard/guard';
+import { logActivity, logStock, syncOrderMoney } from '@/lib/dashboard/ledger';
 import { OrderError, setOrderStatus } from '@/lib/orders';
 import { saveImage, UploadError } from '@/lib/services';
 import { CATEGORIES, FITS, GENDERS, ORDER_STATUSES, SIZES, TAGS } from '@/lib/types';
@@ -15,19 +17,7 @@ function refreshStorefront(...tags: string[]) {
   revalidatePath('/[locale]', 'layout');
 }
 
-// ---- Session ----------------------------------------------------------------------------------
-export async function adminLogin(_: unknown, form: FormData): Promise<{ error: string } | null> {
-  const ip = await clientIp();
-  if (!(await rateLimit(`admin-login:${ip}`, 6, 900))) return { error: 'Too many attempts. Try again in 15 minutes.' };
-  const ok = await checkAdminCredentials(String(form.get('email') ?? ''), String(form.get('password') ?? ''));
-  if (!ok) return { error: 'Wrong email or password.' };
-  await startAdminSession();
-  redirect('/admin');
-}
-export async function adminLogout() {
-  await endAdminSession();
-  redirect('/admin/login');
-}
+// Logging in and out: src/app/dashboard/actions.ts (one owner login for the dashboard and the admin).
 
 // ---- Uploads ----------------------------------------------------------------------------------
 export async function uploadImage(form: FormData): Promise<{ url?: string; error?: string }> {
@@ -64,6 +54,7 @@ const productSchema = z.object({
   descAr: z.string().max(4000), descEn: z.string().max(4000),
   fabricAr: z.string().max(2000), fabricEn: z.string().max(2000), careAr: z.string().max(2000), careEn: z.string().max(2000), fitAr: z.string().max(1000), fitEn: z.string().max(1000),
   price: z.number().int().min(0).max(1000000), salePrice: z.number().int().min(0).max(1000000).nullable(),
+  costPrice: z.number().int().min(0).max(1000000).nullable(),
   category: z.enum(CATEGORIES), fit: z.enum(FITS).nullable(), gender: z.enum(GENDERS), collection: z.string().max(60).nullable(),
   tags: z.array(z.enum(TAGS)), status: z.enum(['active', 'draft']), featured: z.boolean(),
   video: z.string().max(600).nullable(),
@@ -91,7 +82,9 @@ export async function saveProduct(input: ProductInput): Promise<{ ok: boolean; e
   const colors = p.colors.map(({ id: cid, nameAr, nameEn, hex, images }) => ({ id: cid, nameAr, nameEn, hex, images }));
   const collection = p.collection || null;
 
+  const actor = await currentActor();
   await db.tx(async (tx) => {
+    const before = await tx.query<{ color_id: string; size: string; stock: number }>('SELECT color_id, size, stock FROM product_variants WHERE product_id = $1', [id]);
     const values = [id, slug, p.sku, p.nameAr, p.nameEn, p.descAr, p.descEn, p.fabricAr, p.fabricEn, p.careAr, p.careEn, p.fitAr, p.fitEn, p.price, p.salePrice, p.category, p.fit, p.gender, collection, JSON.stringify(p.tags), JSON.stringify(colors), p.video || null, p.status, p.featured];
     await tx.query(
       `INSERT INTO products (id,slug,sku,name_ar,name_en,desc_ar,desc_en,fabric_ar,fabric_en,care_ar,care_en,fit_ar,fit_en,price,sale_price,category,fit,gender,collection,tags,colors,video,status,featured)
@@ -99,12 +92,18 @@ export async function saveProduct(input: ProductInput): Promise<{ ok: boolean; e
        ON CONFLICT (id) DO UPDATE SET slug=$2,sku=$3,name_ar=$4,name_en=$5,desc_ar=$6,desc_en=$7,fabric_ar=$8,fabric_en=$9,care_ar=$10,care_en=$11,fit_ar=$12,fit_en=$13,price=$14,sale_price=$15,category=$16,fit=$17,gender=$18,collection=$19,tags=$20::jsonb,colors=$21::jsonb,video=$22,status=$23,featured=$24,updated_at=now()`,
       values,
     );
+    await tx.query('UPDATE products SET cost_price = $1 WHERE id = $2', [p.costPrice, id]);
     await tx.query('DELETE FROM product_variants WHERE product_id = $1', [id]);
     for (const c of p.colors) {
       for (const s of p.sizes) {
-        await tx.query('INSERT INTO product_variants (product_id,color_id,size,stock) VALUES ($1,$2,$3,$4)', [id, c.id, s, c.stock[s] ?? 0]);
+        const stock = c.stock[s] ?? 0;
+        await tx.query('INSERT INTO product_variants (product_id,color_id,size,stock) VALUES ($1,$2,$3,$4)', [id, c.id, s, stock]);
+        // Stock typed into the product page is a manual change too: it goes in the stock log.
+        const old = before.find((b) => b.color_id === c.id && b.size === s)?.stock ?? 0;
+        if (stock !== old) await logStock(tx, { productId: id, colorId: c.id, size: s, delta: stock - old, kind: 'edit', reason: 'تعديل من صفحة المنتج في الإدارة', actor });
       }
     }
+    await logActivity(tx, actor, p.id ? 'عدّل منتج' : 'ضاف منتج', 'product', id, { name: p.nameAr, costPrice: p.costPrice });
   });
   refreshStorefront('catalog');
   return { ok: true, id };
@@ -117,12 +116,13 @@ export async function deleteProduct(id: string) {
   redirect('/admin/products');
 }
 
+
 // ---- Orders -----------------------------------------------------------------------------------
 export async function changeOrderStatus(id: string, status: string): Promise<{ ok: boolean; error?: string }> {
   await requireAdmin();
   if (!(ORDER_STATUSES as readonly string[]).includes(status)) return { ok: false, error: 'Unknown status.' };
   try {
-    await setOrderStatus(id, status);
+    await setOrderStatus(id, status, { actor: await currentActor() });
   } catch (e) {
     if (e instanceof OrderError && e.code === 'stock') return { ok: false, error: `Not enough stock of ${e.detail} to reopen this order.` };
     throw e;
@@ -133,7 +133,12 @@ export async function changeOrderStatus(id: string, status: string): Promise<{ o
 }
 export async function setPaymentStatus(id: string, status: 'paid' | 'unpaid') {
   await requireAdmin();
-  await db.query('UPDATE orders SET payment_status = $1 WHERE id = $2', [status, id]);
+  const actor = await currentActor();
+  await db.tx(async (tx) => {
+    await tx.query('UPDATE orders SET payment_status = $1 WHERE id = $2', [status, id]);
+    await syncOrderMoney(tx, id, actor);
+    await logActivity(tx, actor, status === 'paid' ? 'اتعلّم مدفوع' : 'اتعلّم مش مدفوع', 'order', id);
+  });
   revalidatePath(`/admin/orders/${id}`);
 }
 

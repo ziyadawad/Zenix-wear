@@ -59,6 +59,8 @@ export function Footer({ t, locale, settings }: { t: Dictionary; locale: Locale;
         <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-line pt-6 text-center text-xs text-muted md:flex-row">
           <p>© {new Date().getFullYear()} ZENIX WEAR. {t.footer.rights}</p>
           <p>{t.footer.payments}</p>
+          {/* Owner-only, password protected. Plain <a> so the page is never prefetched. */}
+          <a href="/dashboard" rel="nofollow" className="text-[11px] text-muted/60 transition-colors hover:text-muted">{locale === 'ar' ? 'داش بورد' : 'Dashboard'}</a>
         </div>
       </div>
     </footer>

@@ -10,15 +10,11 @@ npm run dev
 ```
 
 - Store: http://localhost:3000
-- Admin: http://localhost:3000/admin
+- Dashboard (owner only): http://localhost:3000/dashboard, with product, content and settings management under /admin
 
 No database setup is needed locally. The site creates an embedded database in `.data/` and fills it with the starter catalogue.
 
-To sign in to the admin, create a `.env.local` file (it is never committed; `.env.example` lists the variables) with `ADMIN_EMAIL` set to your email, plus the two lines printed by:
-
-```bash
-npm run admin:password -- "choose-a-long-password"
-```
+To sign in locally, create a `.env.local` file (it is never committed; `.env.example` lists the variables) with `DASHBOARD_PASSWORD=` any password. `npm run admin:password` prints a strong password and the secrets for production.
 
 To go back to a clean starter catalogue, stop the server and run `npm run db:reset`. This only works on the local database.
 
@@ -33,11 +29,11 @@ To go back to a clean starter catalogue, stop the server and run `npm run db:res
    ```
    This creates the tables and the starter catalogue. Afterwards, remove `DATABASE_URL` from `.env.local` if you want to keep using the local database for development. While it is set, `npm run dev` works on the live database.
 
-### 2. Admin password and session secret
+### 2. Dashboard password and secrets
 ```bash
-npm run admin:password -- "choose-a-long-password"
+npm run admin:password
 ```
-Copy the two printed lines into Vercel in the next step. Use a different password from your local one.
+It prints `DASHBOARD_PASSWORD`, `DASHBOARD_SESSION_SECRET` and `SESSION_SECRET`. Add them in Vercel in step 4 and keep the password in a password manager. They are never in code or Git. Wrong passwords are limited to 5 tries, then a 15-minute wait. The old `ADMIN_EMAIL` and `ADMIN_PASSWORD_HASH` variables are no longer used and can be deleted.
 
 ### 3. New-order emails
 Create a free [Resend](https://resend.com) account **using ziyadawad14@gmail.com** and copy an API key. Until you verify a domain, Resend only delivers to your own account's address, which is all order alerts need. Password-reset emails to customers need a verified domain, then set `EMAIL_FROM` to an address on it.
@@ -48,9 +44,10 @@ Create a free [Resend](https://resend.com) account **using ziyadawad14@gmail.com
 3. Deploy, then add your domain and set `NEXT_PUBLIC_SITE_URL` to it (with `https://`). Redeploy once.
 
 ### 5. Before you announce it
-Open **/admin**. The **Launch checklist** on the dashboard shows what is still missing. Then:
+Open **/admin/settings**. The **Launch checklist** shows what is still missing. Then:
 
-- [ ] Remove the sample reviews (one button on the dashboard).
+- [ ] Remove the sample reviews (one button on the Reviews page).
+- [ ] Add a **cost price** to every product (Products → edit), so the dashboard's profit is right.
 - [ ] Replace placeholder photos and products with your own.
 - [ ] Set real stock counts: the starter stock numbers are made up.
 - [ ] Check the **InstaPay and wallet details** in Settings. They default to 01003965158.
@@ -103,11 +100,23 @@ The site shows no photos of people except the three approved ones. To add or rep
 
 Until a photo is processed, its place shows a product shot or the dark brand background, never an empty box. Do not upload other photos of people from the admin.
 
+## Dashboard
+
+`/dashboard` (link at the bottom of the footer and the phone menu) is password protected and shows live numbers from the database, refreshed every 30 seconds. Everything is set in `config/dashboard.config.ts` (Arabic comments on each line).
+
+- **Stock** is held from the moment an order is placed, so the last piece can never be sold twice. Cancelling or returning an order puts it back. Every change (sale, cancel, return, manual change with a reason, edit from the product page) is in the stock log.
+- **Money**: a delivered cash-on-delivery order goes to the "فلوس عند شركة الشحن" wallet; record the courier's payout as a transfer to cash or bank. Paid InstaPay, wallet and card orders go to their own wallets. Expenses come out of the wallet they were paid from.
+- **Profit this month** = delivered sales − cost of goods (cost price × pieces) − shipping cost (governorate fee) − expenses.
+- **TV mode** (desktop): fullscreen, pages rotate; arrows to move, Esc or F to leave.
+- Database changes apply themselves on the first request after a deploy (`src/lib/db/migrations.ts`). Existing data is kept.
+
 ## Project map
 
 ```
 src/app/[locale]/    Store pages (/ar and /en)
-src/app/admin/       Owner dashboard and its server actions
+src/app/dashboard/   Owner dashboard (login, overview, orders, stock, money, products, customers)
+src/app/admin/       Product, content and settings management, and its server actions
+config/dashboard.config.ts  Dashboard settings: pages, refresh, stock minimums, wallets, expense types, target
 src/app/actions/     Checkout, tracking, forms, accounts
 src/components/      UI, by area
 src/lib/db/          Schema, starter data, database driver

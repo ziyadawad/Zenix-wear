@@ -15,14 +15,14 @@ function fromProduct(p: Product | null): ProductInput {
   if (!p) {
     return {
       id: null, slug: '', sku: '', nameAr: '', nameEn: '', descAr: '', descEn: '', fabricAr: '', fabricEn: '', careAr: '', careEn: '', fitAr: '', fitEn: '',
-      price: 0, salePrice: null, category: 't-shirts', fit: 'regular', gender: 'men', collection: null, tags: [], status: 'active', featured: false, video: null,
+      price: 0, salePrice: null, costPrice: null, category: 't-shirts', fit: 'regular', gender: 'men', collection: null, tags: [], status: 'active', featured: false, video: null,
       sizes: ['S', 'M', 'L', 'XL', 'XXL'], colors: [blankColor()],
     };
   }
   const order = SIZES as readonly string[];
   return {
     id: p.id, slug: p.slug, sku: p.sku, nameAr: p.nameAr, nameEn: p.nameEn, descAr: p.descAr, descEn: p.descEn, fabricAr: p.fabricAr, fabricEn: p.fabricEn, careAr: p.careAr, careEn: p.careEn, fitAr: p.fitAr, fitEn: p.fitEn,
-    price: p.price, salePrice: p.salePrice, category: p.category, fit: p.fit as ProductInput['fit'], gender: p.gender as ProductInput['gender'], collection: p.collection, tags: p.tags, status: p.status, featured: p.featured, video: p.video,
+    price: p.price, salePrice: p.salePrice, costPrice: p.costPrice ?? null, category: p.category, fit: p.fit as ProductInput['fit'], gender: p.gender as ProductInput['gender'], collection: p.collection, tags: p.tags, status: p.status, featured: p.featured, video: p.video,
     sizes: [...new Set(p.variants.map((v) => v.size))].sort((a, b) => order.indexOf(a) - order.indexOf(b)) as ProductInput['sizes'],
     colors: p.colors.map((c) => ({ ...c, stock: Object.fromEntries(p.variants.filter((v) => v.colorId === c.id).map((v) => [v.size, v.stock])) })),
   };
@@ -118,6 +118,7 @@ export function ProductForm({ product, collections }: { product: Product | null;
           <div className="grid grid-cols-2 gap-3">
             <div><label className="label" htmlFor="p-price">Price (EGP)</label><input id="p-price" type="number" inputMode="numeric" required min={1} className="field" value={v.price || ''} onChange={(e) => up('price', Number(e.target.value) || 0)} /></div>
             <div><label className="label" htmlFor="p-sale">Sale price (optional)</label><input id="p-sale" type="number" inputMode="numeric" min={0} className="field" value={v.salePrice ?? ''} onChange={(e) => up('salePrice', e.target.value === '' ? null : Number(e.target.value))} /></div>
+            <div className="col-span-2"><label className="label" htmlFor="p-cost">سعر التكلفة · Cost price per piece (EGP)</label><input id="p-cost" type="number" inputMode="numeric" min={0} className="field" placeholder="Used for profit in the dashboard. Never shown to customers." value={v.costPrice ?? ''} onChange={(e) => up('costPrice', e.target.value === '' ? null : Number(e.target.value))} /></div>
           </div>
         </Section>
         <Section title="Organise">

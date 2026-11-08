@@ -21,8 +21,8 @@ export function Card({ title, children, className }: { title?: string; children:
   );
 }
 const STATUS: Record<string, string> = {
-  pending: 'border-[#d9a441] text-[#e9bd67]', confirmed: 'border-[#6aa8ff] text-[#94c0ff]', shipped: 'border-[#b08cff] text-[#c8aeff]',
-  delivered: 'border-success text-[#6fd3a0]', cancelled: 'border-danger text-[#ff9a9d]',
+  pending: 'border-[#d9a441] text-[#e9bd67]', confirmed: 'border-[#6aa8ff] text-[#94c0ff]', preparing: 'border-[#6aa8ff] text-[#94c0ff]', shipped: 'border-[#b08cff] text-[#c8aeff]',
+  delivered: 'border-success text-[#6fd3a0]', returned: 'border-danger text-[#ff9a9d]', cancelled: 'border-danger text-[#ff9a9d]',
 };
 export function StatusBadge({ status }: { status: string }) {
   return <span className={cx('inline-block border px-2 py-0.5 text-[11px] capitalize', STATUS[status] ?? 'border-line text-muted')}>{status}</span>;

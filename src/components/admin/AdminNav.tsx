@@ -4,11 +4,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { BarChart3, ExternalLink, Inbox, LayoutTemplate, LogOut, Menu, Package, Settings, ShoppingCart, Star, TicketPercent, Truck, Users, X } from 'lucide-react';
-import { adminLogout } from '@/app/admin/actions';
+import { ownerLogout } from '@/app/dashboard/actions';
 import { cx } from '@/lib/utils';
 
 const ALL = [
-  { href: '/admin', label: 'Dashboard', icon: BarChart3 },
+  { href: '/dashboard', label: 'Dashboard', icon: BarChart3 },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
   { href: '/admin/products', label: 'Products', icon: Package },
   { href: '/admin/customers', label: 'Customers', icon: Users },
@@ -23,7 +23,7 @@ const ALL = [
 export function AdminNav() {
   const pathname = usePathname();
   const [more, setMore] = useState(false);
-  const active = (h: string) => (h === '/admin' ? pathname === h : pathname.startsWith(h));
+  const active = (h: string) => pathname.startsWith(h);
   const item = (h: typeof ALL[number], onClick?: () => void) => (
     <Link key={h.href} href={h.href} onClick={onClick} aria-current={active(h.href) ? 'page' : undefined} className={cx('flex min-h-12 items-center gap-3 px-3 text-sm transition-colors', active(h.href) ? 'bg-raised text-white' : 'text-muted hover:text-white')}>
       <h.icon size={18} strokeWidth={1.25} />{h.label}
@@ -32,13 +32,13 @@ export function AdminNav() {
   const footer = (
     <div className="mt-4 border-t border-line pt-3">
       <a href="/" target="_blank" className="flex min-h-12 items-center gap-3 px-3 text-sm text-muted hover:text-white"><ExternalLink size={18} strokeWidth={1.25} />View site</a>
-      <form action={adminLogout}><button className="flex min-h-12 w-full items-center gap-3 px-3 text-sm text-muted hover:text-white"><LogOut size={18} strokeWidth={1.25} />Sign out</button></form>
+      <form action={ownerLogout}><button className="flex min-h-12 w-full items-center gap-3 px-3 text-sm text-muted hover:text-white"><LogOut size={18} strokeWidth={1.25} />Sign out</button></form>
     </div>
   );
   return (
     <>
       <aside className="no-print sticky top-0 hidden h-svh flex-col overflow-y-auto border-e border-line bg-black p-4 lg:flex">
-        <Link href="/admin" className="mb-6 block px-3 py-2"><Image src="/brand/wordmark.webp" alt="ZENIX WEAR" width={592} height={56} className="h-auto w-[150px]" /></Link>
+        <Link href="/dashboard" className="mb-6 block px-3 py-2"><Image src="/brand/wordmark.webp" alt="ZENIX WEAR" width={592} height={56} className="h-auto w-[150px]" /></Link>
         <nav className="flex-1 space-y-0.5" aria-label="Admin">{ALL.map((h) => item(h))}</nav>
         {footer}
       </aside>

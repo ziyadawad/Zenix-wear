@@ -3,6 +3,7 @@ import { db, newId, type Queryable, type Row } from './db';
 import type { Order, OrderItem, PaymentMethod } from './types';
 import { getSettings } from './catalog';
 import { effectivePrice } from './utils';
+import { ACTOR_CUSTOMER, ACTOR_SYSTEM, logActivity, logStock, syncOrderMoney, type StockKind } from './dashboard/ledger';
 
 export function toOrder(r: Row): Order {
   return {
@@ -103,6 +104,8 @@ export async function placeOrder(input: PlaceOrderInput): Promise<Order> {
   return db.tx(async (tx) => {
     const lines = await priceLines(tx, input.lines);
     if (!lines.length || lines.length !== input.lines.length) throw new OrderError('empty');
+    const [{ n }] = await tx.query(`SELECT nextval('order_number_seq')::int AS n`);
+    const number = `ZX${n}`;
 
     const items: OrderItem[] = [];
     for (const l of lines) {
@@ -111,6 +114,8 @@ export async function placeOrder(input: PlaceOrderInput): Promise<Order> {
         [l.qty, l.productId, l.colorId, l.size],
       );
       if (!updated.length) throw new OrderError('stock', input.locale === 'ar' ? l.nameAr : l.nameEn);
+      // Stock is held from checkout so two buyers can never get the last piece; a cancel or return gives it back.
+      await logStock(tx, { productId: l.productId, colorId: l.colorId, size: l.size, delta: -l.qty, kind: 'sale', ref: number, actor: ACTOR_CUSTOMER });
       await tx.query('UPDATE products SET sold_count = sold_count + $1 WHERE id = $2', [l.qty, l.productId]);
       const [p] = await tx.query('SELECT sku FROM products WHERE id = $1', [l.productId]);
       items.push({
@@ -128,8 +133,6 @@ export async function placeOrder(input: PlaceOrderInput): Promise<Order> {
     const shipping = await shippingFee(tx, input.governorate, subtotal - promo.discount, freeShippingThreshold);
     if (shipping == null) throw new OrderError('governorate');
 
-    const [{ n }] = await tx.query(`SELECT nextval('order_number_seq')::int AS n`);
-    const number = `ZX${n}`;
     const total = subtotal - promo.discount + shipping;
     const now = new Date().toISOString();
     const [row] = await tx.query(
@@ -150,27 +153,44 @@ export async function findOrderByNumber(number: string) {
   return rows[0] ? toOrder(rows[0]) : null;
 }
 
-/** Cancelling returns the stock; re-activating a cancelled order takes it again. */
-export async function setOrderStatus(id: string, status: string, note?: string) {
+/** Statuses where the pieces are back on the shelf. Every other status holds them. */
+const RESTOCKED = new Set(['cancelled', 'returned']);
+const STAMP: Record<string, string> = { confirmed: 'confirmed_at', shipped: 'shipped_at', delivered: 'delivered_at', cancelled: 'closed_at', returned: 'closed_at' };
+
+/**
+ * Changes an order's status in one transaction: stock goes back on cancel/return (and is taken again if the
+ * order is reopened), the status timestamp is set, the wallets are synced, and who/when is saved in the history and log.
+ */
+export async function setOrderStatus(id: string, status: string, opts: { note?: string; actor?: string } = {}) {
+  const actor = opts.actor ?? ACTOR_SYSTEM;
   return db.tx(async (tx) => {
     const [o] = await tx.query('SELECT * FROM orders WHERE id = $1 FOR UPDATE', [id]);
     if (!o) return null;
     if (o.status === status) return toOrder(o);
     const items = o.items as OrderItem[];
-    if (status === 'cancelled') {
+    const wasBack = RESTOCKED.has(o.status), nowBack = RESTOCKED.has(status);
+    if (!wasBack && nowBack) {
       for (const i of items) {
         await tx.query('UPDATE product_variants SET stock = stock + $1 WHERE product_id = $2 AND color_id = $3 AND size = $4', [i.qty, i.productId, i.colorId, i.size]);
         await tx.query('UPDATE products SET sold_count = GREATEST(sold_count - $1, 0) WHERE id = $2', [i.qty, i.productId]);
+        await logStock(tx, { productId: i.productId, colorId: i.colorId, size: i.size, delta: i.qty, kind: status === 'returned' ? 'return' : 'cancel' as StockKind, ref: o.number, actor });
       }
-    } else if (o.status === 'cancelled') {
+    } else if (wasBack && !nowBack) {
       for (const i of items) {
         const r = await tx.query('UPDATE product_variants SET stock = stock - $1 WHERE product_id = $2 AND color_id = $3 AND size = $4 AND stock >= $1 RETURNING stock', [i.qty, i.productId, i.colorId, i.size]);
-        if (!r.length) throw new OrderError('stock', i.nameEn);
+        if (!r.length) throw new OrderError('stock', i.nameAr);
         await tx.query('UPDATE products SET sold_count = sold_count + $1 WHERE id = $2', [i.qty, i.productId]);
+        await logStock(tx, { productId: i.productId, colorId: i.colorId, size: i.size, delta: -i.qty, kind: 'reopen', ref: o.number, actor });
       }
     }
-    const history = [...(o.history as object[]), { status, at: new Date().toISOString(), ...(note ? { note } : {}) }];
-    const [row] = await tx.query('UPDATE orders SET status = $1, history = $2::jsonb WHERE id = $3 RETURNING *', [status, JSON.stringify(history), id]);
+    const history = [...(o.history as object[]), { status, at: new Date().toISOString(), by: actor, ...(opts.note ? { note: opts.note } : {}) }];
+    const stamp = STAMP[status];
+    const [row] = await tx.query(
+      `UPDATE orders SET status = $1, history = $2::jsonb${stamp ? `, ${stamp} = now()` : ''} WHERE id = $3 RETURNING *`,
+      [status, JSON.stringify(history), id],
+    );
+    await syncOrderMoney(tx, id, actor);
+    await logActivity(tx, actor, `غيّر الحالة من ${o.status} لـ ${status}`, 'order', id, { number: o.number, from: o.status, to: status, note: opts.note ?? null });
     return toOrder(row);
   });
 }

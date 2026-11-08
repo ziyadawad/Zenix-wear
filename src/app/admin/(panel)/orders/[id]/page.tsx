@@ -15,8 +15,10 @@ export const dynamic = 'force-dynamic';
 const MESSAGES: Record<string, (n: string, name: string) => string> = {
   pending: (n, name) => `أهلًا ${name}، معاك ZENIX WEAR. الأوردر رقم ${n} وصلنا. ممكن تأكدلنا البيانات والعنوان؟`,
   confirmed: (n, name) => `أهلًا ${name}، الأوردر رقم ${n} من ZENIX WEAR اتأكد، وهيتشحن قريب.`,
+  preparing: (n, name) => `أهلًا ${name}، الأوردر رقم ${n} من ZENIX WEAR بيتجهز دلوقتي وهيتشحن قريب جدًا.`,
   shipped: (n, name) => `أهلًا ${name}، الأوردر رقم ${n} من ZENIX WEAR اتشحن وفي الطريق ليك. المندوب هيكلمك قبل ما يوصل.`,
   delivered: (n, name) => `أهلًا ${name}، الأوردر رقم ${n} وصلك؟ يارب يكون عجبك. شكرًا إنك اخترت ZENIX WEAR.`,
+  returned: (n, name) => `أهلًا ${name}، بخصوص الأوردر رقم ${n} من ZENIX WEAR: المرتجع وصلنا.`,
   cancelled: (n, name) => `أهلًا ${name}، بخصوص الأوردر رقم ${n} من ZENIX WEAR: الأوردر اتلغى.`,
 };
 
@@ -28,7 +30,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
   const o = toOrder(row);
   const rates = await getShippingRates();
   const gov = rates.find((r) => r.id === o.governorate);
-  const wa = customerWhatsapp(o.phone, MESSAGES[o.status](o.number, o.name.split(' ')[0]));
+  const wa = customerWhatsapp(o.phone, (MESSAGES[o.status] ?? MESSAGES.pending)(o.number, o.name.split(' ')[0]));
   return (
     <>
       <PageHead title={o.number} sub={when(o.createdAt)} action={<Link href="/admin/orders" className="text-sm text-muted underline underline-offset-4">All orders</Link>} />
@@ -59,7 +61,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
           </Card>
           <Card title="History">
             <ol className="space-y-2 text-sm">
-              {o.history.map((h, i) => <li key={i} className="flex items-center justify-between gap-3"><StatusBadge status={h.status} /><span className="text-xs text-muted">{when(h.at)}</span></li>)}
+              {o.history.map((h, i) => <li key={i} className="flex items-center justify-between gap-3"><StatusBadge status={h.status} /><span className="text-xs text-muted">{when(h.at)}{h.by ? ` · ${h.by}` : ''}</span></li>)}
             </ol>
           </Card>
         </div>

@@ -5,10 +5,10 @@ import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { SignJWT, jwtVerify } from 'jose';
 import { db } from './db';
+import { OWNER_COOKIE, verifyOwnerToken } from './session';
 
 const scrypt = promisify(scryptCb) as (p: string, s: Buffer, l: number) => Promise<Buffer>;
 
-export const ADMIN_COOKIE = 'zenix_admin';
 export const USER_COOKIE = 'zenix_session';
 
 function secretString() {
@@ -48,29 +48,15 @@ const cookieOpts = (maxAge: number) => ({
   httpOnly: true, sameSite: 'lax' as const, secure: process.env.NODE_ENV === 'production' && !!process.env.NEXT_PUBLIC_SITE_URL?.startsWith('https'), path: '/', maxAge,
 });
 
-// ---- Admin ------------------------------------------------------------------------------------
-export async function checkAdminCredentials(email: string, password: string) {
-  const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
-  const hash = process.env.ADMIN_PASSWORD_HASH;
-  if (!adminEmail || !hash) return false;
-  // Always run the hash so timing does not reveal whether the email matched.
-  const ok = await verifyPassword(password, hash);
-  return ok && email.trim().toLowerCase() === adminEmail;
-}
-export async function startAdminSession() {
-  const token = await sign({ role: 'admin' }, '7d');
-  (await cookies()).set(ADMIN_COOKIE, token, cookieOpts(60 * 60 * 24 * 7));
-}
-export async function endAdminSession() {
-  (await cookies()).delete(ADMIN_COOKIE);
-}
+// ---- Owner (dashboard + admin) -----------------------------------------------------------------
+// One login for both: the password is DASHBOARD_PASSWORD and the cookie is signed with DASHBOARD_SESSION_SECRET.
+// Logging in and out lives in src/app/dashboard/actions.ts.
 export async function isAdmin() {
-  const p = await verify((await cookies()).get(ADMIN_COOKIE)?.value);
-  return p?.role === 'admin';
+  return verifyOwnerToken((await cookies()).get(OWNER_COOKIE)?.value);
 }
-/** Call at the top of every admin page and every admin server action. */
+/** Call at the top of every admin/dashboard page and every admin server action. */
 export async function requireAdmin() {
-  if (!(await isAdmin())) redirect('/admin/login');
+  if (!(await isAdmin())) redirect('/dashboard/login');
 }
 
 // ---- Customers --------------------------------------------------------------------------------

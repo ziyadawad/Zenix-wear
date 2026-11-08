@@ -12,7 +12,8 @@ async function main() {
   const driver = await openDriver();
   await driver.exec(`
     TRUNCATE collections, products, product_variants, customers, addresses, wishlist, orders,
-             promo_codes, shipping_rates, reviews, settings, newsletter, stock_alerts, messages, rate_limits CASCADE;
+             promo_codes, shipping_rates, reviews, settings, newsletter, stock_alerts, messages, rate_limits,
+             stock_movements, wallet_movements, expenses, activity_log CASCADE;
     ALTER SEQUENCE order_number_seq RESTART WITH 10001;
   `);
   await seedIfEmpty(driver);

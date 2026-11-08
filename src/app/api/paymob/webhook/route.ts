@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { verifyPaymobHmac } from '@/lib/services';
+import { logActivity, syncOrderMoney } from '@/lib/dashboard/ledger';
 
 /** Paymob's server-to-server callback. Trusted only after the HMAC and the amount both check out. */
 export async function POST(req: Request) {
@@ -15,6 +16,11 @@ export async function POST(req: Request) {
   const [o] = await db.query('SELECT id, total FROM orders WHERE number = $1', [number]);
   if (!o) return NextResponse.json({ ok: true });
   const paid = obj.success === true && obj.pending === false && obj.amount_cents === o.total * 100;
-  await db.query('UPDATE orders SET payment_status = $1, payment_ref = $2 WHERE id = $3', [paid ? 'paid' : 'failed', String(obj.id), o.id]);
+  await db.tx(async (tx) => {
+    await tx.query('UPDATE orders SET payment_status = $1, payment_ref = $2 WHERE id = $3', [paid ? 'paid' : 'failed', String(obj.id), o.id]);
+    // A paid card order lands in its wallet in the dashboard.
+    await syncOrderMoney(tx, o.id, 'Paymob');
+    await logActivity(tx, 'Paymob', paid ? 'الدفع بالكارت نجح' : 'الدفع بالكارت فشل', 'order', o.id, { ref: String(obj.id) });
+  });
   return NextResponse.json({ ok: true });
 }

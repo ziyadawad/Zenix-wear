@@ -123,7 +123,10 @@ function MobileMenu({ links }: { links: { href: string; label: string; active: b
           <a href={CONTACT.whatsappUrl} target="_blank" rel="noopener noreferrer" className="py-2">{t.contact.whatsapp}</a>
         </div>
       </nav>
-      <p className="eyebrow container-zx pb-[calc(env(safe-area-inset-bottom)+24px)]">{t.brand.tagline}</p>
+      <div className="container-zx flex items-end justify-between gap-4 pb-[calc(env(safe-area-inset-bottom)+24px)]">
+        <p className="eyebrow">{t.brand.tagline}</p>
+        <a href="/dashboard" rel="nofollow" className="flex-none py-2 text-[11px] text-muted/60">{locale === 'ar' ? 'داش بورد' : 'Dashboard'}</a>
+      </div>
     </div>
   );
 }

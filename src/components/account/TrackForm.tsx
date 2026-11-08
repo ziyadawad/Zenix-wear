@@ -11,8 +11,9 @@ const STEPS = ['pending', 'confirmed', 'shipped', 'delivered'] as const;
 
 export function OrderTimeline({ status, history }: { status: string; history: { status: string; at: string }[] }) {
   const { t, locale } = useI18n();
-  if (status === 'cancelled') return <p className="flex items-center gap-2 text-sm text-[#ff9a9d]"><X size={16} />{t.order.statuses.cancelled}</p>;
-  const current = STEPS.indexOf(status as (typeof STEPS)[number]);
+  if (status === 'cancelled' || status === 'returned') return <p className="flex items-center gap-2 text-sm text-[#ff9a9d]"><X size={16} />{t.order.statuses[status]}</p>;
+  // "Being prepared" sits between confirmed and shipped, so it shows as the confirmed step.
+  const current = STEPS.indexOf((status === 'preparing' ? 'confirmed' : status) as (typeof STEPS)[number]);
   return (
     <ol className="grid grid-cols-4">
       {STEPS.map((s, i) => {

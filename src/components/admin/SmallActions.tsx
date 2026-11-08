@@ -20,10 +20,10 @@ export function OrderStatusControl({ id, status }: { id: string; status: string 
   const [error, setError] = useState<string | null>(null);
   return (
     <div>
-      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-5">
+      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
         {ORDER_STATUSES.map((s) => (
           <button key={s} disabled={pending || s === status} aria-pressed={s === status} onClick={() => {
-            if (s === 'cancelled' && !confirm('Cancel this order? Its items go back into stock.')) return;
+            if ((s === 'cancelled' || s === 'returned') && !confirm(`Mark this order as ${s}? Its items go back into stock.`)) return;
             setError(null);
             start(async () => { const r = await changeOrderStatus(id, s); if (r.ok) router.refresh(); else setError(r.error ?? 'Could not update.'); });
           }} className={cx('min-h-12 border px-2 text-sm capitalize transition-colors', s === status ? 'border-white bg-white text-black' : 'border-line-strong hover:border-white')}>{s}</button>

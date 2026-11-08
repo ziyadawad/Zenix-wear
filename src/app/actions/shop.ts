@@ -127,7 +127,9 @@ export async function trackOrder(number: string, phone: string): Promise<{ ok: t
   return {
     ok: true,
     order: {
-      number: o.number, status: o.status, total: o.total, createdAt: o.createdAt, governorate: o.governorate, history: o.history,
+      number: o.number, status: o.status, total: o.total, createdAt: o.createdAt, governorate: o.governorate,
+      // Who changed the status is internal: customers see only the status and the time.
+      history: o.history.map((h) => ({ status: h.status, at: h.at })),
       items: o.items.map((i) => ({ nameAr: i.nameAr, nameEn: i.nameEn, size: i.size, qty: i.qty, image: i.image, colorAr: i.colorAr, colorEn: i.colorEn })),
     },
   };

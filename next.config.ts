@@ -25,6 +25,8 @@ const config: NextConfig = {
     return [
       { source: '/:path*', headers: securityHeaders },
       { source: '/admin/:path*', headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }] },
+      { source: '/dashboard/:path*', headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }] },
+      { source: '/dashboard', headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }] },
       { source: '/(images|brand)/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=604800, stale-while-revalidate=2592000' }] },
     ];
   },

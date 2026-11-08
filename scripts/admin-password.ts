@@ -1,19 +1,14 @@
-// Usage: npm run admin:password -- "your-strong-password"
-// Prints the values to put in your environment variables. Nothing is stored or sent anywhere.
-import { randomBytes, scrypt as cb } from 'node:crypto';
-import { promisify } from 'node:util';
+// Usage: npm run admin:password
+// Prints a strong dashboard password and the two random secrets to paste into Vercel → Environment Variables.
+// It only prints to your own terminal: nothing is saved to a file or sent anywhere.
+import { randomBytes, randomInt } from 'node:crypto';
 
-const scrypt = promisify(cb) as (p: string, s: Buffer, l: number) => Promise<Buffer>;
+// No look-alike characters (0/O, 1/l/I), so it is easy to type on a phone.
+const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+const password = Array.from({ length: 20 }, () => ALPHABET[randomInt(ALPHABET.length)]).join('');
 
-async function main() {
-  const password = process.argv[2];
-  if (!password || password.length < 10) {
-    console.error('Pass a password of at least 10 characters:\n  npm run admin:password -- "your-strong-password"');
-    process.exit(1);
-  }
-  const salt = randomBytes(16);
-  const hash = await scrypt(password, salt, 64);
-  console.log(`ADMIN_PASSWORD_HASH=scrypt:${salt.toString('hex')}:${hash.toString('hex')}`);
-  console.log(`SESSION_SECRET=${randomBytes(32).toString('hex')}`);
-}
-main();
+console.log('Copy each line into Vercel → Settings → Environment Variables (Production):\n');
+console.log(`DASHBOARD_PASSWORD=${password}`);
+console.log(`DASHBOARD_SESSION_SECRET=${randomBytes(32).toString('hex')}`);
+console.log(`SESSION_SECRET=${randomBytes(32).toString('hex')}   (only if it is not set yet)`);
+console.log('\nSave the password in your phone\'s password manager. Then clear this terminal.');

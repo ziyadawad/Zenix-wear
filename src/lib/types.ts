@@ -12,7 +12,7 @@ export const GENDERS = ['men'] as const;
 export const TAGS = ['new', 'best-seller', 'limited', 'sale'] as const;
 export type Tag = (typeof TAGS)[number];
 
-export const ORDER_STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'] as const;
+export const ORDER_STATUSES = ['pending', 'confirmed', 'preparing', 'shipped', 'delivered', 'returned', 'cancelled'] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 export const PAYMENT_METHODS = ['cod', 'instapay', 'wallet', 'card'] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
@@ -44,6 +44,8 @@ export interface Product {
   tags: Tag[];
   colors: ProductColor[];
   video: string | null;
+  /** What one piece costs to make, for profit. Admin only: never sent to the store. */
+  costPrice?: number | null;
   status: 'active' | 'draft';
   featured: boolean;
   soldCount: number;
@@ -61,7 +63,7 @@ export interface OrderItem {
   productId: string; slug: string; nameAr: string; nameEn: string; sku: string;
   colorId: string; colorAr: string; colorEn: string; size: string; qty: number; price: number; image: string;
 }
-export interface OrderHistoryEntry { status: string; at: string; note?: string }
+export interface OrderHistoryEntry { status: string; at: string; note?: string; by?: string }
 export interface Order {
   id: string; number: string; customerId: string | null;
   name: string; phone: string; altPhone: string | null; email: string | null;

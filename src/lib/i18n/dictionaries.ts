@@ -83,7 +83,7 @@ const en = {
   order: {
     thanks: 'Thank you, {name}.', received: 'Your order has been received.', number: 'Order number', confirmWhatsapp: 'Confirm on WhatsApp', track: 'Track your order', keepShopping: 'Continue shopping', items: 'Items', deliverTo: 'Delivering to', paymentMethod: 'Payment',
     whatsappMessage: 'Hello ZENIX WEAR, I would like to confirm my order {number}. Total: {total}.', proofNote: 'We received your transfer screenshot and will verify it shortly.', paid: 'Payment received', cardPending: 'We are waiting for card payment confirmation.',
-    statuses: { pending: 'Pending', confirmed: 'Confirmed', shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled' },
+    statuses: { pending: 'Pending', confirmed: 'Confirmed', preparing: 'Being prepared', shipped: 'Shipped', delivered: 'Delivered', returned: 'Returned', cancelled: 'Cancelled' },
   },
   track: { title: 'Track Your Order', intro: 'Enter your order number and the phone number you used at checkout.', number: 'Order number', numberPlaceholder: 'ZX10001', phone: 'Phone number', submit: 'Track', notFound: 'We could not find an order with those details.', placed: 'Placed on', rate: 'Too many attempts. Please try again in a few minutes.' },
   account: {
@@ -193,7 +193,7 @@ const ar: Dictionary = {
   order: {
     thanks: 'شكرًا يا {name}.', received: 'الأوردر بتاعك وصلنا.', number: 'رقم الأوردر', confirmWhatsapp: 'أكّد على واتساب', track: 'تابع الأوردر', keepShopping: 'كمّل تسوق', items: 'القطع', deliverTo: 'هيوصل على', paymentMethod: 'الدفع',
     whatsappMessage: 'أهلًا ZENIX WEAR، عايز أأكد الأوردر رقم {number}. الإجمالي: {total}.', proofNote: 'صورة التحويل وصلتنا وهنراجعها قريب.', paid: 'الدفع وصل', cardPending: 'مستنيين تأكيد الدفع بالكارت.',
-    statuses: { pending: 'بنراجعه', confirmed: 'اتأكد', shipped: 'اتشحن', delivered: 'وصل', cancelled: 'اتلغى' },
+    statuses: { pending: 'بنراجعه', confirmed: 'اتأكد', preparing: 'بيتجهز', shipped: 'اتشحن', delivered: 'وصل', returned: 'مرتجع', cancelled: 'اتلغى' },
   },
   track: { title: 'تابع الأوردر', intro: 'اكتب رقم الأوردر ورقم الموبايل اللي طلبت بيه.', number: 'رقم الأوردر', numberPlaceholder: 'ZX10001', phone: 'رقم الموبايل', submit: 'تابع', notFound: 'ملقيناش أوردر بالبيانات دي.', placed: 'اتطلب يوم', rate: 'محاولات كتير. جرب تاني بعد كام دقيقة.' },
   account: {
