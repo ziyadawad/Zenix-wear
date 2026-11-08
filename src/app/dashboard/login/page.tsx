@@ -16,7 +16,7 @@ export default async function DashboardLogin({ searchParams }: { searchParams: P
         <h1 className="mt-6 text-center text-lg font-medium">داش بورد ZENIX</h1>
         {ownerLoginConfigured()
           ? <DashboardLoginForm next={next} />
-          : <p role="alert" className="mt-6 border border-[#e5484d]/60 p-4 text-sm text-[#ff8a8e]">الداش بورد لسه متظبطش. ضيف DASHBOARD_PASSWORD و DASHBOARD_SESSION_SECRET في Vercel ← Environment Variables، وبعدين اعمل Redeploy.</p>}
+          : <p role="alert" className="mt-6 border border-[#e5484d]/60 p-4 text-sm text-[#ff8a8e]">الداش بورد لسه متظبطتش. ضيف DASHBOARD_PASSWORD و DASHBOARD_SESSION_SECRET في Vercel ← Settings ← Environment Variables، وبعدين اعمل Redeploy.</p>}
       </div>
     </main>
   );

@@ -1,5 +1,5 @@
 import type { Queryable } from './index';
-import { cleanImage, cleanImages } from './images';
+import { CATEGORY_MOCKUP, SCENES, cleanImage, isOwnPhoto, mockupsFor, typeFromOldImage } from './images';
 
 /**
  * Ordered, run-once database changes. Each runs inside a transaction and is recorded in
@@ -7,61 +7,67 @@ import { cleanImage, cleanImages } from './images';
  */
 interface Migration { id: string; up: (q: Queryable) => Promise<void> }
 
-/** Repoints every stored image path to a product-only image. Idempotent: running it again changes nothing. */
-async function removePeoplePhotos(q: Queryable) {
-  for (const p of await q.query<{ id: string; colors: { images: string[] }[] }>('SELECT id, colors FROM products')) {
-    // A colour left with no image shows the logo rather than a broken box until a product shot is uploaded.
-    const colors = p.colors.map((c) => { const images = cleanImages(c.images ?? []); return { ...c, images: images.length ? images : ['/brand/logo-icon-full.webp'] }; });
+/** Homepage defaults: every tile, banner and gallery image is a mockup. */
+export const DEFAULT_CATEGORY_IMAGES: Record<string, string> = {
+  't-shirts': SCENES.tees, tanks: mockupsFor('tank', 'black')[0], shorts: mockupsFor('shorts', 'black')[0],
+  socks: mockupsFor('socks', 'black')[0], accessories: mockupsFor('cap', 'black')[0], collections: SCENES.all,
+};
+export const DEFAULT_COMMUNITY = [
+  mockupsFor('tee-a', 'bone')[0], mockupsFor('tee-b', 'navy')[0], mockupsFor('cap', 'olive')[0],
+  mockupsFor('shorts2', 'olive')[0], mockupsFor('tank', 'charcoal')[0], mockupsFor('socks', 'bone')[0],
+];
+const COLLECTION_SCENES: Record<string, string> = { zen: SCENES.zen, zenith: SCENES.zenith, 'limited-drop': SCENES.limited };
+
+/**
+ * No photos of people anywhere: every image shipped with the site becomes a product mockup in the product's
+ * own colour (front and back). Photos the owner uploaded are kept and win over mockups. Idempotent.
+ */
+async function useMockups(q: Queryable) {
+  const productMockups = new Map<string, string[]>();
+  for (const p of await q.query<{ id: string; category: string; colors: { id: string; hex: string; images: string[] }[] }>('SELECT id, category, colors FROM products')) {
+    const colors = p.colors.map((c) => {
+      const own = (c.images ?? []).filter(isOwnPhoto);
+      if (own.length) return { ...c, images: own };
+      const type = (c.images ?? []).map(typeFromOldImage).find(Boolean) ?? CATEGORY_MOCKUP[p.category] ?? 'tee-a';
+      return { ...c, images: mockupsFor(type, c.id, c.hex) };
+    });
+    colors.forEach((c) => productMockups.set(`${p.id}|${c.id}`, c.images));
     if (JSON.stringify(colors) !== JSON.stringify(p.colors)) await q.query('UPDATE products SET colors = $1::jsonb WHERE id = $2', [JSON.stringify(colors), p.id]);
   }
-  for (const o of await q.query<{ id: string; items: { image: string }[] }>('SELECT id, items FROM orders')) {
-    const items = o.items.map((i) => ({ ...i, image: cleanImage(i.image) ?? '/brand/logo-icon-full.webp' }));
+  for (const o of await q.query<{ id: string; items: { productId: string; colorId: string; image: string }[] }>('SELECT id, items FROM orders')) {
+    const items = o.items.map((i) => (isOwnPhoto(i.image ?? '') || i.image?.startsWith('/images/mockups/') ? i : { ...i, image: productMockups.get(`${i.productId}|${i.colorId}`)?.[0] ?? cleanImage(i.image ?? '') }));
     if (JSON.stringify(items) !== JSON.stringify(o.items)) await q.query('UPDATE orders SET items = $1::jsonb WHERE id = $2', [JSON.stringify(items), o.id]);
   }
   for (const c of await q.query<{ slug: string; image: string }>('SELECT slug, image FROM collections')) {
-    const image = cleanImage(c.image) ?? '/images/editorial/gym-bw.webp';
-    if (image !== c.image) await q.query('UPDATE collections SET image = $1 WHERE slug = $2', [image, c.slug]);
+    if (isOwnPhoto(c.image) || c.image.startsWith('/images/mockups/')) continue;
+    await q.query('UPDATE collections SET image = $1 WHERE slug = $2', [COLLECTION_SCENES[c.slug] ?? SCENES.all, c.slug]);
   }
-  for (const r of await q.query<{ id: string; image: string | null }>('SELECT id, image FROM reviews WHERE image IS NOT NULL')) {
-    const image = cleanImage(r.image!);
-    if (image !== r.image) await q.query('UPDATE reviews SET image = $1 WHERE id = $2', [image, r.id]);
+  for (const r of await q.query<{ id: string; image: string | null; product_id: string | null }>('SELECT id, image, product_id FROM reviews WHERE image IS NOT NULL')) {
+    if (isOwnPhoto(r.image!) || r.image!.startsWith('/images/mockups/')) continue;
+    await q.query('UPDATE reviews SET image = $1 WHERE id = $2', [cleanImage(r.image!), r.id]);
   }
   const [row] = await q.query<{ value: Record<string, unknown> }>(`SELECT value FROM settings WHERE key = 'content'`);
   if (row) {
     const v = row.value as { hero?: { image: string; kind: string }[]; featuredCollectionImage?: string; community?: string[]; categoryImages?: Record<string, string> };
+    const keep = (src?: string) => !!src && (isOwnPhoto(src) || src.startsWith('/images/mockups/'));
     const next = {
       ...v,
-      // A slide whose photo was removed becomes a "brand" slide: approved hero photo (or dark background), logo and text.
-      hero: (v.hero ?? []).map((s) => (s.image && cleanImage(s.image) === s.image ? s : { ...s, kind: 'brand', image: '' })),
-      featuredCollectionImage: v.featuredCollectionImage ? cleanImage(v.featuredCollectionImage) ?? '/images/editorial/gym-bw.webp' : v.featuredCollectionImage,
-      community: cleanImages(v.community ?? []),
-      categoryImages: Object.fromEntries(Object.entries(v.categoryImages ?? {}).map(([k, src]) => [k, cleanImage(src) ?? '/images/editorial/gym-bw.webp'])),
+      // Slides without the owner's own photo become brand slides: the hero mockup, the logo and the text.
+      hero: (v.hero ?? []).map((s) => (s.image && isOwnPhoto(s.image) ? s : { ...s, kind: 'brand', image: '' })),
+      featuredCollectionImage: keep(v.featuredCollectionImage) ? v.featuredCollectionImage : SCENES.zenith,
+      community: (v.community ?? []).filter(keep),
+      categoryImages: Object.fromEntries(Object.entries({ ...DEFAULT_CATEGORY_IMAGES, ...(v.categoryImages ?? {}) }).map(([k, src]) => [k, keep(src) ? src : DEFAULT_CATEGORY_IMAGES[k] ?? SCENES.all])),
     };
-    // The old gallery mixed people in; fill it back to six with product shots.
-    const fill = ['/images/products/tee-b-navy-p1.webp', '/images/products/cap-black-1.webp', '/images/products/tee-b-olive-p1.webp', '/images/products/shorts2-navy-1.webp', '/images/products/tee-a-wine-p2.webp', '/images/products/bag-black-1.webp'];
-    for (const f of fill) if (next.community.length < 6 && !next.community.includes(f)) next.community.push(f);
+    for (const f of DEFAULT_COMMUNITY) if (next.community.length < 6 && !next.community.includes(f)) next.community.push(f);
     await q.query(`UPDATE settings SET value = $1::jsonb WHERE key = 'content'`, [JSON.stringify(next)]);
   }
 }
 
 const MIGRATIONS: Migration[] = [
-  // Task: remove every photo of a person.
-  { id: '2026-11-08-remove-people-photos', up: removePeoplePhotos },
-  {
-    // A first draft of the migration above ran on one database. This pass applies the final rules there too
-    // (older leftover photos, colours left without an image) and turns the hero slides it had pointed at
-    // stand-in photos into brand slides, so the approved hero photo is what shows.
-    id: '2026-11-08-remove-people-photos-2',
-    up: async (q) => {
-      await removePeoplePhotos(q);
-      const [row] = await q.query<{ value: { hero?: { image: string; kind: string }[] } }>(`SELECT value FROM settings WHERE key = 'content'`);
-      const standIns = new Set(['/images/products/tee-lineup.webp', '/images/editorial/dumbbells.webp', '/images/editorial/rack.webp']);
-      if (row?.value.hero?.some((h) => standIns.has(h.image))) {
-        const hero = row.value.hero.map((h) => (standIns.has(h.image) ? { ...h, kind: 'brand', image: '' } : h));
-        await q.query(`UPDATE settings SET value = jsonb_set(value, '{hero}', $1::jsonb) WHERE key = 'content'`, [JSON.stringify(hero)]);
-      }
-    },
-  },
+  // Remove every photo of a person. (These two first ran an earlier rule set; on a new database they now
+  // go straight to mockups, and the last migration below brings every database to the same state.)
+  { id: '2026-11-08-remove-people-photos', up: useMockups },
+  { id: '2026-11-08-remove-people-photos-2', up: useMockups },
   {
     // Task: private dashboard. Cost prices, order timestamps, and logs for stock, money and every dashboard change.
     id: '2026-11-08-dashboard',
@@ -107,6 +113,8 @@ const MIGRATIONS: Migration[] = [
       for (const t of ['stock_movements', 'wallet_movements', 'expenses', 'activity_log', 'schema_migrations']) await q.query(`ALTER TABLE ${t} ENABLE ROW LEVEL SECURITY`);
     },
   },
+  // No photos of people at all, including the approved ones: every shipped image is a product mockup.
+  { id: '2026-11-09-mockups-only', up: useMockups },
 ];
 
 /** Applies pending migrations. Safe to call on every cold start: one small query when nothing is pending. */

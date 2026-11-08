@@ -1,8 +1,8 @@
 import type { Queryable } from './index';
 import type { ProductColor, SiteContent, SiteSettings } from '../types';
 
-const P = '/images/products/';
-const E = '/images/editorial/';
+import { SCENES, mockupsFor } from './images';
+import { DEFAULT_CATEGORY_IMAGES, DEFAULT_COMMUNITY } from './migrations';
 
 /** Governorate id, Arabic, English, placeholder fee (editable in admin > Shipping). */
 export const GOVERNORATES: [string, string, string, number][] = [
@@ -23,16 +23,17 @@ const COLOR: Record<string, [string, string, string]> = {
   navy: ['كحلي', 'Navy', '#262f48'], wine: ['نبيتي', 'Wine', '#561c26'], silver: ['فضي', 'Silver', '#b2b4b8'], sand: ['رملي', 'Sand', '#b09b7a'],
 };
 
-/** "a:black" = tee render A, "b:navy" = tee render B, otherwise a studio render base such as "tank-black". All product-only shots. */
+/** "a:black" = tee mockup A, "b:navy" = raglan tee mockup B, otherwise a mockup type and colour such as "tank-black". Front and back. */
 function color(spec: string): ProductColor {
   let id: string; let images: string[];
   if (spec.startsWith('a:') || spec.startsWith('b:')) {
     const [t, c] = spec.split(':');
     id = c;
-    images = ['p1', 'p2'].map((i) => `${P}tee-${t}-${c}-${i}.webp`);
+    images = mockupsFor(`tee-${t}`, c);
   } else {
-    id = spec.split('-')[1];
-    images = [1, 2].map((i) => `${P}${spec}-${i}.webp`);
+    const cut = spec.lastIndexOf('-');
+    id = spec.slice(cut + 1);
+    images = mockupsFor(spec.slice(0, cut), id);
   }
   const [nameAr, nameEn, hex] = COLOR[id];
   return { id, nameAr, nameEn, hex, images };
@@ -95,10 +96,10 @@ const PRODUCTS: SeedProduct[] = [
 ];
 
 const REVIEWS: [string, string, number, string, string, string][] = [
-  ['أحمد م.', 'القاهرة', 5, 'الخامة ممتازة والمقاس مظبوط جدًا. لبسته في أصعب تمرين ومحستش بأي حرارة.', 'zenith-core-tee', `${P}tee-a-black-p1.webp`],
-  ['Omar K.', 'Giza', 5, 'Best fitting compression tee I have owned. The fabric feels premium and it arrived in two days.', 'phantom-compression-tee', `${P}tee-a-navy-p1.webp`],
-  ['Youssef T.', 'Cairo', 5, 'Exchanged a size with no problem at all. Great customer service on WhatsApp.', 'apex-raglan-tee', `${P}tee-b-charcoal-p1.webp`],
-  ['كريم س.', 'طنطا', 5, 'الشورت مرن وخفيف، وجيوب السوستة حاجة عملية جدًا في الجيم.', 'pace-training-shorts', `${P}shorts-black-1.webp`],
+  ['أحمد م.', 'القاهرة', 5, 'الخامة ممتازة والمقاس مظبوط جدًا. لبسته في أصعب تمرين ومحستش بأي حرارة.', 'zenith-core-tee', mockupsFor('tee-a', 'black')[0]],
+  ['Omar K.', 'Giza', 5, 'Best fitting compression tee I have owned. The fabric feels premium and it arrived in two days.', 'phantom-compression-tee', mockupsFor('tee-a', 'navy')[0]],
+  ['Youssef T.', 'Cairo', 5, 'Exchanged a size with no problem at all. Great customer service on WhatsApp.', 'apex-raglan-tee', mockupsFor('tee-b', 'charcoal')[0]],
+  ['كريم س.', 'طنطا', 5, 'الشورت مرن وخفيف، وجيوب السوستة حاجة عملية جدًا في الجيم.', 'pace-training-shorts', mockupsFor('shorts', 'black')[0]],
 ];
 
 export const DEFAULT_CONTENT: SiteContent = {
@@ -113,13 +114,10 @@ export const DEFAULT_CONTENT: SiteContent = {
     { ar: 'تبديل سهل في خلال ١٤ يوم', en: 'Easy exchange within 14 days' },
   ],
   featuredCollection: 'zenith',
-  featuredCollectionImage: `${E}gym-bw.webp`,
+  featuredCollectionImage: SCENES.zenith,
   bestSellerIds: [],
-  community: [`${P}tee-b-navy-p1.webp`, `${P}cap-black-1.webp`, `${P}tee-b-olive-p1.webp`, `${P}shorts2-navy-1.webp`, `${P}tee-a-wine-p2.webp`, `${P}bag-black-1.webp`],
-  categoryImages: {
-    't-shirts': `${P}tee-lineup.webp`, tanks: `${P}tank-black-1.webp`, shorts: `${P}shorts-black-1.webp`,
-    socks: `${P}socks-black-1.webp`, accessories: `${E}rack.webp`, collections: `${E}gym-bw.webp`,
-  },
+  community: DEFAULT_COMMUNITY,
+  categoryImages: DEFAULT_CATEGORY_IMAGES,
 };
 
 export const DEFAULT_SETTINGS: SiteSettings = {
@@ -145,9 +143,9 @@ export async function seedIfEmpty(q: Queryable) {
   if (n > 0 || s > 0) return false;
 
   const collections = [
-    ['zen', 'كوليكشن زين', 'ZEN Collection', 'الهدوء قوة. ألوان ترابية وخامات ناعمة، لقبل التمرين وبعده.', 'Calm is a strength. Relaxed cuts, earthy tones and soft fabrics for every moment before and after the work.', `${E}dumbbells.webp`, 1],
-    ['zenith', 'كوليكشن زينيث', 'ZENITH Collection', 'القمة بتتبني عدة ورا عدة. خامات قوية وقصّات معمولة لأصعب أيامك، من غير ما تفقد تركيزك.', 'The peak is built rep by rep. High-performance fabrics and cuts engineered for your hardest days, without breaking your focus.', `${E}rack.webp`, 2],
-    ['limited-drop', 'إصدار محدود', 'Limited Drop', 'كميات قليلة وتصميمات مش هتتكرر. لما تخلص، بتخلص.', 'Small runs and designs that will not repeat. When they are gone, they are gone.', `${P}tee-b-wine-p1.webp`, 3],
+    ['zen', 'كوليكشن زين', 'ZEN Collection', 'الهدوء قوة. ألوان ترابية وخامات ناعمة، لقبل التمرين وبعده.', 'Calm is a strength. Relaxed cuts, earthy tones and soft fabrics for every moment before and after the work.', SCENES.zen, 1],
+    ['zenith', 'كوليكشن زينيث', 'ZENITH Collection', 'القمة بتتبني عدة ورا عدة. خامات قوية وقصّات معمولة لأصعب أيامك، من غير ما تفقد تركيزك.', 'The peak is built rep by rep. High-performance fabrics and cuts engineered for your hardest days, without breaking your focus.', SCENES.zenith, 2],
+    ['limited-drop', 'إصدار محدود', 'Limited Drop', 'كميات قليلة وتصميمات مش هتتكرر. لما تخلص، بتخلص.', 'Small runs and designs that will not repeat. When they are gone, they are gone.', SCENES.limited, 3],
   ];
   for (const c of collections) {
     await q.query('INSERT INTO collections (slug,name_ar,name_en,story_ar,story_en,image,sort) VALUES ($1,$2,$3,$4,$5,$6,$7)', c);

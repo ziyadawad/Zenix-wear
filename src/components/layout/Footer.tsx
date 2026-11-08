@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Mail, Phone } from 'lucide-react';
+import { LockKeyhole, Mail, Phone } from 'lucide-react';
 import type { Dictionary } from '@/lib/i18n/dictionaries';
 import type { Locale, SiteSettings } from '@/lib/types';
 import { CONTACT } from '@/lib/utils';
@@ -44,6 +44,7 @@ export function Footer({ t, locale, settings }: { t: Dictionary; locale: Locale;
               <li><Link className={col} href={lp('/contact')}>{t.nav.contact}</Link></li>
               <li><Link className={col} href={lp('/privacy')}>{t.footer.privacy}</Link></li>
               <li><Link className={col} href={lp('/terms')}>{t.footer.terms}</Link></li>
+              <li><a className={`${col} inline-flex items-center gap-2 !text-silver`} href="/dashboard" rel="nofollow"><LockKeyhole size={14} strokeWidth={1.5} aria-hidden="true" />{t.nav.dashboard}</a></li>
             </ul>
           </div>
           <div className="col-span-2 md:col-span-1">
@@ -59,8 +60,6 @@ export function Footer({ t, locale, settings }: { t: Dictionary; locale: Locale;
         <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-line pt-6 text-center text-xs text-muted md:flex-row">
           <p>© {new Date().getFullYear()} ZENIX WEAR. {t.footer.rights}</p>
           <p>{t.footer.payments}</p>
-          {/* Owner-only, password protected. Plain <a> so the page is never prefetched. */}
-          <a href="/dashboard" rel="nofollow" className="text-[11px] text-muted/60 transition-colors hover:text-muted">{locale === 'ar' ? 'داش بورد' : 'Dashboard'}</a>
         </div>
       </div>
     </footer>

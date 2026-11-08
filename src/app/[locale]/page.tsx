@@ -5,7 +5,7 @@ import { getDictionary } from '@/lib/i18n/dictionaries';
 import { cardProps, getCatalog, getCollections, getContent, getHomeReviews, getSettings } from '@/lib/catalog';
 import type { Locale } from '@/lib/types';
 import { jsonLd, SITE_URL, CONTACT } from '@/lib/utils';
-import { APPROVED_PHOTOS } from '@/lib/approved-photos';
+import { DEFAULT_CATEGORY_IMAGES } from '@/lib/db/migrations';
 import { Hero } from '@/components/home/Hero';
 import { Marquee, OrbitMark, SectionHead } from '@/components/home/Bits';
 import { Newsletter } from '@/components/home/Newsletter';
@@ -25,8 +25,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
   const bestSellers = (chosen.length ? chosen : [...catalog].sort((a, b) => b.soldCount - a.soldCount)).slice(0, 8).map(cardProps);
   const featured = collections.find((c) => c.slug === content.featuredCollection) ?? collections[0];
   const cats = (['t-shirts', 'tanks', 'shorts', 'socks', 'accessories', 'collections'] as const).map((id) => ({
-    // The T-shirts tile uses the approved photo when it exists; every other tile is a product or texture shot.
-    id, label: t.categories[id], image: (id === 't-shirts' && APPROVED_PHOTOS.tshirts?.src) || content.categoryImages[id] || '/images/editorial/gym-bw.webp', href: id === 'collections' ? lp('/collections') : lp(`/shop/${id}`),
+    // Every tile is a product mockup (or the owner's own upload from the admin).
+    id, label: t.categories[id], image: content.categoryImages[id] || DEFAULT_CATEGORY_IMAGES[id], href: id === 'collections' ? lp('/collections') : lp(`/shop/${id}`),
   }));
   const whyIcons = [Gem, Ruler, Truck, Repeat2];
 
@@ -49,7 +49,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
             <Link key={c.id} href={c.href} data-reveal style={{ '--d': `${i * 70}ms` } as React.CSSProperties}
               className={`group relative block overflow-hidden bg-surface ${i === 0 ? 'col-span-2 aspect-[4/3.4] md:row-span-2 md:aspect-auto' : c.id === 'collections' ? 'col-span-2 aspect-[2/1] md:col-span-4 md:aspect-[4/1]' : 'aspect-[4/5] md:aspect-[4/4.2]'}`}>
               <Image src={c.image} alt="" fill sizes={i === 0 ? '(min-width:768px) 50vw, 100vw' : c.id === 'collections' ? '100vw' : '(min-width:768px) 25vw, 50vw'} loading="lazy" quality={70} className={`zoom-img object-cover ${i === 0 ? 'object-[50%_30%]' : ''}`} />
-              <div className={`absolute inset-0 bg-gradient-to-t from-black/75 ${i === 0 && APPROVED_PHOTOS.tshirts ? 'via-black/30 to-black/25' : 'via-black/10 to-transparent'}`} />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-4 md:p-6">
                 <h3 className={`display ${i === 0 || c.id === 'collections' ? 'text-2xl md:text-4xl' : 'text-[15px] md:text-xl'}`}>{c.label}</h3>
                 <ArrowRight size={18} strokeWidth={1.25} className="flip-rtl hidden flex-none md:block" />

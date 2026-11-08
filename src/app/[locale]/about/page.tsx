@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import type { Locale } from '@/lib/types';
 import { OrbitMark } from '@/components/home/Bits';
-import { APPROVED_PHOTOS } from '@/lib/approved-photos';
+import { SCENES } from '@/lib/db/images';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -14,17 +14,11 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: L
 export default async function About({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params;
   const t = getDictionary(locale).about;
-  const photo = APPROVED_PHOTOS.about;
   return (
     <>
       <section className="relative flex min-h-[72svh] items-end overflow-hidden bg-black">
-        {photo ? (
-          <Image src={photo.src} alt="" fill preload fetchPriority="high" loading="eager" sizes="100vw" quality={75} className="object-cover opacity-75" style={{ objectPosition: photo.position }} />
-        ) : (
-          <div className="brand-texture absolute inset-0" aria-hidden="true">
-            <OrbitMark className="absolute end-[-6%] top-1/2 w-[min(78vw,620px)] -translate-y-1/2 opacity-[.13]" />
-          </div>
-        )}
+        <div className="brand-texture absolute inset-0" aria-hidden="true" />
+        <Image src={SCENES.zenith} alt="" fill preload fetchPriority="high" loading="eager" sizes="100vw" quality={75} className="object-cover object-[50%_30%] opacity-55" />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-black/25" />
         <div className="container-zx relative pb-12 md:pb-20">
           <p className="eyebrow mb-5">{t.eyebrow}</p>

@@ -91,7 +91,7 @@ export function ProductForm({ product, collections }: { product: Product | null;
                 <div><label className="label" htmlFor={`c-a-${i}`}>Colour (AR)</label><input id={`c-a-${i}`} className="field" required dir="rtl" value={c.nameAr} onChange={(e) => upColor(i, { nameAr: e.target.value })} /></div>
                 <button type="button" aria-label={`Remove colour ${c.nameEn}`} disabled={v.colors.length === 1} onClick={() => up('colors', v.colors.filter((_, x) => x !== i))} className="flex size-[50px] items-center justify-center text-muted hover:text-[#ff9a9d] disabled:opacity-30"><Trash2 size={17} strokeWidth={1.25} /></button>
               </div>
-              <div><p className="label">Photos (first one is the main photo)</p><ImagePicker images={c.images} onChange={(images) => upColor(i, { images })} /></div>
+              <div><p className="label">Photos (first one is the main photo). Upload your own and the mockups for this colour are removed when you save; leave it empty to use a mockup.</p><ImagePicker images={c.images} onChange={(images) => upColor(i, { images })} /></div>
               <div>
                 <p className="label">Stock per size</p>
                 <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-7">

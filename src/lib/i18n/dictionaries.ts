@@ -6,7 +6,7 @@ const en = {
   nav: {
     shop: 'Shop', tshirts: 'T-Shirts', newDrops: 'New Drops', collections: 'Collections', about: 'About', contact: 'Contact',
     home: 'Home', search: 'Search', wishlist: 'Wishlist', cart: 'Cart', account: 'Account', menu: 'Menu', close: 'Close', language: 'العربية', languageLabel: 'Switch to Arabic',
-    faq: 'FAQ', track: 'Track Order', skip: 'Skip to content',
+    faq: 'FAQ', track: 'Track Order', skip: 'Skip to content', dashboard: 'Dashboard',
   },
   categories: { 't-shirts': 'T-Shirts', tanks: 'Tank Tops & Stringers', shorts: 'Shorts', socks: 'Socks', accessories: 'Caps & Accessories', collections: 'Collections' },
   categoryBlurb: {
@@ -116,7 +116,7 @@ const ar: Dictionary = {
   nav: {
     shop: 'اتسوق', tshirts: 'التيشيرتات', newDrops: 'الجديد', collections: 'الكوليكشنز', about: 'عن ZENIX', contact: 'كلمنا',
     home: 'الرئيسية', search: 'دوّر', wishlist: 'المفضلة', cart: 'السلة', account: 'حسابي', menu: 'القايمة', close: 'اقفل', language: 'EN', languageLabel: 'حوّل للإنجليزي',
-    faq: 'أسئلة بتتكرر', track: 'تابع الأوردر', skip: 'روح للمحتوى',
+    faq: 'أسئلة بتتكرر', track: 'تابع الأوردر', skip: 'روح للمحتوى', dashboard: 'داش بورد',
   },
   categories: { 't-shirts': 'التيشيرتات', tanks: 'تانك توب وسترينجر', shorts: 'الشورتات', socks: 'الشرابات', accessories: 'كابات وإكسسوارات', collections: 'الكوليكشنز' },
   categoryBlurb: {

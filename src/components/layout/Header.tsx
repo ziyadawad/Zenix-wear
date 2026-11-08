@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Heart, Menu, Search, ShoppingBag, User, X } from 'lucide-react';
+import { Heart, LockKeyhole, Menu, Search, ShoppingBag, User, X } from 'lucide-react';
 import { useI18n } from './I18nProvider';
 import { cartCount, cartUi, menuUi, searchUi, useCart, useWishlist } from '@/lib/client/store';
 import { CONTACT, cx, isNavActive } from '@/lib/utils';
@@ -71,6 +71,10 @@ export function Header() {
           </Link>
 
           <div className="flex items-center justify-end">
+            {/* Owner dashboard (password protected), at the end of the header. Plain <a>: never prefetched. Phones and tablets: in the menu. */}
+            <a href="/dashboard" rel="nofollow" className="me-2 hidden h-9 items-center gap-1.5 whitespace-nowrap border border-line-strong px-3 text-[11px] tracking-[.08em] uppercase transition-colors hover:border-white lg:inline-flex rtl:text-[13px] rtl:tracking-normal">
+              <LockKeyhole size={14} strokeWidth={1.5} aria-hidden="true" />{t.nav.dashboard}
+            </a>
             <a href={`${languageHref(pathname, locale)}${qs}`} hrefLang={locale === 'ar' ? 'en' : 'ar'} lang={locale === 'ar' ? 'en' : 'ar'} aria-label={`${t.nav.language}: ${t.nav.languageLabel}`} className="icon-btn text-[12px] tracking-wider" onClick={() => { document.cookie = `zenix_lang=${locale === 'ar' ? 'en' : 'ar'};path=/;max-age=31536000;samesite=lax`; }}>
               {t.nav.language}
             </a>
@@ -115,6 +119,11 @@ function MobileMenu({ links }: { links: { href: string; label: string; active: b
               <Link href={l.href} aria-current={l.active ? 'page' : undefined} className={cx('display block py-5 text-[26px]', !l.active && 'text-muted')} onClick={() => menuUi.set(false)}>{l.label}</Link>
             </li>
           ))}
+          <li className="slide-rise border-b border-line" style={{ '--d': `${links.length * 55}ms` } as React.CSSProperties}>
+            <a href="/dashboard" rel="nofollow" className="flex items-center gap-3 py-5 text-[20px] text-silver" onClick={() => menuUi.set(false)}>
+              <LockKeyhole size={20} strokeWidth={1.5} aria-hidden="true" />{t.nav.dashboard}
+            </a>
+          </li>
         </ul>
         <div className="mt-8 grid grid-cols-2 gap-3 text-sm text-muted">
           <Link href={lp('/track-order')} onClick={() => menuUi.set(false)} className="py-2">{t.nav.track}</Link>
@@ -123,10 +132,7 @@ function MobileMenu({ links }: { links: { href: string; label: string; active: b
           <a href={CONTACT.whatsappUrl} target="_blank" rel="noopener noreferrer" className="py-2">{t.contact.whatsapp}</a>
         </div>
       </nav>
-      <div className="container-zx flex items-end justify-between gap-4 pb-[calc(env(safe-area-inset-bottom)+24px)]">
-        <p className="eyebrow">{t.brand.tagline}</p>
-        <a href="/dashboard" rel="nofollow" className="flex-none py-2 text-[11px] text-muted/60">{locale === 'ar' ? 'داش بورد' : 'Dashboard'}</a>
-      </div>
+      <p className="eyebrow container-zx pb-[calc(env(safe-area-inset-bottom)+24px)]">{t.brand.tagline}</p>
     </div>
   );
 }

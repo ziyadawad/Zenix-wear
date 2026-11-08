@@ -11,6 +11,7 @@ import { saveImage, UploadError } from '@/lib/services';
 import { CATEGORIES, FITS, GENDERS, ORDER_STATUSES, SIZES, TAGS } from '@/lib/types';
 import { DEFAULT_CONTENT, DEFAULT_SETTINGS } from '@/lib/db/seed';
 import { slugify } from '@/lib/utils';
+import { CATEGORY_MOCKUP, isOwnPhoto, mockupType, mockupsFor } from '@/lib/db/images';
 
 function refreshStorefront(...tags: string[]) {
   tags.forEach((t) => updateTag(t));
@@ -73,13 +74,18 @@ export async function saveProduct(input: ProductInput): Promise<{ ok: boolean; e
   const p = parsed.data;
   if (p.salePrice != null && p.salePrice >= p.price) return { ok: false, error: 'Sale price must be lower than the price.' };
   if (new Set(p.colors.map((c) => c.id)).size !== p.colors.length) return { ok: false, error: 'Two colours have the same name. Give each colour its own English name.' };
-  if (p.status === 'active' && p.colors.some((c) => !c.images.length)) return { ok: false, error: 'Every colour needs at least one image before the product can go live.' };
   const slug = slugify(p.slug || p.nameEn);
   if (!slug) return { ok: false, error: 'Add an English name so the product gets a clean URL.' };
   const id = p.id ?? newId();
   const dupe = await db.query('SELECT 1 FROM products WHERE slug = $1 AND id <> $2', [slug, id]);
   if (dupe.length) return { ok: false, error: `Another product already uses the URL "${slug}". Change the URL field.` };
-  const colors = p.colors.map(({ id: cid, nameAr, nameEn, hex, images }) => ({ id: cid, nameAr, nameEn, hex, images }));
+  // Your own photos replace the mockups for that colour; a colour without any photo gets its mockup (front and back),
+  // in the same type as the product's other mockups, or the category's default.
+  const mockType = p.colors.flatMap((c) => c.images).map(mockupType).find(Boolean) ?? CATEGORY_MOCKUP[p.category] ?? 'tee-a';
+  const colors = p.colors.map(({ id: cid, nameAr, nameEn, hex, images }) => {
+    const own = images.filter(isOwnPhoto);
+    return { id: cid, nameAr, nameEn, hex, images: own.length ? own : mockupsFor(mockType, cid, hex) };
+  });
   const collection = p.collection || null;
 
   const actor = await currentActor();

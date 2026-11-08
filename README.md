@@ -10,7 +10,7 @@ npm run dev
 ```
 
 - Store: http://localhost:3000
-- Dashboard (owner only): http://localhost:3000/dashboard, with product, content and settings management under /admin
+- Dashboard (owner only): http://localhost:3000/dashboard (link in the header, the phone menu and the footer), with product, content and settings management under /admin
 
 No database setup is needed locally. The site creates an embedded database in `.data/` and fills it with the starter catalogue.
 
@@ -88,17 +88,11 @@ Everything can be replaced from the admin. Recommended sizes: products 1200×150
 
 The logos in `public/brand/` were cut from the supplied JPEGs. The wordmark source is only 831 px wide: if you have a vector (SVG) or high-resolution version, replace `wordmark.webp` for sharper rendering on large screens.
 
-Placeholder editorial photos are from Unsplash (see `public/images/editorial/CREDITS.txt`); none of them show people. All product images are generated product-only illustrations (`npm run photos:tees` re-renders the T-shirts).
+### Images: product mockups only
 
-### Photos of people
+The site shows no photos of people. Every image (hero, tiles, banners, collections, gallery, products) is a flat product mockup on the dark ZENIX background with the Z printed on it, made by `npm run mockups` (`scripts/render-mockups.mjs`, output in `public/images/mockups/`). Each product colour has a front and a back view, so the colour swatches switch the image.
 
-The site shows no photos of people except the three approved ones. To add or replace them:
-
-1. Put `photo-1.jpg` (hero), `photo-2.jpg` (T-shirts tile) and `photo-4.jpg` (About page) in `public/approved-photos/`.
-2. Run `npm run photos:approved`. It removes the Snapchat caption from photo-4, applies the dark brand grade, writes WebP copies to `public/images/approved/`, moves the originals out of `public/` into the git-ignored `approved-photos-originals/` and switches the site to the new photos.
-3. Open `approved-photos-originals/preview.jpg` to check the photo-4 crop. If any of the caption is left, re-run with `--photo4-crop=0.75` (the share of the height to keep).
-
-Until a photo is processed, its place shows a product shot or the dark brand background, never an empty box. Do not upload other photos of people from the admin.
+When you upload your own photo for a colour in the admin, it replaces that colour's mockups when you save. A colour without a photo always gets its mockup, so there are no empty boxes.
 
 ## Dashboard
 

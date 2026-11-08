@@ -19,8 +19,19 @@ function passwordMatches(given: string) {
 }
 
 /** 5 wrong passwords from one connection, then a 15-minute wait. Stored in the database so it holds across servers. */
-export async function ownerLogin(_: unknown, form: FormData): Promise<{ error: string } | null> {
-  if (!ownerLoginConfigured()) return { error: 'الداش بورد لسه متظبطش: ضيف DASHBOARD_PASSWORD و DASHBOARD_SESSION_SECRET في Vercel.' };
+export async function ownerLogin(prev: unknown, form: FormData): Promise<{ error: string } | null> {
+  try {
+    return await attemptLogin(form);
+  } catch (e) {
+    // redirect() after a good password works by throwing: let it through.
+    if (e && typeof e === 'object' && 'digest' in e && String((e as { digest: unknown }).digest).startsWith('NEXT_REDIRECT')) throw e;
+    console.error('[dashboard] login failed:', e instanceof Error ? e.message : 'unknown error');
+    return { error: 'مش قادرين نوصل لقاعدة البيانات دلوقتي. جرب تاني بعد شوية.' };
+  }
+}
+
+async function attemptLogin(form: FormData): Promise<{ error: string } | null> {
+  if (!ownerLoginConfigured()) return { error: 'الداش بورد لسه متظبطتش: ضيف DASHBOARD_PASSWORD و DASHBOARD_SESSION_SECRET في Vercel.' };
   const key = `owner-login:${await clientIp()}`;
   const [lock] = await db.query<{ count: number; mins: number }>(`SELECT count, ceil(extract(epoch FROM reset_at - now()) / 60)::int AS mins FROM rate_limits WHERE key = $1 AND reset_at > now()`, [key]);
   if (lock && lock.count >= MAX_TRIES) return { error: `جربت كتير. استنى ${lock.mins} دقيقة وجرب تاني.` };
