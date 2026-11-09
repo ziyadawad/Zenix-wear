@@ -1,6 +1,7 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DASHBOARD_CONFIG as C } from '../../../config/dashboard.config';
+import { L } from './i18n';
 
 type Raw = { ok: true; data: unknown } | { ok: false };
 export type Sec<T> = { data: T | undefined; stale: boolean };
@@ -82,6 +83,6 @@ export async function act(action: string, input: unknown): Promise<{ ok: boolean
     if (res.status === 401) { window.location.href = '/dashboard/login'; return { ok: false }; }
     return (await res.json()) as { ok: boolean; error?: string };
   } catch {
-    return { ok: false, error: 'مش متصل بالإنترنت، جرّب تاني' };
+    return { ok: false, error: L('مش متصل بالإنترنت، جرّب تاني', 'You are offline. Try again.') };
   }
 }

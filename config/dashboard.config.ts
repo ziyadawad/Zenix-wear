@@ -1,14 +1,14 @@
 // إعدادات الداش بورد كلها في مكان واحد. غيّر هنا وارفع على GitHub، والداش بورد هيتحدث لوحده.
 
 export const DASHBOARD_CONFIG = {
-  // الصفحات اللي بتظهر فوق كتابات (tabs)، بالترتيب ده
+  // الصفحات اللي بتظهر فوق (tabs)، بالترتيب ده. title بالعربي و titleEn بالإنجليزي
   pages: [
-    { id: 'overview', order: 1, title: 'الرئيسية', icon: 'LayoutDashboard', enabled: true }, // نظرة عامة على البيع النهارده والشهر
-    { id: 'orders', order: 2, title: 'الأوردرات', icon: 'ShoppingCart', enabled: true }, // الأوردرات وحالاتها والمتأخر منها
-    { id: 'stock', order: 3, title: 'المخزون', icon: 'Boxes', enabled: true }, // الكميات لكل مقاس ولون
-    { id: 'money', order: 4, title: 'الفلوس', icon: 'Wallet', enabled: true }, // المحافظ والمصاريف والربح
-    { id: 'products', order: 5, title: 'المنتجات', icon: 'Shirt', enabled: true }, // أكتر وأقل حاجة بتتباع
-    { id: 'customers', order: 6, title: 'العملاء', icon: 'Users', enabled: true }, // العملاء والمحافظات
+    { id: 'overview', order: 1, title: 'الرئيسية', titleEn: 'Overview', icon: 'LayoutDashboard', enabled: true }, // نظرة عامة على البيع النهارده والشهر
+    { id: 'orders', order: 2, title: 'الأوردرات', titleEn: 'Orders', icon: 'ShoppingCart', enabled: true }, // الأوردرات وحالاتها والمتأخر منها
+    { id: 'stock', order: 3, title: 'المخزون', titleEn: 'Stock', icon: 'Boxes', enabled: true }, // الكميات لكل مقاس ولون
+    { id: 'money', order: 4, title: 'الفلوس', titleEn: 'Money', icon: 'Wallet', enabled: true }, // المحافظ والمصاريف والربح
+    { id: 'products', order: 5, title: 'المنتجات', titleEn: 'Products', icon: 'Shirt', enabled: true }, // أكتر وأقل حاجة بتتباع
+    { id: 'customers', order: 6, title: 'العملاء', titleEn: 'Customers', icon: 'Users', enabled: true }, // العملاء والمحافظات
   ],
 
   refreshSeconds: 30, // كل كام ثانية الأرقام تتحدث لوحدها
@@ -16,7 +16,7 @@ export const DASHBOARD_CONFIG = {
 
   lowStock: {
     default: 3, // لو الكمية في مقاس/لون أقل من الرقم ده يطلع تنبيه "محتاج نزوّد"
-    perProduct: {} as Record<string, number>, // حد مختلف لمنتج معين: { 'zenix-crew-socks': 5 } (الاسم من رابط المنتج)
+    perProduct: {} as Record<string, number>, // حد مختلف لمنتج معين: { 'regular-tee': 5 } (الاسم من رابط المنتج)
   },
 
   late: {
@@ -31,13 +31,13 @@ export const DASHBOARD_CONFIG = {
 
   monthlySalesTarget: 100000, // تارجت المبيعات في الشهر بالجنيه
 
-  // المحافظ/الحسابات اللي الفلوس بتدخل فيها. متغيّرش الـ id بعد ما تبدأ تستخدمها
+  // المحافظ/الحسابات اللي الفلوس بتدخل فيها. متغيّرش الـ id بعد ما تبدأ تستخدمها. nameEn = الاسم بالإنجليزي
   wallets: [
-    { id: 'cash', name: 'كاش' }, // فلوس في إيدك
-    { id: 'vodafone', name: 'فودافون كاش' }, // محفظة فودافون كاش
-    { id: 'instapay', name: 'إنستاباي' }, // تحويلات إنستاباي
-    { id: 'bank', name: 'البنك' }, // الحساب البنكي (والدفع بالكارت)
-    { id: 'courier', name: 'فلوس عند شركة الشحن' }, // كاش الأوردرات اللي اتسلمت ولسه شركة الشحن مسلمتهاش
+    { id: 'cash', name: 'كاش', nameEn: 'Cash' }, // فلوس في إيدك
+    { id: 'vodafone', name: 'فودافون كاش', nameEn: 'Vodafone Cash' }, // محفظة فودافون كاش
+    { id: 'instapay', name: 'إنستاباي', nameEn: 'InstaPay' }, // تحويلات إنستاباي
+    { id: 'bank', name: 'البنك', nameEn: 'Bank' }, // الحساب البنكي (والدفع بالكارت)
+    { id: 'courier', name: 'عند شركة الشحن', nameEn: 'With courier' }, // كاش الأوردرات اللي اتسلمت ولسه شركة الشحن مسلمتهاش
   ],
 
   // كل طريقة دفع في الموقع فلوسها بتنزل في أنهي محفظة
@@ -48,18 +48,25 @@ export const DASHBOARD_CONFIG = {
     card: 'bank', // كارت (Paymob)
   } as Record<string, string>,
 
-  // أنواع المصاريف اللي بتختار منها وانت بتسجل مصروف
-  expenseCategories: ['إعلانات', 'شحن', 'تغليف', 'تصنيع وقماش', 'مرتبات', 'أخرى'],
+  // أنواع المصاريف اللي بتختار منها وانت بتسجل مصروف. name هو اللي بيتسجل، متغيّرهوش بعد ما تستخدمه
+  expenseCategories: [
+    { name: 'إعلانات', nameEn: 'Ads' },
+    { name: 'شحن', nameEn: 'Shipping' },
+    { name: 'تغليف', nameEn: 'Packaging' },
+    { name: 'تصنيع وقماش', nameEn: 'Production & fabric' },
+    { name: 'مرتبات', nameEn: 'Salaries' },
+    { name: 'أخرى', nameEn: 'Other' },
+  ],
 
   // حالات الأوردر بالترتيب، واسم كل حالة واللون بتاعها
   orderStatuses: [
-    { id: 'pending', label: 'جديد', tone: 'warn' }, // لسه واصل ومحتاج تأكيد
-    { id: 'confirmed', label: 'اتأكد', tone: 'info' }, // العميل أكد
-    { id: 'preparing', label: 'بيتجهز', tone: 'info' }, // بيتغلف
-    { id: 'shipped', label: 'اتشحن', tone: 'info' }, // مع شركة الشحن
-    { id: 'delivered', label: 'اتسلم', tone: 'good' }, // وصل للعميل
-    { id: 'returned', label: 'مرتجع', tone: 'bad' }, // رجع (المخزون بيرجع لوحده)
-    { id: 'cancelled', label: 'اتلغى', tone: 'bad' }, // اتلغى (المخزون بيرجع لوحده)
+    { id: 'pending', label: 'جديد', labelEn: 'New', tone: 'warn' }, // لسه واصل ومحتاج تأكيد
+    { id: 'confirmed', label: 'اتأكد', labelEn: 'Confirmed', tone: 'info' }, // العميل أكد
+    { id: 'preparing', label: 'بيتجهز', labelEn: 'Preparing', tone: 'info' }, // بيتغلف
+    { id: 'shipped', label: 'اتشحن', labelEn: 'Shipped', tone: 'info' }, // مع شركة الشحن
+    { id: 'delivered', label: 'اتسلم', labelEn: 'Delivered', tone: 'good' }, // وصل للعميل
+    { id: 'returned', label: 'مرتجع', labelEn: 'Returned', tone: 'bad' }, // رجع (المخزون بيرجع لوحده)
+    { id: 'cancelled', label: 'اتلغى', labelEn: 'Cancelled', tone: 'bad' }, // اتلغى (المخزون بيرجع لوحده)
   ],
 
   colors: {

@@ -2,6 +2,11 @@ import 'server-only';
 import { db } from '../db';
 import { DASHBOARD_CONFIG as C } from '../../../config/dashboard.config';
 import { normalizePhone } from '../utils';
+import type { DashLang } from './lang';
+
+/** Column / JSON key for names in the dashboard's language. */
+const nameCol = (lang: DashLang) => (lang === 'en' ? 'name_en' : 'name_ar');
+const itemKey = (lang: DashLang, what: 'name' | 'color') => `${what}${lang === 'en' ? 'En' : 'Ar'}`;
 
 // ---- Time: every "today" and "this month" is Cairo time -----------------------------------------
 const NOW = `(now() AT TIME ZONE 'Africa/Cairo')`;
@@ -85,14 +90,14 @@ export function overview() {
 }
 
 // ---- 2) Orders -----------------------------------------------------------------------------------
-export function orders(q: string) {
+export function orders(q: string, lang: DashLang = 'ar') {
   return sections({
     counts: async () => {
       const rows = await db.query('SELECT status, count(*)::int AS n FROM orders GROUP BY status');
       return Object.fromEntries(C.orderStatuses.map((s) => [s.id, rows.find((r) => r.status === s.id)?.n ?? 0])) as Record<string, number>;
     },
     late: async () => db.query(`
-      SELECT o.id, o.number, o.name, o.phone, o.status, o.total, r.name_ar AS governorate,
+      SELECT o.id, o.number, o.name, o.phone, o.status, o.total, r.${nameCol(lang)} AS governorate,
         CASE WHEN o.status = 'shipped' THEN o.shipped_at ELSE COALESCE(o.confirmed_at, o.created_at) END AS since,
         (extract(epoch FROM now() - CASE WHEN o.status = 'shipped' THEN o.shipped_at ELSE COALESCE(o.confirmed_at, o.created_at) END) / 86400)::float8 AS days
       FROM orders o LEFT JOIN shipping_rates r ON r.id = o.governorate
@@ -106,7 +111,7 @@ export function orders(q: string) {
         params.push(`%${q.trim().toUpperCase()}%`, `%${normalizePhone(q)}%`);
         where = 'WHERE o.number ILIKE $1 OR o.phone LIKE $2 OR o.alt_phone LIKE $2';
       }
-      return db.query(`SELECT o.id, o.number, o.name, o.phone, r.name_ar AS governorate, o.total, o.payment_method, o.payment_status, o.status, o.created_at
+      return db.query(`SELECT o.id, o.number, o.name, o.phone, r.${nameCol(lang)} AS governorate, o.total, o.payment_method, o.payment_status, o.status, o.created_at
         FROM orders o LEFT JOIN shipping_rates r ON r.id = o.governorate ${where} ORDER BY o.created_at DESC LIMIT 60`, params);
     },
     rates: async () => {
@@ -116,8 +121,8 @@ export function orders(q: string) {
   });
 }
 
-export async function orderDetail(id: string) {
-  const [o] = await db.query(`SELECT o.*, r.name_ar AS governorate_name, COALESCE(o.shipping_cost, r.fee) AS ship_cost FROM orders o LEFT JOIN shipping_rates r ON r.id = o.governorate WHERE o.id = $1`, [id]);
+export async function orderDetail(id: string, lang: DashLang = 'ar') {
+  const [o] = await db.query(`SELECT o.*, r.${nameCol(lang)} AS governorate_name, COALESCE(o.shipping_cost, r.fee) AS ship_cost FROM orders o LEFT JOIN shipping_rates r ON r.id = o.governorate WHERE o.id = $1`, [id]);
   if (!o) return null;
   const log = await db.query(`SELECT actor, action, details, created_at FROM activity_log WHERE entity = 'order' AND entity_id = $1 ORDER BY created_at DESC LIMIT 50`, [id]);
   return {
@@ -129,20 +134,20 @@ export async function orderDetail(id: string) {
 }
 
 // ---- 3) Stock ------------------------------------------------------------------------------------
-export function stock() {
+export function stock(lang: DashLang = 'ar') {
   return sections({
     products: async () => {
-      const products = await db.query(`SELECT id, slug, name_ar, colors, price, sale_price, cost_price, status FROM products ORDER BY status, name_ar`);
+      const products = await db.query(`SELECT id, slug, ${nameCol(lang)} AS name, colors, price, sale_price, cost_price, status FROM products ORDER BY status, created_at`);
       const variants = await db.query('SELECT product_id, color_id, size, stock FROM product_variants');
       const order = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', 'ONE'];
       return products.map((p) => {
         const vs = variants.filter((v) => v.product_id === p.id);
         const sizes = [...new Set(vs.map((v) => v.size as string))].sort((a, b) => order.indexOf(a) - order.indexOf(b));
         const min = lowMin(p.slug);
-        const colors = (p.colors as { id: string; nameAr: string; hex: string; images: string[] }[]).map((c) => ({ id: c.id, name: c.nameAr, hex: c.hex, cells: sizes.map((s) => vs.find((v) => v.color_id === c.id && v.size === s)?.stock ?? null) }));
+        const colors = (p.colors as { id: string; nameAr: string; nameEn: string; hex: string; images: string[] }[]).map((c) => ({ id: c.id, name: lang === 'en' ? c.nameEn : c.nameAr, hex: c.hex, cells: sizes.map((s) => vs.find((v) => v.color_id === c.id && v.size === s)?.stock ?? null) }));
         const total = vs.reduce((a, v) => a + v.stock, 0);
         const low = vs.filter((v) => v.stock < min).length;
-        return { id: p.id, slug: p.slug, name: p.name_ar, image: p.colors[0]?.images?.[0] ?? null, live: p.status === 'active', price: p.sale_price ?? p.price, cost: p.cost_price, min, sizes, colors, total, low, out: vs.filter((v) => v.stock === 0).length };
+        return { id: p.id, slug: p.slug, name: p.name, image: p.colors[0]?.images?.[0] ?? null, live: p.status === 'active', price: p.sale_price ?? p.price, cost: p.cost_price, min, sizes, colors, total, low, out: vs.filter((v) => v.stock === 0).length };
       });
     },
     totals: async () => {
@@ -160,7 +165,7 @@ export const stockLog = (productId: string) =>
   db.query(`SELECT color_id, size, delta, stock_after, kind, reason, ref, actor, created_at FROM stock_movements WHERE product_id = $1 ORDER BY created_at DESC LIMIT 200`, [productId]);
 
 // ---- 4) Money ------------------------------------------------------------------------------------
-export function money(filter: { month?: string; category?: string; wallet?: string }) {
+export function money(filter: { month?: string; category?: string; wallet?: string }, lang: DashLang = 'ar') {
   return sections({
     wallets: async () => {
       const rows = await db.query(`
@@ -171,7 +176,7 @@ export function money(filter: { month?: string; category?: string; wallet?: stri
       const last = await db.query(`SELECT DISTINCT ON (wallet) wallet, amount, note, created_at FROM wallet_movements ORDER BY wallet, created_at DESC`);
       return C.wallets.map((w) => {
         const r = rows.find((x) => x.wallet === w.id);
-        return { id: w.id, name: w.name, balance: r?.balance ?? 0, inToday: r?.in_today ?? 0, outToday: r?.out_today ?? 0, last: last.find((x) => x.wallet === w.id) ?? null };
+        return { id: w.id, name: lang === 'en' ? w.nameEn : w.name, balance: r?.balance ?? 0, inToday: r?.in_today ?? 0, outToday: r?.out_today ?? 0, last: last.find((x) => x.wallet === w.id) ?? null };
       });
     },
     profit: monthProfit,
@@ -210,19 +215,19 @@ export async function walletDetail(wallet: string, range: string) {
 }
 
 // ---- 5) Products performance ---------------------------------------------------------------------
-export function products() {
+export function products(lang: DashLang = 'ar') {
   const ITEMS = `FROM orders o CROSS JOIN LATERAL jsonb_array_elements(o.items) i`;
   const THIS_MONTH = `o.${SALE} AND ${loc('o.created_at')} >= ${MONTH}`;
   return sections({
-    best: async () => db.query(`SELECT i->>'productId' AS id, max(i->>'nameAr') AS name, sum((i->>'qty')::int)::int AS pieces, sum((i->>'qty')::int * (i->>'price')::int)::int AS money ${ITEMS} WHERE ${THIS_MONTH} GROUP BY 1 ORDER BY pieces DESC, money DESC LIMIT 10`),
+    best: async () => db.query(`SELECT i->>'productId' AS id, max(i->>'${itemKey(lang, 'name')}') AS name, sum((i->>'qty')::int)::int AS pieces, sum((i->>'qty')::int * (i->>'price')::int)::int AS money ${ITEMS} WHERE ${THIS_MONTH} GROUP BY 1 ORDER BY pieces DESC, money DESC LIMIT 10`),
     slow: async () => db.query(`
-      SELECT p.id, p.name_ar AS name, COALESCE(s.pieces,0)::int AS pieces, COALESCE(s.money,0)::int AS money, (SELECT COALESCE(sum(stock),0)::int FROM product_variants v WHERE v.product_id = p.id) AS stock
+      SELECT p.id, p.${nameCol(lang)} AS name, COALESCE(s.pieces,0)::int AS pieces, COALESCE(s.money,0)::int AS money, (SELECT COALESCE(sum(stock),0)::int FROM product_variants v WHERE v.product_id = p.id) AS stock
       FROM products p LEFT JOIN (SELECT i->>'productId' AS id, sum((i->>'qty')::int) AS pieces, sum((i->>'qty')::int * (i->>'price')::int) AS money ${ITEMS} WHERE ${THIS_MONTH} GROUP BY 1) s ON s.id = p.id
       WHERE p.status = 'active' ORDER BY pieces, stock DESC LIMIT 10`),
     sizes: async () => db.query(`SELECT i->>'size' AS label, sum((i->>'qty')::int)::int AS pieces ${ITEMS} WHERE ${THIS_MONTH} GROUP BY 1 ORDER BY pieces DESC`),
-    colors: async () => db.query(`SELECT i->>'colorAr' AS label, sum((i->>'qty')::int)::int AS pieces ${ITEMS} WHERE ${THIS_MONTH} GROUP BY 1 ORDER BY pieces DESC LIMIT 12`),
+    colors: async () => db.query(`SELECT i->>'${itemKey(lang, 'color')}' AS label, sum((i->>'qty')::int)::int AS pieces ${ITEMS} WHERE ${THIS_MONTH} GROUP BY 1 ORDER BY pieces DESC LIMIT 12`),
     returns: async () => db.query(`
-      SELECT i->>'productId' AS id, max(i->>'nameAr') AS name,
+      SELECT i->>'productId' AS id, max(i->>'${itemKey(lang, 'name')}') AS name,
         sum((i->>'qty')::int) FILTER (WHERE o.status = 'returned')::int AS returned,
         sum((i->>'qty')::int) FILTER (WHERE o.status IN ('delivered','returned'))::int AS closed
       ${ITEMS} WHERE o.status IN ('delivered','returned') GROUP BY 1 ORDER BY 3 DESC NULLS LAST, 4 DESC LIMIT 30`),
@@ -236,7 +241,7 @@ export function products() {
 }
 
 // ---- 6) Customers --------------------------------------------------------------------------------
-export function customers() {
+export function customers(lang: DashLang = 'ar') {
   return sections({
     newVsReturning: async () => {
       const [r] = await db.query(`
@@ -247,7 +252,7 @@ export function customers() {
       return { new: r.new, returning: r.returning };
     },
     governorates: async () => db.query(`
-      SELECT COALESCE(r.name_ar, o.governorate) AS name, count(*)::int AS orders, COALESCE(sum(o.total),0)::int AS sales
+      SELECT COALESCE(r.${nameCol(lang)}, o.governorate) AS name, count(*)::int AS orders, COALESCE(sum(o.total),0)::int AS sales
       FROM orders o LEFT JOIN shipping_rates r ON r.id = o.governorate WHERE o.${SALE} AND ${loc('o.created_at')} >= ${MONTH}
       GROUP BY 1 ORDER BY orders DESC, sales DESC LIMIT 12`),
     top: async () => db.query(`
@@ -262,5 +267,5 @@ export function customers() {
   });
 }
 
-export const customerOrders = (phone: string) =>
-  db.query(`SELECT o.id, o.number, o.total, o.status, o.payment_method, o.created_at, r.name_ar AS governorate FROM orders o LEFT JOIN shipping_rates r ON r.id = o.governorate WHERE o.phone = $1 ORDER BY o.created_at DESC LIMIT 100`, [normalizePhone(phone)]);
+export const customerOrders = (phone: string, lang: DashLang = 'ar') =>
+  db.query(`SELECT o.id, o.number, o.total, o.status, o.payment_method, o.created_at, r.${nameCol(lang)} AS governorate FROM orders o LEFT JOIN shipping_rates r ON r.id = o.governorate WHERE o.phone = $1 ORDER BY o.created_at DESC LIMIT 100`, [normalizePhone(phone)]);
