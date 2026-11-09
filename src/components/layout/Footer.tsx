@@ -11,7 +11,8 @@ export function Footer({ t, locale, settings, categories }: { t: Dictionary; loc
   const lp = (p: string) => `/${locale}${p}`;
   const col = 'inline-block py-1 text-sm text-muted transition-colors hover:text-white';
   return (
-    <footer className="no-print border-t border-line bg-black pb-safe-nav">
+    <footer className="no-print relative bg-black pb-safe-nav">
+      <span className="ambient-strip top-0" aria-hidden="true" />
       <div className="container-zx py-14 md:py-20">
         <div className="flex flex-col items-center text-center">
           <Image src="/brand/wordmark.webp" alt="ZENIX WEAR" width={592} height={56} loading="lazy" className="h-auto w-[240px] md:w-[340px]" />

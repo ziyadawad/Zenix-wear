@@ -46,8 +46,10 @@ export function Header() {
     <>
       <header
         style={isHome ? { marginBottom: 'calc(var(--hh) * -1)' } : undefined}
-        className={cx('sticky top-0 z-40 h-[var(--hh)] transition-colors duration-500 no-print', overHero ? 'bg-transparent' : 'border-b border-line bg-ink/95 backdrop-blur')}
+        className={cx('sticky top-0 z-40 h-[var(--hh)] transition-colors duration-500 no-print', overHero ? 'bg-transparent' : 'bg-ink/95 backdrop-blur')}
       >
+        {/* Thin glowing line along the bottom edge, with a slow light running along it. */}
+        <span className={cx('ambient-strip bottom-0 transition-opacity duration-500', overHero && 'opacity-40')} aria-hidden="true" />
         <div className="container-zx grid h-full grid-cols-[1fr_auto_1fr] items-center">
           <div className="flex items-center">
             <button className="icon-btn -ms-3 xl:hidden" aria-label={t.nav.menu} onClick={() => menuUi.set(true)}>

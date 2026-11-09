@@ -87,7 +87,8 @@ export function DashboardApp({ logout, lang }: { logout: () => Promise<void>; la
   return (
     <ShellCtx.Provider value={shell}>
       <div ref={root} className={`min-h-svh overflow-x-clip bg-ink ${tv ? 'overflow-y-auto' : ''}`}>
-        <header className="dash-header sticky top-0 z-40 bg-black/90 backdrop-blur">
+        <header className="dash-header sticky top-0 z-40 bg-ink/90 backdrop-blur">
+          <span className="ambient-strip bottom-0" aria-hidden="true" />
           <div className="mx-auto flex h-14 max-w-[1500px] items-center justify-between gap-3 px-4 md:h-16 md:px-6">
             <div className="flex min-w-0 items-center gap-3">
               <Image src="/brand/wordmark.webp" alt="ZENIX WEAR" width={592} height={56} priority className="h-auto w-[112px] md:w-[150px]" />

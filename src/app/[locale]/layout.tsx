@@ -23,7 +23,7 @@ const cairo = Cairo({ subsets: ['arabic'], weight: ['300', '400', '500', '600'],
 export const generateStaticParams = () => [];
 export const revalidate = 300;
 
-export const viewport: Viewport = { themeColor: '#000000', width: 'device-width', initialScale: 1, viewportFit: 'cover' };
+export const viewport: Viewport = { themeColor: '#050507', width: 'device-width', initialScale: 1, viewportFit: 'cover' };
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;

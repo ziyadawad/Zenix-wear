@@ -70,6 +70,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
         </section>
       )}
 
+      <div className="ambient-divider container-zx" aria-hidden="true"><span className="ambient-strip" /></div>
+
       {/* Why ZENIX */}
       <section className="cv section container-zx" aria-labelledby="why-h">
         <SectionHead id="why-h" title={t.home.why} center />

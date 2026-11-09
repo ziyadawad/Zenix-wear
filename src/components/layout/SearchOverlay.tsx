@@ -56,7 +56,7 @@ export function SearchOverlay() {
           {hits?.map((h) => (
             <li key={h.slug}>
               <Link href={lp(`/product/${h.slug}`)} onClick={close} className="group block">
-                <div className="relative aspect-[4/5] overflow-hidden bg-[#0d0d0d]"><Image src={displayImage(h.image)} alt={locale === 'ar' ? h.nameAr : h.nameEn} fill sizes="(min-width:1024px) 16vw, 50vw" quality={70} className="zoom-img object-contain p-[5%]" /></div>
+                <div className="relative aspect-[4/5] overflow-hidden mockup-stage"><Image src={displayImage(h.image)} alt={locale === 'ar' ? h.nameAr : h.nameEn} fill sizes="(min-width:1024px) 16vw, 50vw" quality={70} className="zoom-img object-contain p-[5%]" /></div>
                 <p className="mt-2 text-[13px]">{locale === 'ar' ? h.nameAr : h.nameEn}</p>
                 <p className="text-[13px] text-muted">{formatMoney(h.price, locale)}</p>
               </Link>

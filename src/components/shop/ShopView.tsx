@@ -43,7 +43,7 @@ export async function ShopView({ locale, sp, title, blurb, image, base, showSubn
             {[{ h: '/shop', l: t.categoryBlurb.all }, ...categories.filter((c) => c.inMenu).map((c) => ({ h: `/shop/${c.slug}`, l: locale === 'ar' ? c.nameAr : c.nameEn }))].map((x) => {
               const active = base.category ? x.h === `/shop/${base.category}` : x.h === '/shop';
               return (
-                <li key={x.h}><Link href={lp(x.h)} aria-current={active ? 'page' : undefined} className={`block min-w-8 border-b py-4 text-center text-[13px] ${active ? 'border-white' : 'border-transparent text-muted hover:text-white'}`}>{x.l}</Link></li>
+                <li key={x.h}><Link href={lp(x.h)} aria-current={active ? 'page' : undefined} className={`block min-w-8 border-b py-4 text-center text-[13px] ${active ? 'tab-active' : 'border-transparent text-muted hover:text-white'}`}>{x.l}</Link></li>
               );
             })}
           </ul>

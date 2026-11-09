@@ -12,7 +12,7 @@ import { cx } from '@/lib/utils';
 function BrandBackground({ eager }: { eager: boolean }) {
   return (
     <>
-      <div className="absolute inset-0" style={{ background: 'radial-gradient(70% 60% at 50% 38%, #2b2b2b 0%, #111 52%, #000 100%)' }} />
+      <div className="absolute inset-0" style={{ background: 'radial-gradient(70% 60% at 50% 38%, #1c1a2c 0%, #0b0b10 52%, #050507 100%)' }} />
       <Image src={SCENES.hero} alt="" fill preload={eager} fetchPriority={eager ? 'high' : 'auto'} loading={eager ? 'eager' : 'lazy'} sizes="100vw" quality={75} className="object-cover object-[50%_35%] opacity-60" />
       <div className="brand-sheen absolute inset-0" aria-hidden="true" />
     </>
@@ -70,7 +70,7 @@ export function Hero({ slides }: { slides: HeroSlide[] }) {
 
       <div className="container-zx relative flex h-full flex-col items-center justify-center pb-[calc(var(--bottom-nav)+64px)] pt-[var(--hh)] text-center md:pb-16">
         {/* Outside the keyed block below, so the logo keeps turning when the slide changes. */}
-        <h1 className="w-[min(62vw,34svh)] md:w-[min(30vw,50svh,440px)]">
+        <h1 className="logo-glow w-[min(62vw,34svh)] md:w-[min(30vw,50svh,440px)]">
           <OrbitMark hero sizes="(min-width:768px) 440px, 62vw" />
         </h1>
         <div key={active.id} className="w-full max-w-[640px]">

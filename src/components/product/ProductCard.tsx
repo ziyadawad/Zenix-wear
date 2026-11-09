@@ -25,7 +25,7 @@ export function Price({ p, className }: { p: Pick<Product, 'price' | 'salePrice'
   const pct = discountPercent(p);
   return (
     <p className={cx('flex flex-wrap items-baseline gap-x-2', className)}>
-      <span>{formatMoney(effectivePrice(p), locale)}</span>
+      <span className="price-accent">{formatMoney(effectivePrice(p), locale)}</span>
       {pct > 0 && <><s className="text-[0.85em] text-muted">{formatMoney(p.price, locale)}</s><span className="sr-only">{pct}% {t.product.off}</span></>}
     </p>
   );
@@ -55,7 +55,7 @@ export function ProductCard({ product: p, priority, sizes = '(min-width:1024px) 
 
   return (
     <article className="group relative" onPointerEnter={(e) => { if (e.pointerType === 'mouse') setHovered(true); }}>
-      <div className="relative aspect-[4/5] overflow-hidden bg-[#0d0d0d]">
+      <div className="mockup-stage glow-card relative aspect-[4/5] overflow-hidden">
         <Link href={lp(`/product/${p.slug}`)} aria-label={name} className="absolute inset-0 block">
           <Image src={color?.images[0] ?? displayImage(null)} alt={`${name}, ${locale === 'ar' ? color.nameAr : color.nameEn}`} fill sizes={sizes} quality={70} loading={priority ? 'eager' : 'lazy'} className={cx('zoom-img object-contain p-[5%]', hovered && color.images[1] && 'group-hover:opacity-0', 'transition-opacity duration-700')} />
           {hovered && color?.images[1] && <Image src={color.images[1]} alt="" fill sizes={sizes} quality={70} className="object-contain p-[5%] opacity-0 transition-opacity duration-700 group-hover:opacity-100" />}
