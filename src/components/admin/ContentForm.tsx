@@ -46,7 +46,7 @@ export function ContentForm({ initial, products }: { initial: SiteContent; produ
               </div>
             </div>
           ))}
-          {v.hero.length < 6 && <button type="button" className="btn btn-ghost !min-h-11 w-full" onClick={() => up({ hero: [...v.hero, { id: crypto.randomUUID(), kind: 'cover', image: '', headlineAr: 'دماغ هادية، وأداء في القمة', headlineEn: 'Calm Mind. Peak Performance.', subAr: '', subEn: '' }] })}><Plus size={15} />Add slide</button>}
+          {v.hero.length < 6 && <button type="button" className="btn btn-ghost !min-h-11 w-full" onClick={() => up({ hero: [...v.hero, { id: crypto.randomUUID(), kind: 'cover', image: '', headlineAr: 'ZENIX WEAR', headlineEn: 'ZENIX WEAR', subAr: '', subEn: '' }] })}><Plus size={15} />Add slide</button>}
         </div>
       </Card>
 

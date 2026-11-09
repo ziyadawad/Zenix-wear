@@ -15,7 +15,6 @@ export function Footer({ t, locale, settings, categories }: { t: Dictionary; loc
       <div className="container-zx py-14 md:py-20">
         <div className="flex flex-col items-center text-center">
           <Image src="/brand/wordmark.webp" alt="ZENIX WEAR" width={592} height={56} loading="lazy" className="h-auto w-[240px] md:w-[340px]" />
-          <p className="mt-5 text-sm text-muted">{t.brand.tagline}</p>
         </div>
         <div className="mt-14 grid grid-cols-2 gap-x-6 gap-y-10 border-t border-line pt-12 md:grid-cols-4">
           <div>

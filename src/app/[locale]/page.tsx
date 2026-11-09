@@ -7,7 +7,7 @@ import type { Locale } from '@/lib/types';
 import { jsonLd, SITE_URL, CONTACT } from '@/lib/utils';
 import { SCENES } from '@/lib/db/images';
 import { Hero } from '@/components/home/Hero';
-import { Marquee, OrbitMark, SectionHead } from '@/components/home/Bits';
+import { Marquee, SectionHead } from '@/components/home/Bits';
 import { Newsletter } from '@/components/home/Newsletter';
 import { ReviewsSlider } from '@/components/home/ReviewsSlider';
 import { ProductCard } from '@/components/product/ProductCard';
@@ -69,33 +69,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
           </div>
         </section>
       )}
-
-      {/* The meaning of ZENIX */}
-      <section className="cv relative overflow-hidden border-y border-line bg-black" aria-labelledby="mean-h">
-        <div className="container-zx grid items-center gap-12 py-20 md:py-32 lg:grid-cols-[1fr_1.15fr] lg:gap-20">
-          <div className="mx-auto w-[min(72vw,440px)]" data-reveal><OrbitMark /></div>
-          <div data-reveal>
-            <p className="eyebrow mb-6">{t.home.meaningEyebrow}</p>
-            <h2 id="mean-h" className="display text-[clamp(1.9rem,4vw,3.5rem)]">{t.home.meaningTitle}</h2>
-            <div className="mt-10 grid gap-8 sm:grid-cols-2">
-              <div className="border-t border-line-strong pt-5">
-                <h3 className="latin-wide text-sm" dir="ltr">{t.home.zenTitle}</h3>
-                <p className="mt-3 text-sm leading-[1.9] text-muted">{t.home.zenText}</p>
-              </div>
-              <div className="border-t border-line-strong pt-5">
-                <h3 className="latin-wide text-sm" dir="ltr">{t.home.zenithTitle}</h3>
-                <p className="mt-3 text-sm leading-[1.9] text-muted">{t.home.zenithText}</p>
-              </div>
-            </div>
-            <div className="mt-10 border-t border-line pt-8">
-              <p className="font-arabic text-3xl font-light md:text-4xl" lang="ar" dir="rtl">سَمْت الرأس</p>
-              <h3 className="eyebrow mt-5">{t.home.originTitle}</h3>
-              <p className="mt-3 max-w-[60ch] text-sm leading-[1.9] text-[#c8c8c8]">{t.home.originText}</p>
-            </div>
-            <Link href={lp('/about')} className="link-underline mt-8 inline-block text-sm">{t.home.readStory}</Link>
-          </div>
-        </div>
-      </section>
 
       {/* Why ZENIX */}
       <section className="cv section container-zx" aria-labelledby="why-h">

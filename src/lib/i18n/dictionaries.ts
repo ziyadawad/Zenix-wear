@@ -2,7 +2,6 @@ import 'server-only';
 import type { Locale } from '../types';
 
 const en = {
-  brand: { tagline: 'Calm Mind. Peak Performance.' },
   nav: {
     shop: 'Shop', about: 'About', contact: 'Contact us',
     home: 'Home', search: 'Search', wishlist: 'Wishlist', cart: 'Cart', account: 'Account', menu: 'Menu', close: 'Close', language: 'العربية', languageLabel: 'Switch to Arabic',
@@ -16,13 +15,6 @@ const en = {
     marquee: ['ZENIX WEAR', 'FOCUS', 'PUSH', 'RISE'],
     shopByCategory: 'Shop by Category', explore: 'Explore',
     viewAll: 'View all', products: 'Our T-Shirts',
-    meaningEyebrow: 'The Meaning of ZENIX',
-    meaningTitle: 'Two words. One way of training.',
-    zenTitle: 'Zen', zenText: 'Focus and a calm mind. The stillness you bring into the room before the first rep.',
-    zenithTitle: 'Zenith', zenithText: 'The peak. The highest point you are working towards, one session at a time.',
-    originTitle: 'An Arabic origin',
-    originText: 'The word “Zenith” itself comes from the Arabic “سَمْت الرأس”, the highest point in the sky directly above your head. Astronomers carried it from Arabic into Europe. We brought it home.',
-    readStory: 'Read our story',
     why: 'Why ZENIX',
     whyItems: [
       ['Premium fabric', 'Performance knits and heavyweight Egyptian cotton, chosen by hand.'],
@@ -87,11 +79,10 @@ const en = {
     title: 'Contact Us', intro: 'A question about size, an order or an exchange? We reply fastest on WhatsApp.', name: 'Your name', phone: 'Phone (optional)', email: 'Email (optional)', message: 'Your message', send: 'Send message', sent: 'Thank you. We will get back to you soon.', error: 'Please add your name, a way to reach you, and your message.', rate: 'Too many messages. Please try again later.', callUs: 'Call us', whatsapp: 'WhatsApp', emailUs: 'Email', follow: 'Follow', online: 'ZENIX WEAR is an online-only brand delivering across Egypt.',
   },
   about: {
-    eyebrow: 'About ZENIX', title: 'Calm mind. Peak performance.', intro: 'ZENIX WEAR is an Egyptian sportswear brand built on one belief: the strongest performance comes from the calmest mind.',
-    storyTitle: 'Our Story', story: 'We started ZENIX for people who train with intent. People who do not need loud logos to prove anything, and who expect their gear to be as disciplined as they are. Every piece begins with fabric and fit, and everything unnecessary is taken away.',
-    meaningTitle: 'The Meaning of the Name', meaning: 'ZENIX joins two ideas. “Zen” is focus and a calm mind. “Zenith” is the peak. And the word Zenith itself comes from the Arabic “سَمْت الرأس”, the highest point in the sky. It is a name that starts in stillness and ends at the summit, with its roots in our own language.',
-    missionTitle: 'Our Mission', mission: 'To give every athlete in Egypt world-class training wear, at home, without compromise.',
-    valuesTitle: 'Our Values', values: [['Discipline', 'Show up. Do the work. Repeat. We make our clothes the same way.'], ['Focus', 'Nothing unnecessary. Every seam and detail earns its place.'], ['Quality', 'We choose fabrics that last far longer than the trend.'], ['Respect', 'Clear prices, honest policies and real service for every customer.']],
+    eyebrow: 'About ZENIX', title: 'T-shirts made right.', intro: 'ZENIX WEAR is an Egyptian brand making T-shirts for training and every day: heavy cotton, a clean fit and clear prices.',
+    qualityTitle: 'Quality', quality: 'Every piece starts with the fabric. We choose heavy Egyptian cotton that lasts: it does not shrink and keeps its colour wash after wash.',
+    fitTitle: 'Fit', fit: 'A cut tested on real people, from S to XXL, with a clear size guide for every T-shirt. If the size is not right, exchanging it within 14 days is easy.',
+    valuesTitle: 'What you get', values: [['Quality', 'Fabrics that outlast any trend.'], ['The right fit', 'A comfortable cut and a clear guide for every size.'], ['Delivery across Egypt', 'With cash on delivery.'], ['Real service', 'Clear prices and easy exchanges.']],
   },
   footer: { shop: 'Shop', help: 'Help', brand: 'ZENIX', contact: 'Contact', shippingPolicy: 'Shipping Policy', exchangePolicy: 'Exchange & Returns', privacy: 'Privacy Policy', terms: 'Terms & Conditions', rights: 'All rights reserved.', payments: 'Cash on Delivery · InstaPay · Mobile Wallets · Cards' },
   notFound: { title: 'Off the path.', text: 'This page has moved or never existed. Take a breath and head back.', home: 'Back to home', shop: 'Shop T-Shirts' },
@@ -101,7 +92,6 @@ const en = {
 export type Dictionary = typeof en;
 
 const ar: Dictionary = {
-  brand: { tagline: 'دماغ هادية، وأداء في القمة' },
   nav: {
     shop: 'المتجر', about: 'عن ZENIX', contact: 'تواصل معانا',
     home: 'الرئيسية', search: 'دوّر', wishlist: 'المفضلة', cart: 'السلة', account: 'حسابي', menu: 'القايمة', close: 'اقفل', language: 'EN', languageLabel: 'حوّل للإنجليزي',
@@ -115,13 +105,6 @@ const ar: Dictionary = {
     marquee: ['ZENIX WEAR', 'FOCUS', 'PUSH', 'RISE'],
     shopByCategory: 'اتسوق بالقسم', explore: 'شوف',
     viewAll: 'شوف الكل', products: 'تيشيرتاتنا',
-    meaningEyebrow: 'يعني إيه ZENIX',
-    meaningTitle: 'كلمتين، وطريقة واحدة للتمرين.',
-    zenTitle: 'Zen', zenText: 'التركيز والدماغ الهادية. الهدوء اللي بتدخل بيه الجيم قبل أول عدة.',
-    zenithTitle: 'Zenith', zenithText: 'القمة. أعلى نقطة بتشتغل عشان توصلها، تمرين ورا تمرين.',
-    originTitle: 'أصلها عربي',
-    originText: 'كلمة Zenith نفسها جاية من العربي «سَمْت الرأس»، يعني أعلى نقطة في السما فوق دماغك بالظبط. علماء الفلك نقلوها من العربي لأوروبا، وإحنا رجّعناها لبيتها.',
-    readStory: 'اعرف حكايتنا',
     why: 'ليه ZENIX',
     whyItems: [
       ['خامات فاخرة', 'أقمشة تمرين وقطن مصري تقيل، مختارين بإيدينا.'],
@@ -186,11 +169,10 @@ const ar: Dictionary = {
     title: 'كلمنا', intro: 'عندك سؤال عن المقاس أو الأوردر أو التبديل؟ أسرع رد على واتساب.', name: 'اسمك', phone: 'الموبايل (مش لازم)', email: 'الإيميل (مش لازم)', message: 'رسالتك', send: 'ابعت', sent: 'شكرًا ليك. هنرد عليك قريب.', error: 'اكتب اسمك، وطريقة نكلمك بيها، ورسالتك.', rate: 'رسايل كتير. جرب تاني بعدين.', callUs: 'اتصل بينا', whatsapp: 'واتساب', emailUs: 'الإيميل', follow: 'تابعنا', online: 'ZENIX WEAR براند أونلاين بس، وبنوصل لكل مصر.',
   },
   about: {
-    eyebrow: 'عن ZENIX', title: 'دماغ هادية، وأداء في القمة', intro: 'ZENIX WEAR براند لبس رياضي مصري مبني على فكرة واحدة: أقوى أداء بييجي من أهدى دماغ.',
-    storyTitle: 'حكايتنا', story: 'بدأنا ZENIX للناس اللي بتتمرن بهدف. ناس مش محتاجة لوجوهات كبيرة تثبت بيها حاجة، ومستنية من لبسها نفس الالتزام اللي عندها. كل قطعة بتبدأ من الخامة والقصّة، وأي حاجة ملهاش لازمة بنشيلها.',
-    meaningTitle: 'معنى الاسم', meaning: 'ZENIX بيجمع فكرتين. Zen يعني التركيز والدماغ الهادية، وZenith يعني القمة. وكلمة Zenith نفسها أصلها عربي من «سَمْت الرأس»، يعني أعلى نقطة في السما. اسم بيبدأ من الهدوء وبيوصل للقمة، وجذوره من لغتنا.',
-    missionTitle: 'هدفنا', mission: 'نقدّم لكل رياضي في مصر لبس تمرين بمستوى عالمي، من غير تنازلات.',
-    valuesTitle: 'اللي بنؤمن بيه', values: [['الالتزام', 'انزل، اشتغل، وكرر. وبنفس الطريقة بنعمل لبسنا.'], ['التركيز', 'مفيش حاجة زيادة. كل خياطة وتفصيلة ليها سبب.'], ['الجودة', 'بنختار خامات تعيش أطول من أي موضة.'], ['الاحترام', 'أسعار واضحة، سياسات صريحة، وخدمة بجد لكل عميل.']],
+    eyebrow: 'عن ZENIX', title: 'تيشيرتات معمولة صح.', intro: 'ZENIX WEAR براند مصري بيعمل تيشيرتات للتمرين ولكل يوم: قطن تقيل، قصّة نضيفة، وسعر واضح.',
+    qualityTitle: 'الخامة', quality: 'كل قطعة بتبدأ من القماش. بنختار قطن مصري تقيل بيعيش معاك، مبيكشّش ولونه مبيروحش مع الغسيل.',
+    fitTitle: 'المقاس', fit: 'قصّة متجربة على ناس حقيقيين، من S لحد XXL، ودليل مقاسات واضح لكل تيشيرت. ولو المقاس مظبطش، التبديل سهل في خلال ١٤ يوم.',
+    valuesTitle: 'هتاخد إيه مننا', values: [['جودة', 'خامات بتعيش أطول من أي موضة.'], ['مقاس مظبوط', 'قصّة مريحة ودليل واضح لكل مقاس.'], ['توصيل لكل مصر', 'والدفع عند الاستلام.'], ['خدمة بجد', 'أسعار واضحة وتبديل سهل.']],
   },
   footer: { shop: 'اتسوق', help: 'مساعدة', brand: 'ZENIX', contact: 'كلمنا', shippingPolicy: 'سياسة الشحن', exchangePolicy: 'التبديل والاسترجاع', privacy: 'الخصوصية', terms: 'الشروط والأحكام', rights: 'كل الحقوق محفوظة.', payments: 'الدفع عند الاستلام · إنستاباي · المحافظ · الكروت' },
   notFound: { title: 'شكلك تهت.', text: 'الصفحة دي اتنقلت أو مش موجودة. خد نفس وارجع تاني.', home: 'ارجع للرئيسية', shop: 'اتسوق التيشيرتات' },

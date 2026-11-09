@@ -173,6 +173,31 @@ const MIGRATIONS: Migration[] = [
       }
     },
   },
+  {
+    // ZENIX is just the brand name: no tagline and no explanation of the word in the saved homepage texts.
+    id: '2026-11-09-brand-name-only',
+    up: async (q) => {
+      const SUBS: Record<string, string> = {
+        'لبس رياضي فاخر متصمم في مصر، لكل واحد بيتمرن بتركيز.': 'تيشيرتات متصممة في مصر: قطن تقيل وقصّة مريحة.',
+        'Premium sportswear designed in Egypt, for those who train with focus.': 'T-shirts designed in Egypt: heavy cotton and a comfortable fit.',
+        'الالتزام الأول. وكل حاجة بعد كده بتيجي.': 'نص كم وكت، بالأسود والأبيض والرمادي.',
+        'Discipline first. Everything else follows.': 'Short-sleeve and sleeveless, in black, white and gray.',
+        'كوليكشن جديد. نفس التركيز.': 'توصيل لكل مصر، والدفع عند الاستلام.',
+        'A new drop. The same focus.': 'Delivered across Egypt, cash on delivery.',
+      };
+      const tagline = /calm mind|peak performance|دماغ هادية|عقل هادي|في القمة|zenith|سمت الرأس|سَمْت/i;
+      const [row] = await q.query<{ value: { hero?: Record<string, string>[] } & Record<string, unknown> }>(`SELECT value FROM settings WHERE key = 'content'`);
+      if (!row) return;
+      const hero = (row.value.hero ?? []).map((h) => ({
+        ...h,
+        headlineAr: tagline.test(h.headlineAr ?? '') ? 'ZENIX WEAR' : h.headlineAr,
+        headlineEn: tagline.test(h.headlineEn ?? '') ? 'ZENIX WEAR' : h.headlineEn,
+        subAr: SUBS[h.subAr] ?? (tagline.test(h.subAr ?? '') ? '' : h.subAr),
+        subEn: SUBS[h.subEn] ?? (tagline.test(h.subEn ?? '') ? '' : h.subEn),
+      }));
+      await q.query(`UPDATE settings SET value = $1::jsonb WHERE key = 'content'`, [JSON.stringify({ ...row.value, hero })]);
+    },
+  },
 ];
 
 /** Applies pending migrations. Safe to call on every cold start: one small query when nothing is pending. */

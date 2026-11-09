@@ -30,8 +30,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const ar = locale === 'ar';
   const title = ar ? 'ZENIX WEAR | لبس رياضي فاخر في مصر' : 'ZENIX WEAR | Premium Sportswear in Egypt';
   const description = ar
-    ? 'دماغ هادية، وأداء في القمة. تيشيرتات ولبس جيم فاخر، بنوصل لكل مصر والدفع عند الاستلام.'
-    : 'Calm Mind. Peak Performance. Premium t-shirts and gym wear, delivered across Egypt with cash on delivery.';
+    ? 'تيشيرتات ZENIX: نص كم وكت، قطن تقيل وقصّة مريحة. بنوصل لكل مصر والدفع عند الاستلام.'
+    : 'ZENIX T-shirts: short-sleeve and sleeveless, heavy cotton and a comfortable fit. Delivered across Egypt, cash on delivery.';
   return {
     metadataBase: new URL(SITE_URL),
     title: { default: title, template: '%s | ZENIX WEAR' },

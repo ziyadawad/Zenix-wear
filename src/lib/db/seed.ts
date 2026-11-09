@@ -82,9 +82,9 @@ export async function insertStarterCatalogue(q: Queryable) {
 
 export const DEFAULT_CONTENT: SiteContent = {
   hero: [
-    { id: 'h1', kind: 'brand', image: '', headlineAr: 'دماغ هادية، وأداء في القمة', headlineEn: 'Calm Mind. Peak Performance.', subAr: 'لبس رياضي فاخر متصمم في مصر، لكل واحد بيتمرن بتركيز.', subEn: 'Premium sportswear designed in Egypt, for those who train with focus.' },
-    { id: 'h2', kind: 'brand', image: '', headlineAr: 'دماغ هادية، وأداء في القمة', headlineEn: 'Calm Mind. Peak Performance.', subAr: 'الالتزام الأول. وكل حاجة بعد كده بتيجي.', subEn: 'Discipline first. Everything else follows.' },
-    { id: 'h3', kind: 'brand', image: '', headlineAr: 'دماغ هادية، وأداء في القمة', headlineEn: 'Calm Mind. Peak Performance.', subAr: 'كوليكشن جديد. نفس التركيز.', subEn: 'A new drop. The same focus.' },
+    { id: 'h1', kind: 'brand', image: '', headlineAr: 'ZENIX WEAR', headlineEn: 'ZENIX WEAR', subAr: 'تيشيرتات متصممة في مصر: قطن تقيل وقصّة مريحة.', subEn: 'T-shirts designed in Egypt: heavy cotton and a comfortable fit.' },
+    { id: 'h2', kind: 'brand', image: '', headlineAr: 'ZENIX WEAR', headlineEn: 'ZENIX WEAR', subAr: 'نص كم وكت، بالأسود والأبيض والرمادي.', subEn: 'Short-sleeve and sleeveless, in black, white and gray.' },
+    { id: 'h3', kind: 'brand', image: '', headlineAr: 'ZENIX WEAR', headlineEn: 'ZENIX WEAR', subAr: 'توصيل لكل مصر، والدفع عند الاستلام.', subEn: 'Delivered across Egypt, cash on delivery.' },
   ],
   announcements: [
     { ar: 'الشحن مجاني فوق ١٥٠٠ ج.م', en: 'Free shipping on orders over 1500 EGP' },
