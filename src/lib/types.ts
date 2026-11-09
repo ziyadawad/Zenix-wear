@@ -4,8 +4,10 @@ export const DEFAULT_LOCALE: Locale = 'ar';
 export const isLocale = (v: string): v is Locale => (LOCALES as readonly string[]).includes(v);
 
 export const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', 'ONE'] as const;
-export const CATEGORIES = ['t-shirts', 'tanks', 'shorts', 'socks', 'accessories'] as const;
-export type Category = (typeof CATEGORIES)[number];
+/** A store category (Admin → Categories). The slug is its URL: /shop/<slug>. */
+export interface Category {
+  slug: string; nameAr: string; nameEn: string; blurbAr: string; blurbEn: string; image: string; sort: number; inMenu: boolean;
+}
 export const FITS = ['regular', 'compression'] as const;
 /** The brand is men only for now. To add a section: extend this list, then add a filter and an admin field. */
 export const GENDERS = ['men'] as const;
@@ -37,7 +39,7 @@ export interface Product {
   fitAr: string; fitEn: string;
   price: number;
   salePrice: number | null;
-  category: Category;
+  category: string;
   fit: string | null;
   gender: string;
   collection: string | null;
@@ -95,11 +97,10 @@ export interface Localized { ar: string; en: string }
 export interface SiteContent {
   hero: HeroSlide[];
   announcements: Localized[];
-  featuredCollection: string;
-  featuredCollectionImage: string;
+  /** Banner at the top of the shop page. */
+  shopImage: string;
   bestSellerIds: string[];
   community: string[];
-  categoryImages: Record<string, string>;
 }
 export interface SiteSettings {
   freeShippingThreshold: number;

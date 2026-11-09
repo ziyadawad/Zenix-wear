@@ -2,7 +2,7 @@ import 'server-only';
 import { unstable_cache } from 'next/cache';
 import { db, type Row } from './db';
 import { FITS } from './types';
-import type { Collection, Product, Review, ShippingRate, SiteContent, SiteSettings } from './types';
+import type { Category, Product, Review, ShippingRate, SiteContent, SiteSettings } from './types';
 import { DEFAULT_CONTENT, DEFAULT_SETTINGS } from './db/seed';
 import { effectivePrice, sizesOf, sortSizes, stockOf, totalStock } from './utils';
 
@@ -39,12 +39,12 @@ export const getCatalog = unstable_cache(() => loadProducts(), ['catalog-v1'], {
 
 export const getProduct = async (slug: string) => (await getCatalog()).find((p) => p.slug === slug) ?? null;
 
-export const getCollections = unstable_cache(
-  async (): Promise<Collection[]> => {
-    const rows = await db.query('SELECT * FROM collections ORDER BY sort');
-    return rows.map((r) => ({ slug: r.slug, nameAr: r.name_ar, nameEn: r.name_en, storyAr: r.story_ar, storyEn: r.story_en, image: r.image, sort: r.sort }));
+export const getCategories = unstable_cache(
+  async (): Promise<Category[]> => {
+    const rows = await db.query('SELECT * FROM categories ORDER BY sort, name_en');
+    return rows.map((r) => ({ slug: r.slug, nameAr: r.name_ar, nameEn: r.name_en, blurbAr: r.blurb_ar, blurbEn: r.blurb_en, image: r.image, sort: r.sort, inMenu: r.in_menu }));
   },
-  ['collections-v1'], { ...TTL, tags: ['catalog'] },
+  ['categories-v1'], { ...TTL, tags: ['catalog'] },
 );
 
 export const getShippingRates = unstable_cache(
@@ -79,7 +79,7 @@ export const getProductReviews = unstable_cache(
 
 // ---- Filtering ------------------------------------------------------------------------------
 export interface ShopQuery {
-  category?: string; collection?: string; size?: string[]; color?: string[];
+  category?: string; size?: string[]; color?: string[];
   fit?: string[]; min?: number; max?: number; flags?: string[]; sort?: string; q?: string;
 }
 export const parseList = (v: string | string[] | undefined) => (Array.isArray(v) ? v : v ? v.split(',') : []).filter(Boolean);
@@ -88,7 +88,6 @@ export function filterProducts(all: Product[], f: ShopQuery): Product[] {
   const q = f.q?.trim().toLowerCase();
   const out = all.filter((p) => {
     if (f.category && p.category !== f.category) return false;
-    if (f.collection && p.collection !== f.collection) return false;
     if (f.fit?.length && !f.fit.includes(p.fit ?? '')) return false;
     if (f.color?.length && !p.colors.some((c) => f.color!.includes(c.id))) return false;
     if (f.size?.length && !f.size.some((s) => p.colors.some((c) => stockOf(p, c.id, s) > 0))) return false;

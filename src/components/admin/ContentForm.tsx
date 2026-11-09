@@ -7,9 +7,8 @@ import { ImagePicker } from './ImagePicker';
 import { Card } from './ui';
 import { cx } from '@/lib/utils';
 
-const CATS = [['t-shirts', 'T-Shirts'], ['tanks', 'Tanks'], ['shorts', 'Shorts'], ['socks', 'Socks'], ['accessories', 'Accessories'], ['collections', 'Collections']] as const;
 
-export function ContentForm({ initial, collections, products }: { initial: SiteContent; collections: { slug: string; name: string }[]; products: { id: string; name: string }[] }) {
+export function ContentForm({ initial, products }: { initial: SiteContent; products: { id: string; name: string }[] }) {
   const [v, setV] = useState(initial);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [pending, start] = useTransition();
@@ -51,22 +50,12 @@ export function ContentForm({ initial, collections, products }: { initial: SiteC
         </div>
       </Card>
 
-      <Card title="Category tile photos">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {CATS.map(([k, label]) => (
-            <div key={k}><p className="label">{label}</p><ImagePicker max={1} label="Upload" images={v.categoryImages[k] ? [v.categoryImages[k]] : []} onChange={(a) => { if (a[0]) up({ categoryImages: { ...v.categoryImages, [k]: a[0] } }); }} /></div>
-          ))}
-        </div>
+      <Card title="Shop page banner">
+        <p className="mb-3 text-xs text-muted">Category tile photos are set per category, under Categories.</p>
+        <div className="max-w-[240px]"><ImagePicker max={1} label="Upload" images={v.shopImage ? [v.shopImage] : []} onChange={(a) => up({ shopImage: a[0] ?? '' })} /></div>
       </Card>
 
-      <Card title="Featured collection banner">
-        <div className="grid gap-4 sm:grid-cols-[1fr_200px]">
-          <div><label className="label" htmlFor="c-feat">Collection</label><select id="c-feat" className="field" value={v.featuredCollection} onChange={(e) => up({ featuredCollection: e.target.value })}>{collections.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}</select></div>
-          <div><p className="label">Banner photo</p><ImagePicker max={1} label="Upload" images={v.featuredCollectionImage ? [v.featuredCollectionImage] : []} onChange={(a) => up({ featuredCollectionImage: a[0] ?? '' })} /></div>
-        </div>
-      </Card>
-
-      <Card title="Featured products (Best Sellers section)">
+      <Card title="Product order on the homepage">
         <p className="mb-3 text-xs text-muted">Pick up to 8 to show first. Leave empty and the site shows your real best sellers automatically.</p>
         <div className="flex max-h-[280px] flex-wrap gap-1.5 overflow-y-auto">
           {products.map((p) => {

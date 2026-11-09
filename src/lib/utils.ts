@@ -70,10 +70,10 @@ export function jsonLd(data: unknown) {
   return JSON.stringify(data).replace(/</g, '\\u003c');
 }
 
-/** Which header link is the current page. Other categories and product pages count as Shop; T-Shirts has its own link. */
+/** Which header link is the current page. Product pages count as Shop; each category has its own link. */
 export function isNavActive(pathname: string, locale: string, section: string) {
   const p = pathname.replace(new RegExp(`^/${locale}(?=/|$)`), '') || '/';
   if (section === '/') return p === '/';
-  if (section === '/shop') return p === '/shop' || p.startsWith('/product/') || (p.startsWith('/shop/') && !p.startsWith('/shop/t-shirts'));
+  if (section === '/shop') return p === '/shop' || p.startsWith('/product/');
   return p === section || p.startsWith(`${section}/`);
 }

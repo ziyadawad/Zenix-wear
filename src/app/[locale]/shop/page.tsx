@@ -16,5 +16,5 @@ export default async function Shop({ params, searchParams }: { params: Promise<{
   const { locale } = await params;
   const t = getDictionary(locale);
   const content = await getContent();
-  return <ShopView locale={locale} sp={await searchParams} title={t.nav.shop} blurb={t.categoryBlurb.shop} image={content.categoryImages.collections} base={{}} />;
+  return <ShopView locale={locale} sp={await searchParams} title={t.nav.shop} blurb={t.categoryBlurb.shop} image={content.shopImage} base={{}} />;
 }

@@ -20,7 +20,7 @@ function BrandBackground({ eager }: { eager: boolean }) {
 }
 
 export function Hero({ slides }: { slides: HeroSlide[] }) {
-  const { t, locale, lp } = useI18n();
+  const { t, locale, lp, categories } = useI18n();
   const [i, setI] = useState(0);
   // Later slides load only after the page settles, to protect first paint.
   const [loadAll, setLoadAll] = useState(false);
@@ -76,8 +76,10 @@ export function Hero({ slides }: { slides: HeroSlide[] }) {
         <div key={active.id} className="w-full max-w-[640px]">
           <p className="slide-rise mx-auto mt-6 max-w-[46ch] text-sm leading-relaxed text-silver md:mt-8 md:text-base" style={{ '--d': '.2s' } as React.CSSProperties}>{locale === 'ar' ? active.subAr : active.subEn}</p>
           <div className="slide-rise mt-6 flex justify-center gap-2 md:mt-8 md:gap-3" style={{ '--d': '.35s' } as React.CSSProperties}>
-            <Link href={lp('/shop/t-shirts')} className="btn btn-primary min-w-0 flex-1 !px-2 md:flex-none md:!px-8 md:min-w-[220px]">{t.home.shopTshirts}</Link>
-            <Link href={lp('/new-drops')} className="btn btn-ghost min-w-0 flex-1 !px-2 md:flex-none md:!px-8 md:min-w-[190px]">{t.home.newDrop}</Link>
+            {/* One button per menu category (the two T-shirts), or Shop when there are none. */}
+            {(categories.length ? categories.slice(0, 2) : [{ slug: '', name: t.home.shopNow }]).map((c, i) => (
+              <Link key={c.slug} href={lp(c.slug ? `/shop/${c.slug}` : '/shop')} className={cx('btn min-w-0 flex-1 !px-2 md:flex-none md:!px-8 md:min-w-[210px]', i === 0 ? 'btn-primary' : 'btn-ghost')}>{c.name}</Link>
+            ))}
           </div>
         </div>
       </div>

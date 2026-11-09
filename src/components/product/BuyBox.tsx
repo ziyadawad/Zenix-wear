@@ -174,14 +174,13 @@ function NotifyMe({ colorId, size }: { colorId: string; size: string }) {
 const TABLES: Record<string, { cols: ('chest' | 'length' | 'shoulder' | 'waist' | 'inseam' | 'footLabel')[]; rows: Record<string, (number | string)[]> }> = {
   regular: { cols: ['chest', 'length', 'shoulder'], rows: { XS: [92, 66, 42], S: [98, 69, 44], M: [104, 71, 46], L: [110, 73, 48], XL: [116, 75, 50], XXL: [122, 77, 52], '3XL': [128, 79, 54] } },
   compression: { cols: ['chest', 'length', 'shoulder'], rows: { XS: [84, 62, 39], S: [90, 64, 41], M: [96, 66, 43], L: [102, 68, 45], XL: [108, 70, 47], XXL: [114, 72, 49], '3XL': [120, 74, 51] } },
-  shorts: { cols: ['waist', 'length', 'inseam'], rows: { XS: [66, 41, 11], S: [72, 43, 12], M: [78, 45, 13], L: [84, 47, 14], XL: [90, 49, 15], XXL: [96, 51, 16], '3XL': [102, 53, 17] } },
-  socks: { cols: ['footLabel'], rows: { S: ['36-39'], M: ['40-43'], L: ['44-47'] } },
+  sleeveless: { cols: ['chest', 'length'], rows: { XS: [92, 68], S: [98, 70], M: [104, 72], L: [110, 74], XL: [116, 76], XXL: [122, 78], '3XL': [128, 80] } },
 };
 
 function SizeGuide({ onClose }: { onClose: () => void }) {
   const { t, locale } = useI18n();
   const { product: p } = useProductState();
-  const key = p.category === 'shorts' ? 'shorts' : p.category === 'socks' ? 'socks' : (p.fit ?? 'regular');
+  const key = p.category === 'sleeveless' ? 'sleeveless' : (p.fit ?? 'regular');
   const table = TABLES[key] ?? TABLES.regular;
   const sizes = sizesOf(p).filter((s) => table.rows[s]);
   useEffect(() => {

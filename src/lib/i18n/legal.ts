@@ -25,13 +25,13 @@ export const LEGAL: Record<string, Record<Locale, LegalDoc>> = {
   },
   'exchange-policy': {
     en: doc('Exchange & Return Policy', 'You have 14 days from the day you receive your order to exchange or return it.', [
-      ['Conditions', 'The item must be unworn, unwashed and in its original condition, with all tags attached.', 'For hygiene reasons, socks and other intimate items can be exchanged only if unopened and in their original packaging.'],
+      ['Conditions', 'The item must be unworn, unwashed and in its original condition, with all tags attached.'],
       ['How to request an exchange', `Contact us within 14 days with your order number and the size or item you want. ${contactEn}`],
       ['Fees', 'If the item is faulty or we sent the wrong item, we cover all shipping. For a change of size or mind, the customer pays the shipping fee.'],
       ['Refunds', 'Once we receive and inspect a returned item, the refund is sent to your wallet or by the original payment method within 7 to 14 working days. Original shipping fees are not refundable unless the error was ours.'],
     ]),
     ar: doc('سياسة التبديل والاسترجاع', 'قدامك ١٤ يوم من يوم ما الأوردر يوصلك تبدّل أو ترجّع.', [
-      ['الشروط', 'لازم القطعة متكونش اتلبست ولا اتغسلت، وتكون زي ما هي وبكل التيكتات.', 'عشان النضافة، الشرابات وأي حاجة زيها مبتتبدلش غير لو لسه مقفولة في تغليفها.'],
+      ['الشروط', 'لازم القطعة متكونش اتلبست ولا اتغسلت، وتكون زي ما هي وبكل التيكتات.'],
       ['تطلب التبديل إزاي', `كلمنا في خلال ١٤ يوم برقم الأوردر والمقاس أو القطعة اللي عايزها. ${contactAr}`],
       ['المصاريف', 'لو فيه عيب في القطعة أو وصلك حاجة غلط، إحنا بنتحمل كل مصاريف الشحن. لو هتغيّر المقاس أو غيرت رأيك، مصاريف الشحن عليك.'],
       ['رجوع الفلوس', 'بعد ما القطعة توصلنا ونراجعها، بنرجعلك الفلوس على محفظتك أو بنفس طريقة الدفع في خلال ٧ لـ ١٤ يوم شغل. مصاريف الشحن الأصلية مبترجعش إلا لو الغلط مننا.'],

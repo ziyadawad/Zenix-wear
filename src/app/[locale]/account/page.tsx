@@ -40,7 +40,7 @@ export default async function AccountPage({ params }: { params: Promise<{ locale
       <section className="mt-10" aria-labelledby="acc-o">
         <h2 id="acc-o" className="eyebrow mb-5">{t.account.orders}</h2>
         {orders.length === 0 ? (
-          <div className="border border-line p-8 text-center"><p className="text-muted">{t.account.noOrders}</p><Link href={`/${locale}/shop/t-shirts`} className="btn btn-ghost mt-5">{t.home.shopTshirts}</Link></div>
+          <div className="border border-line p-8 text-center"><p className="text-muted">{t.account.noOrders}</p><Link href={`/${locale}/shop/t-shirts`} className="btn btn-ghost mt-5">{t.home.shopNow}</Link></div>
         ) : (
           <ul className="space-y-3">{orders.map((r) => <OrderCard key={r.id} order={toOrder(r)} />)}</ul>
         )}

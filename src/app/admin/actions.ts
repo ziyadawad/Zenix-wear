@@ -8,7 +8,7 @@ import { currentActor } from '@/lib/dashboard/guard';
 import { logActivity, logStock, syncOrderMoney } from '@/lib/dashboard/ledger';
 import { OrderError, setOrderStatus } from '@/lib/orders';
 import { saveImage, UploadError } from '@/lib/services';
-import { CATEGORIES, FITS, GENDERS, ORDER_STATUSES, SIZES, TAGS } from '@/lib/types';
+import { FITS, GENDERS, ORDER_STATUSES, SIZES, TAGS } from '@/lib/types';
 import { DEFAULT_CONTENT, DEFAULT_SETTINGS } from '@/lib/db/seed';
 import { slugify } from '@/lib/utils';
 import { CATEGORY_MOCKUP, isOwnPhoto, mockupType, mockupsFor } from '@/lib/db/images';
@@ -56,7 +56,7 @@ const productSchema = z.object({
   fabricAr: z.string().max(2000), fabricEn: z.string().max(2000), careAr: z.string().max(2000), careEn: z.string().max(2000), fitAr: z.string().max(1000), fitEn: z.string().max(1000),
   price: z.number().int().min(0).max(1000000), salePrice: z.number().int().min(0).max(1000000).nullable(),
   costPrice: z.number().int().min(0).max(1000000).nullable(),
-  category: z.enum(CATEGORIES), fit: z.enum(FITS).nullable(), gender: z.enum(GENDERS), collection: z.string().max(60).nullable(),
+  category: z.string().trim().min(1).max(60), fit: z.enum(FITS).nullable(), gender: z.enum(GENDERS),
   tags: z.array(z.enum(TAGS)), status: z.enum(['active', 'draft']), featured: z.boolean(),
   video: z.string().max(600).nullable(),
   sizes: z.array(z.enum(SIZES)).min(1),
@@ -76,6 +76,8 @@ export async function saveProduct(input: ProductInput): Promise<{ ok: boolean; e
   if (new Set(p.colors.map((c) => c.id)).size !== p.colors.length) return { ok: false, error: 'Two colours have the same name. Give each colour its own English name.' };
   const slug = slugify(p.slug || p.nameEn);
   if (!slug) return { ok: false, error: 'Add an English name so the product gets a clean URL.' };
+  const [cat] = await db.query('SELECT 1 FROM categories WHERE slug = $1', [p.category]);
+  if (!cat) return { ok: false, error: 'Choose a category (add one under Categories first).' };
   const id = p.id ?? newId();
   const dupe = await db.query('SELECT 1 FROM products WHERE slug = $1 AND id <> $2', [slug, id]);
   if (dupe.length) return { ok: false, error: `Another product already uses the URL "${slug}". Change the URL field.` };
@@ -86,7 +88,7 @@ export async function saveProduct(input: ProductInput): Promise<{ ok: boolean; e
     const own = images.filter(isOwnPhoto);
     return { id: cid, nameAr, nameEn, hex, images: own.length ? own : mockupsFor(mockType, cid, hex) };
   });
-  const collection = p.collection || null;
+  const collection = null; // Collections were removed; the column stays for older data.
 
   const actor = await currentActor();
   await db.tx(async (tx) => {
@@ -197,6 +199,49 @@ export async function saveShipping(fees: Record<string, number>): Promise<{ ok: 
   return { ok: true };
 }
 
+// ---- Categories -------------------------------------------------------------------------------
+const categorySchema = z.object({
+  originalSlug: z.string().max(60).nullable(),
+  slug: z.string().trim().max(60), nameAr: z.string().trim().min(1).max(80), nameEn: z.string().trim().min(1).max(80),
+  blurbAr: z.string().trim().max(240), blurbEn: z.string().trim().max(240),
+  image: z.union([z.literal(''), imageUrl]), sort: z.number().int().min(0).max(999), inMenu: z.boolean(),
+});
+export type CategoryInput = z.infer<typeof categorySchema>;
+
+/** Adds or edits a category. Renaming its URL moves its products with it. */
+export async function saveCategory(input: CategoryInput): Promise<{ ok: boolean; error?: string }> {
+  await requireAdmin();
+  const r = categorySchema.safeParse(input);
+  if (!r.success) return { ok: false, error: `Check "${r.error.issues[0].path.join(' > ')}".` };
+  const c = r.data;
+  const slug = slugify(c.slug || c.nameEn);
+  if (!slug) return { ok: false, error: 'Add an English name so the category gets a clean URL.' };
+  const [taken] = await db.query('SELECT 1 FROM categories WHERE slug = $1 AND slug IS DISTINCT FROM $2', [slug, c.originalSlug]);
+  if (taken) return { ok: false, error: `Another category already uses the URL "${slug}".` };
+  await db.tx(async (tx) => {
+    if (c.originalSlug && c.originalSlug !== slug) {
+      await tx.query('UPDATE categories SET slug = $1 WHERE slug = $2', [slug, c.originalSlug]);
+      await tx.query('UPDATE products SET category = $1 WHERE category = $2', [slug, c.originalSlug]);
+    }
+    await tx.query(
+      `INSERT INTO categories (slug,name_ar,name_en,blurb_ar,blurb_en,image,sort,in_menu) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+       ON CONFLICT (slug) DO UPDATE SET name_ar=$2,name_en=$3,blurb_ar=$4,blurb_en=$5,image=$6,sort=$7,in_menu=$8`,
+      [slug, c.nameAr, c.nameEn, c.blurbAr, c.blurbEn, c.image, c.sort, c.inMenu]);
+  });
+  refreshStorefront('catalog');
+  return { ok: true };
+}
+
+/** Only an empty category can be deleted, so no product is ever left without one. */
+export async function deleteCategory(slug: string): Promise<{ ok: boolean; error?: string }> {
+  await requireAdmin();
+  const [{ n }] = await db.query<{ n: number }>('SELECT count(*)::int AS n FROM products WHERE category = $1', [slug]);
+  if (n > 0) return { ok: false, error: `Move or delete its ${n} product(s) first.` };
+  await db.query('DELETE FROM categories WHERE slug = $1', [slug]);
+  refreshStorefront('catalog');
+  return { ok: true };
+}
+
 // ---- Content & settings -----------------------------------------------------------------------
 const localized = z.object({ ar: z.string().trim().max(200), en: z.string().trim().max(200) });
 const contentSchema = z.object({
@@ -205,11 +250,9 @@ const contentSchema = z.object({
     headlineAr: z.string().max(120), headlineEn: z.string().max(120), subAr: z.string().max(240), subEn: z.string().max(240),
   })).min(1).max(6),
   announcements: z.array(localized).max(8),
-  featuredCollection: z.string().max(60),
-  featuredCollectionImage: z.string().max(600),
+  shopImage: z.union([z.literal(''), imageUrl]),
   bestSellerIds: z.array(z.string().max(100)).max(12),
   community: z.array(imageUrl).max(6),
-  categoryImages: z.record(z.string().max(30), imageUrl),
 });
 export async function saveContent(input: unknown): Promise<{ ok: boolean; error?: string }> {
   await requireAdmin();

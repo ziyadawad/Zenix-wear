@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { getDictionary } from '@/lib/i18n/dictionaries';
-import { cardProps, getCatalog, getProduct, getProductReviews, getSettings } from '@/lib/catalog';
+import { cardProps, getCatalog, getCategories, getProduct, getProductReviews, getSettings } from '@/lib/catalog';
 import type { Locale, Product } from '@/lib/types';
 import { effectivePrice, formatMoney, jsonLd, pName, SITE_URL, totalStock } from '@/lib/utils';
 import { Gallery } from '@/components/product/Gallery';
@@ -29,18 +29,18 @@ export async function generateMetadata({ params }: P): Promise<Metadata> {
   };
 }
 
-/** Sensible styling links: tops pair with shorts, socks and accessories; everything else pairs with tees. */
+/** The other products in stock, from other categories first (e.g. the sleeveless tee on the short-sleeve page). */
 function completeTheLook(p: Product, all: Product[]) {
-  const wanted = p.category === 't-shirts' || p.category === 'tanks' ? ['shorts', 'socks', 'accessories'] : ['t-shirts', 'tanks', 'socks'];
-  const picks = wanted.flatMap((c) => all.filter((x) => x.category === c && x.id !== p.id && totalStock(x) > 0).sort((a, b) => b.soldCount - a.soldCount).slice(0, 2));
-  return picks.slice(0, 6);
+  return all.filter((x) => x.category !== p.category && totalStock(x) > 0).sort((a, b) => b.soldCount - a.soldCount).slice(0, 6);
 }
 
 export default async function ProductPage({ params }: P) {
   const { locale, slug } = await params;
   const t = getDictionary(locale);
-  const [p, catalog, settings] = await Promise.all([getProduct(slug), getCatalog(), getSettings()]);
-  if (!p) notFound();
+  const [p, catalog, settings, categories] = await Promise.all([getProduct(slug), getCatalog(), getSettings(), getCategories()]);
+  // Products that were removed (old links, shared posts) land on the shop instead of a 404.
+  if (!p) redirect(`/${locale}/shop`);
+  const cat = categories.find((c) => c.slug === p.category);
   const reviews = await getProductReviews(p.id);
   const realReviews = reviews.filter((r) => !r.isDemo);
   const name = pName(p, locale);
@@ -62,7 +62,7 @@ export default async function ProductPage({ params }: P) {
         '@context': 'https://schema.org', '@type': 'BreadcrumbList',
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: t.nav.shop, item: `${SITE_URL}/${locale}/shop` },
-          { '@type': 'ListItem', position: 2, name: t.categories[p.category], item: `${SITE_URL}/${locale}/shop/${p.category}` },
+          { '@type': 'ListItem', position: 2, name: cat ? (locale === 'ar' ? cat.nameAr : cat.nameEn) : t.nav.shop, item: `${SITE_URL}/${locale}/shop/${p.category}` },
           { '@type': 'ListItem', position: 3, name, item: url },
         ],
       }) }} />

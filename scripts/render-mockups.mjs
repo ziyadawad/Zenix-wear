@@ -11,14 +11,13 @@ const W = 1200, H = 1500;
 /** Fabric tones per colour id (slightly lifted for the darkest so they read on black). Keep in sync with src/lib/db/images.ts. */
 export const TONES = {
   black: '#2b2b2f', charcoal: '#3a3b3f', graphite: '#5d5f63', stone: '#9a978f', bone: '#dcd6c8', white: '#ececec',
-  olive: '#4d5439', navy: '#27304a', wine: '#5a1d28', silver: '#b4b6ba', sand: '#b39e7c',
+  olive: '#4d5439', navy: '#27304a', wine: '#5a1d28', silver: '#b4b6ba', sand: '#b39e7c', gray: '#85878d',
 };
 const LIGHT = new Set(['stone', 'bone', 'white', 'silver', 'sand']);
 const ALL = Object.keys(TONES);
-const TYPES = {
-  'tee-a': ALL, 'tee-b': ALL, tank: ALL, stringer: ALL, shorts: ALL, shorts2: ALL, socks: ALL, cap: ALL,
-  towel: ['black', 'charcoal', 'graphite', 'navy', 'olive', 'stone'], bag: ['black', 'charcoal', 'graphite', 'navy', 'olive', 'stone'],
-};
+// The store sells two products for now: the short-sleeve tee (tee-a) and the sleeveless tee (tank).
+// The other garment drawings below stay available: add a type here to render it again.
+const TYPES = { 'tee-a': ALL, tank: ALL };
 
 const shade = (hex, f) => {
   const n = parseInt(hex.slice(1), 16);
@@ -214,14 +213,12 @@ if (!only || only === 'scenes') {
   // Items in a centred row; `step` is the distance between items, sleeves may overlap slightly.
   const row = (types, colours, w, h, s, y, step = 440) => types.map((t, i) => ({ type: t, colour: colours[i], s, y, x: Math.round((w - ((types.length - 1) * step + 1200 * s)) / 2 + i * step) }));
   await scene('hero.webp', 2400, 1350, [
-    { type: 'tee-b', colour: 'graphite', x: 230, y: 250, s: 0.72 }, { type: 'tee-a', colour: 'navy', x: 1305, y: 250, s: 0.72 },
+    { type: 'tank', colour: 'gray', x: 230, y: 250, s: 0.72 }, { type: 'tee-a', colour: 'white', x: 1305, y: 250, s: 0.72 },
     { type: 'tee-a', colour: 'black', x: 660, y: 40, s: 0.9 },
   ]);
-  await scene('scene-tees.webp', 2400, 1100, row(['tee-a', 'tee-b', 'tee-a', 'tee-b', 'tee-a'], ['olive', 'bone', 'black', 'navy', 'wine'], 2400, 1100, 0.6, 90));
-  await scene('scene-all.webp', 2400, 1100, row(['cap', 'tee-a', 'shorts', 'tank', 'socks'], ['black', 'graphite', 'charcoal', 'bone', 'black'], 2400, 1100, 0.6, 110));
-  await scene('scene-zen.webp', 2000, 1500, [{ type: 'shorts2', colour: 'sand', x: 980, y: 300, s: 0.7 }, { type: 'tee-b', colour: 'olive', x: 120, y: 120, s: 0.85 }, { type: 'socks', colour: 'bone', x: 1480, y: 880, s: 0.4 }]);
-  await scene('scene-zenith.webp', 2000, 1500, [{ type: 'shorts', colour: 'charcoal', x: 1000, y: 330, s: 0.7 }, { type: 'tee-a', colour: 'black', x: 110, y: 120, s: 0.85 }, { type: 'cap', colour: 'black', x: 1160, y: 80, s: 0.4 }]);
-  await scene('scene-limited.webp', 2000, 1500, [{ type: 'tee-b', colour: 'navy', x: 860, y: 230, s: 0.72 }, { type: 'tee-b', colour: 'wine', x: 220, y: 120, s: 0.88 }]);
+  await scene('scene-tees.webp', 2400, 1100, row(['tee-a', 'tee-a', 'tee-a'], ['gray', 'black', 'white'], 2400, 1100, 0.66, 70, 620));
+  await scene('scene-sleeveless.webp', 2400, 1100, row(['tank', 'tank', 'tank'], ['white', 'black', 'gray'], 2400, 1100, 0.66, 70, 620));
+  await scene('scene-all.webp', 2400, 1100, row(['tank', 'tee-a', 'tank', 'tee-a'], ['white', 'black', 'gray', 'white'], 2400, 1100, 0.6, 110, 500));
   console.log('✓ scenes');
 }
 console.log(`Rendered ${n} product mockups.`);

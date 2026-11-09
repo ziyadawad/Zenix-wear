@@ -1,6 +1,6 @@
 /** Idempotent schema. Runs automatically on the embedded DB, and via `npm run db:setup` in production. */
 const TABLES = [
-  'collections', 'products', 'product_variants', 'customers', 'addresses', 'wishlist', 'orders',
+  'collections', 'categories', 'products', 'product_variants', 'customers', 'addresses', 'wishlist', 'orders',
   'promo_codes', 'shipping_rates', 'reviews', 'settings', 'newsletter', 'stock_alerts', 'messages', 'rate_limits',
 ];
 
@@ -10,6 +10,14 @@ CREATE TABLE IF NOT EXISTS collections (
   name_ar text NOT NULL, name_en text NOT NULL,
   story_ar text NOT NULL DEFAULT '', story_en text NOT NULL DEFAULT '',
   image text NOT NULL DEFAULT '', sort int NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS categories (
+  slug text PRIMARY KEY,
+  name_ar text NOT NULL, name_en text NOT NULL,
+  blurb_ar text NOT NULL DEFAULT '', blurb_en text NOT NULL DEFAULT '',
+  image text NOT NULL DEFAULT '', sort int NOT NULL DEFAULT 0,
+  in_menu boolean NOT NULL DEFAULT true
 );
 
 CREATE TABLE IF NOT EXISTS products (

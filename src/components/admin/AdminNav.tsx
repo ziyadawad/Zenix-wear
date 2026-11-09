@@ -3,7 +3,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BarChart3, ExternalLink, Inbox, LayoutTemplate, LogOut, Menu, Package, Settings, ShoppingCart, Star, TicketPercent, Truck, Users, X } from 'lucide-react';
+import { BarChart3, ExternalLink, FolderTree, Inbox, LayoutTemplate, LogOut, Menu, Package, Settings, ShoppingCart, Star, TicketPercent, Truck, Users, X } from 'lucide-react';
 import { ownerLogout } from '@/app/dashboard/actions';
 import { cx } from '@/lib/utils';
 
@@ -11,6 +11,7 @@ const ALL = [
   { href: '/dashboard', label: 'Dashboard', icon: BarChart3 },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
   { href: '/admin/products', label: 'Products', icon: Package },
+  { href: '/admin/categories', label: 'Categories', icon: FolderTree },
   { href: '/admin/customers', label: 'Customers', icon: Users },
   { href: '/admin/promos', label: 'Promo codes', icon: TicketPercent },
   { href: '/admin/shipping', label: 'Shipping fees', icon: Truck },
@@ -44,7 +45,7 @@ export function AdminNav() {
       </aside>
       {/* Phone: the four daily tasks on a bottom bar, the rest under More */}
       <nav aria-label="Admin" className="no-print fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-line bg-black pb-[env(safe-area-inset-bottom)] lg:hidden">
-        {ALL.slice(0, 3).concat(ALL[6]).map((h) => (
+        {ALL.slice(0, 3).concat(ALL[7]).map((h) => (
           <Link key={h.href} href={h.href} aria-current={active(h.href) ? 'page' : undefined} className={cx('flex min-h-[60px] flex-col items-center justify-center gap-1 text-[10px]', active(h.href) ? 'text-white' : 'text-muted')}>
             <h.icon size={20} strokeWidth={1.25} />{h.label.split(' ')[0]}
           </Link>

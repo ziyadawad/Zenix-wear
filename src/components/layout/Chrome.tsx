@@ -37,7 +37,7 @@ export function BottomNav() {
   const under = (...sections: string[]) => sections.some((s) => p === s || p.startsWith(`${s}/`));
   const active = {
     home: p === '/',
-    shop: under('/shop', '/product', '/new-drops', '/collections'),
+    shop: under('/shop', '/product'),
     search: under('/search'),
     wishlist: under('/wishlist'),
     cart: under('/cart', '/checkout'),

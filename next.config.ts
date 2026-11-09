@@ -21,6 +21,18 @@ const config: NextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 30,
   },
   experimental: { serverActions: { bodySizeLimit: '6mb' } },
+  // Pages removed when the store went down to two products: send old links to the shop, never a 404.
+  async redirects() {
+    const L = ':locale(ar|en)';
+    return [
+      { source: `/${L}/collections`, destination: '/:locale/shop', permanent: true },
+      { source: `/${L}/collections/:slug*`, destination: '/:locale/shop', permanent: true },
+      { source: `/${L}/new-drops`, destination: '/:locale/shop', permanent: true },
+      { source: `/${L}/shop/tanks`, destination: '/:locale/shop/sleeveless', permanent: true },
+      { source: `/${L}/shop/:cat(shorts|socks|accessories)`, destination: '/:locale/shop', permanent: true },
+      { source: '/:p(collections|new-drops)/:rest*', destination: '/ar/shop', permanent: true },
+    ];
+  },
   async headers() {
     return [
       { source: '/:path*', headers: securityHeaders },

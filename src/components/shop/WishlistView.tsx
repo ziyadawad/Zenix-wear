@@ -25,7 +25,7 @@ export function WishlistView() {
     return (
       <div className="border border-line px-6 py-24 text-center">
         <p className="text-muted">{t.wishlist.empty}</p>
-        <Link href={lp('/shop/t-shirts')} className="btn btn-ghost mt-6">{t.home.shopTshirts}</Link>
+        <Link href={lp('/shop')} className="btn btn-ghost mt-6">{t.home.shopNow}</Link>
       </div>
     );
   }

@@ -5,8 +5,9 @@ import type { Dictionary } from '@/lib/i18n/dictionaries';
 import type { Locale, SiteSettings } from '@/lib/types';
 import { CONTACT } from '@/lib/utils';
 import { SocialLinks } from './SocialLinks';
+import type { MenuCategory } from './I18nProvider';
 
-export function Footer({ t, locale, settings }: { t: Dictionary; locale: Locale; settings: SiteSettings }) {
+export function Footer({ t, locale, settings, categories }: { t: Dictionary; locale: Locale; settings: SiteSettings; categories: MenuCategory[] }) {
   const lp = (p: string) => `/${locale}${p}`;
   const col = 'inline-block py-1 text-sm text-muted transition-colors hover:text-white';
   return (
@@ -20,12 +21,8 @@ export function Footer({ t, locale, settings }: { t: Dictionary; locale: Locale;
           <div>
             <h2 className="eyebrow mb-5">{t.footer.shop}</h2>
             <ul className="space-y-1.5">
-              <li><Link className={col} href={lp('/shop/t-shirts')}>{t.categories['t-shirts']}</Link></li>
-              <li><Link className={col} href={lp('/shop/tanks')}>{t.categories.tanks}</Link></li>
-              <li><Link className={col} href={lp('/shop/shorts')}>{t.categories.shorts}</Link></li>
-              <li><Link className={col} href={lp('/shop/socks')}>{t.categories.socks}</Link></li>
-              <li><Link className={col} href={lp('/shop/accessories')}>{t.categories.accessories}</Link></li>
-              <li><Link className={col} href={lp('/collections')}>{t.nav.collections}</Link></li>
+              <li><Link className={col} href={lp('/shop')}>{t.categoryBlurb.all}</Link></li>
+              {categories.map((c) => <li key={c.slug}><Link className={col} href={lp(`/shop/${c.slug}`)}>{c.name}</Link></li>)}
             </ul>
           </div>
           <div>

@@ -16,7 +16,7 @@ export function languageHref(pathname: string, locale: string) {
 }
 
 export function Header() {
-  const { t, locale, lp } = useI18n();
+  const { t, locale, lp, categories } = useI18n();
   const pathname = usePathname();
   const cart = useCart();
   const wish = useWishlist();
@@ -34,13 +34,11 @@ export function Header() {
   }, []);
   useEffect(() => { setQs(window.location.search); menuUi.set(false); }, [pathname]);
 
+  // Home / Shop / one link per menu category (Admin → Categories) / Contact. The dashboard link sits at the end.
   const links = ([
     ['/', t.nav.home],
     ['/shop', t.nav.shop],
-    ['/shop/t-shirts', t.nav.tshirts],
-    ['/new-drops', t.nav.newDrops],
-    ['/collections', t.nav.collections],
-    ['/about', t.nav.about],
+    ...categories.map((c) => [`/shop/${c.slug}`, c.name] as const),
     ['/contact', t.nav.contact],
   ] as const).map(([section, label]) => ({ href: lp(section), label, active: isNavActive(pathname, locale, section) }));
 

@@ -1,6 +1,7 @@
 import type { Queryable } from './index';
-import { CATEGORY_MOCKUP, SCENES, cleanImage, isOwnPhoto, mockupsFor, typeFromOldImage } from './images';
+import { CATEGORY_MOCKUP, DEFAULT_COMMUNITY, SCENES, cleanImage, isOwnPhoto, mockupsFor, typeFromOldImage } from './images';
 import LEGACY_AR from './legacy-ar.json';
+import { insertStarterCatalogue } from './seed';
 
 /**
  * Ordered, run-once database changes. Each runs inside a transaction and is recorded in
@@ -9,15 +10,9 @@ import LEGACY_AR from './legacy-ar.json';
 interface Migration { id: string; up: (q: Queryable) => Promise<void> }
 
 /** Homepage defaults: every tile, banner and gallery image is a mockup. */
-export const DEFAULT_CATEGORY_IMAGES: Record<string, string> = {
-  't-shirts': SCENES.tees, tanks: mockupsFor('tank', 'black')[0], shorts: mockupsFor('shorts', 'black')[0],
-  socks: mockupsFor('socks', 'black')[0], accessories: mockupsFor('cap', 'black')[0], collections: SCENES.all,
-};
-export const DEFAULT_COMMUNITY = [
-  mockupsFor('tee-a', 'bone')[0], mockupsFor('tee-b', 'navy')[0], mockupsFor('cap', 'olive')[0],
-  mockupsFor('shorts2', 'olive')[0], mockupsFor('tank', 'charcoal')[0], mockupsFor('socks', 'bone')[0],
-];
-const COLLECTION_SCENES: Record<string, string> = { zen: SCENES.zen, zenith: SCENES.zenith, 'limited-drop': SCENES.limited };
+/** Used by the older migrations below. Category images now live on each category (Admin → Categories). */
+const DEFAULT_CATEGORY_IMAGES: Record<string, string> = { 't-shirts': SCENES.tees, sleeveless: SCENES.sleeveless, collections: SCENES.all };
+const COLLECTION_SCENES: Record<string, string> = {};
 
 /**
  * No photos of people anywhere: every image shipped with the site becomes a product mockup in the product's
@@ -55,7 +50,7 @@ async function useMockups(q: Queryable) {
       ...v,
       // Slides without the owner's own photo become brand slides: the hero mockup, the logo and the text.
       hero: (v.hero ?? []).map((s) => (s.image && isOwnPhoto(s.image) ? s : { ...s, kind: 'brand', image: '' })),
-      featuredCollectionImage: keep(v.featuredCollectionImage) ? v.featuredCollectionImage : SCENES.zenith,
+      featuredCollectionImage: keep(v.featuredCollectionImage) ? v.featuredCollectionImage : SCENES.all,
       community: (v.community ?? []).filter(keep),
       categoryImages: Object.fromEntries(Object.entries({ ...DEFAULT_CATEGORY_IMAGES, ...(v.categoryImages ?? {}) }).map(([k, src]) => [k, keep(src) ? src : DEFAULT_CATEGORY_IMAGES[k] ?? SCENES.all])),
     };
@@ -141,6 +136,40 @@ const MIGRATIONS: Migration[] = [
         const map = new Map(pairs);
         const walk = (v: unknown): unknown => (typeof v === 'string' ? map.get(v) ?? v : Array.isArray(v) ? v.map(walk) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, walk(x)])) : v);
         await q.query(`UPDATE settings SET value = $1::jsonb WHERE key = 'content'`, [JSON.stringify(walk(row.value))]);
+      }
+    },
+  },
+  {
+    // The store sells two products for now: the short-sleeve tee and the sleeveless tee. Everything else
+    // (other products and categories, collections, their demo reviews) is removed. Past orders keep their
+    // own copy of each item's name, price and image, so order history stays complete.
+    id: '2026-11-09-two-products',
+    up: async (q) => {
+      await q.query(`
+        CREATE TABLE IF NOT EXISTS categories (
+          slug text PRIMARY KEY, name_ar text NOT NULL, name_en text NOT NULL,
+          blurb_ar text NOT NULL DEFAULT '', blurb_en text NOT NULL DEFAULT '',
+          image text NOT NULL DEFAULT '', sort int NOT NULL DEFAULT 0, in_menu boolean NOT NULL DEFAULT true
+        )`);
+      await q.query('ALTER TABLE categories ENABLE ROW LEVEL SECURITY');
+      await q.query(`DELETE FROM products WHERE id NOT IN ('regular-tee', 'sleeveless-tee')`); // variants, reviews, wishlist and alerts go with them
+      await q.query(`DELETE FROM categories WHERE slug NOT IN ('t-shirts', 'sleeveless')`);
+      await q.query('UPDATE products SET collection = NULL');
+      await q.query('DELETE FROM collections');
+      await q.query(`DELETE FROM reviews WHERE product_id IS NULL AND is_demo`);
+      await insertStarterCatalogue(q);
+      const [row] = await q.query<{ value: Record<string, unknown> }>(`SELECT value FROM settings WHERE key = 'content'`);
+      if (row) {
+        const { featuredCollection: _f, featuredCollectionImage: _fi, categoryImages: _c, ...v } = row.value as Record<string, unknown>;
+        void _f; void _fi; void _c;
+        const own = ((v.community as string[] | undefined) ?? []).filter(isOwnPhoto);
+        const next = {
+          ...v,
+          shopImage: typeof v.shopImage === 'string' && isOwnPhoto(v.shopImage) ? v.shopImage : SCENES.all,
+          bestSellerIds: ((v.bestSellerIds as string[] | undefined) ?? []).filter((id) => id === 'regular-tee' || id === 'sleeveless-tee'),
+          community: [...own, ...DEFAULT_COMMUNITY].slice(0, 6),
+        };
+        await q.query(`UPDATE settings SET value = $1::jsonb WHERE key = 'content'`, [JSON.stringify(next)]);
       }
     },
   },

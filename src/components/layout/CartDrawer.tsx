@@ -88,7 +88,7 @@ export function CartDrawer() {
           <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 text-center">
             <ShoppingBag size={36} strokeWidth={1} className="text-muted" />
             <p className="text-muted">{t.cart.empty}</p>
-            <Link href={lp('/shop/t-shirts')} className="btn btn-ghost" onClick={close}>{t.home.shopTshirts}</Link>
+            <Link href={lp('/shop')} className="btn btn-ghost" onClick={close}>{t.home.shopNow}</Link>
           </div>
         ) : (
           <>

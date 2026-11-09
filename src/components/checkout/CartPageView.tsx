@@ -35,7 +35,7 @@ export function CartPageView() {
       <div className="container-zx flex min-h-[60vh] flex-col items-center justify-center py-20 text-center">
         <h1 className="display text-[clamp(1.8rem,4vw,3rem)]">{t.cart.title}</h1>
         <p className="mt-4 text-muted">{t.cart.empty}</p>
-        <Link href={lp('/shop/t-shirts')} className="btn btn-primary mt-8">{t.home.shopTshirts}</Link>
+        <Link href={lp('/shop')} className="btn btn-primary mt-8">{t.home.shopNow}</Link>
       </div>
     );
   }

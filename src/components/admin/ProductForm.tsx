@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Plus, Trash2 } from 'lucide-react';
 import { ImagePicker } from './ImagePicker';
 import { saveProduct, type ProductInput } from '@/app/admin/actions';
-import { CATEGORIES, FITS, SIZES, TAGS, type Collection, type Product } from '@/lib/types';
+import { FITS, SIZES, TAGS, type Category, type Product } from '@/lib/types';
 import { cx, slugify } from '@/lib/utils';
 
 type ColorDraft = ProductInput['colors'][number];
@@ -15,14 +15,14 @@ function fromProduct(p: Product | null): ProductInput {
   if (!p) {
     return {
       id: null, slug: '', sku: '', nameAr: '', nameEn: '', descAr: '', descEn: '', fabricAr: '', fabricEn: '', careAr: '', careEn: '', fitAr: '', fitEn: '',
-      price: 0, salePrice: null, costPrice: null, category: 't-shirts', fit: 'regular', gender: 'men', collection: null, tags: [], status: 'active', featured: false, video: null,
+      price: 0, salePrice: null, costPrice: null, category: 't-shirts', fit: 'regular', gender: 'men', tags: [], status: 'active', featured: false, video: null,
       sizes: ['S', 'M', 'L', 'XL', 'XXL'], colors: [blankColor()],
     };
   }
   const order = SIZES as readonly string[];
   return {
     id: p.id, slug: p.slug, sku: p.sku, nameAr: p.nameAr, nameEn: p.nameEn, descAr: p.descAr, descEn: p.descEn, fabricAr: p.fabricAr, fabricEn: p.fabricEn, careAr: p.careAr, careEn: p.careEn, fitAr: p.fitAr, fitEn: p.fitEn,
-    price: p.price, salePrice: p.salePrice, costPrice: p.costPrice ?? null, category: p.category, fit: p.fit as ProductInput['fit'], gender: p.gender as ProductInput['gender'], collection: p.collection, tags: p.tags, status: p.status, featured: p.featured, video: p.video,
+    price: p.price, salePrice: p.salePrice, costPrice: p.costPrice ?? null, category: p.category, fit: p.fit as ProductInput['fit'], gender: p.gender as ProductInput['gender'], tags: p.tags, status: p.status, featured: p.featured, video: p.video,
     sizes: [...new Set(p.variants.map((v) => v.size))].sort((a, b) => order.indexOf(a) - order.indexOf(b)) as ProductInput['sizes'],
     colors: p.colors.map((c) => ({ ...c, stock: Object.fromEntries(p.variants.filter((v) => v.colorId === c.id).map((v) => [v.size, v.stock])) })),
   };
@@ -32,7 +32,7 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
   <section className="space-y-4 border border-line bg-surface p-4 md:p-5"><h2 className="eyebrow">{title}</h2>{children}</section>
 );
 
-export function ProductForm({ product, collections }: { product: Product | null; collections: Collection[] }) {
+export function ProductForm({ product, categories }: { product: Product | null; categories: Category[] }) {
   const router = useRouter();
   const [v, setV] = useState<ProductInput>(() => fromProduct(product));
   const [error, setError] = useState<string | null>(null);
@@ -123,9 +123,8 @@ export function ProductForm({ product, collections }: { product: Product | null;
         </Section>
         <Section title="Organise">
           <div><label className="label" htmlFor="p-status">Visibility</label><select id="p-status" className="field" value={v.status} onChange={(e) => up('status', e.target.value as ProductInput['status'])}><option value="active">Live on the site</option><option value="draft">Draft (hidden)</option></select></div>
-          <div><label className="label" htmlFor="p-cat">Category</label><select id="p-cat" className="field capitalize" value={v.category} onChange={(e) => up('category', e.target.value as ProductInput['category'])}>{CATEGORIES.map((c) => <option key={c} value={c}>{c.replace('-', ' ')}</option>)}</select></div>
-          {v.category === 't-shirts' && <div><label className="label" htmlFor="p-fit">Fit</label><select id="p-fit" className="field capitalize" value={v.fit ?? ''} onChange={(e) => up('fit', (e.target.value || null) as ProductInput['fit'])}><option value="">None</option>{FITS.map((f) => <option key={f}>{f}</option>)}</select></div>}
-          <div><label className="label" htmlFor="p-col">Collection</label><select id="p-col" className="field" value={v.collection ?? ''} onChange={(e) => up('collection', e.target.value || null)}><option value="">None</option>{collections.map((c) => <option key={c.slug} value={c.slug}>{c.nameEn}</option>)}</select></div>
+          <div><label className="label" htmlFor="p-cat">Category</label><select id="p-cat" className="field capitalize" value={v.category} onChange={(e) => up('category', e.target.value as ProductInput['category'])}>{categories.map((c) => <option key={c.slug} value={c.slug}>{c.nameEn} · {c.nameAr}</option>)}</select><a href="/admin/categories" className="mt-1 inline-block text-xs text-muted underline">Add a category</a></div>
+          {<div><label className="label" htmlFor="p-fit">Fit</label><select id="p-fit" className="field capitalize" value={v.fit ?? ''} onChange={(e) => up('fit', (e.target.value || null) as ProductInput['fit'])}><option value="">None</option>{FITS.map((f) => <option key={f}>{f}</option>)}</select></div>}
           <fieldset>
             <legend className="label">Tags</legend>
             <div className="flex flex-wrap gap-1.5">

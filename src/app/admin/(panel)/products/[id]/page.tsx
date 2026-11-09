@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { requireAdmin } from '@/lib/auth';
-import { getCollections, loadProducts } from '@/lib/catalog';
+import { getCategories, loadProducts } from '@/lib/catalog';
 import { db } from '@/lib/db';
 import { PageHead } from '@/components/admin/ui';
 import { ProductForm } from '@/components/admin/ProductForm';
@@ -16,7 +16,7 @@ export default async function EditProduct({ params }: { params: Promise<{ id: st
   return (
     <>
       <PageHead title={p.nameEn} action={<DeleteProductButton id={p.id} />} />
-      <ProductForm product={{ ...p, costPrice: cost_price }} collections={await getCollections()} />
+      <ProductForm product={{ ...p, costPrice: cost_price }} categories={await getCategories()} />
     </>
   );
 }

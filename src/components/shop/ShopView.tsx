@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { cardProps, facets, filterProducts, getCatalog, parseList, type ShopQuery } from '@/lib/catalog';
+import { cardProps, facets, filterProducts, getCatalog, getCategories, parseList, type ShopQuery } from '@/lib/catalog';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { FITS, type Locale } from '@/lib/types';
 import { FilterSheet, FilterSidebar, SortSelect } from './Filters';
@@ -21,7 +21,7 @@ export async function ShopView({ locale, sp, title, blurb, image, base, showSubn
   locale: Locale; sp: SearchParams; title: string; blurb?: string; image?: string; base: ShopQuery; showSubnav?: boolean;
 }) {
   const t = getDictionary(locale);
-  const all = await getCatalog();
+  const [all, categories] = await Promise.all([getCatalog(), getCategories()]);
   const scope = filterProducts(all, base);
   const list = filterProducts(all, { ...base, ...queryFromParams(sp), flags: [...(base.flags ?? []), ...parseList(sp.flags)] });
   const f = facets(scope);
@@ -40,7 +40,7 @@ export async function ShopView({ locale, sp, title, blurb, image, base, showSubn
       {showSubnav && (
         <nav aria-label={t.nav.shop} className="border-b border-line">
           <ul className="container-zx flex gap-6 overflow-x-auto whitespace-nowrap no-scrollbar">
-            {[{ h: '/shop', l: locale === 'ar' ? 'الكل' : 'All' }, ...(['t-shirts', 'tanks', 'shorts', 'socks', 'accessories'] as const).map((c) => ({ h: `/shop/${c}`, l: t.categories[c] }))].map((x) => {
+            {[{ h: '/shop', l: t.categoryBlurb.all }, ...categories.filter((c) => c.inMenu).map((c) => ({ h: `/shop/${c.slug}`, l: locale === 'ar' ? c.nameAr : c.nameEn }))].map((x) => {
               const active = base.category ? x.h === `/shop/${base.category}` : x.h === '/shop';
               return (
                 <li key={x.h}><Link href={lp(x.h)} aria-current={active ? 'page' : undefined} className={`block min-w-8 border-b py-4 text-center text-[13px] ${active ? 'border-white' : 'border-transparent text-muted hover:text-white'}`}>{x.l}</Link></li>
