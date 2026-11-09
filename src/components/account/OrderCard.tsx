@@ -4,6 +4,7 @@ import { useI18n } from '../layout/I18nProvider';
 import { OrderTimeline } from './TrackForm';
 import type { Order } from '@/lib/types';
 import { formatDate, formatMoney } from '@/lib/utils';
+import { displayImage } from '@/lib/db/images';
 
 export function OrderCard({ order: o }: { order: Order }) {
   const { t, locale } = useI18n();
@@ -15,7 +16,7 @@ export function OrderCard({ order: o }: { order: Order }) {
       </div>
       <div className="mt-6"><OrderTimeline status={o.status} history={o.history} /></div>
       <div className="mt-5 flex gap-2 overflow-x-auto no-scrollbar">
-        {o.items.map((i, idx) => <div key={idx} className="relative h-16 w-[52px] flex-none bg-raised"><Image src={i.image} alt={locale === 'ar' ? i.nameAr : i.nameEn} fill sizes="52px" quality={70} className="object-cover" /></div>)}
+        {o.items.map((i, idx) => <div key={idx} className="relative h-16 w-[52px] flex-none bg-raised"><Image src={displayImage(i.image)} alt={locale === 'ar' ? i.nameAr : i.nameEn} fill sizes="52px" quality={70} className="object-cover" /></div>)}
       </div>
     </li>
   );

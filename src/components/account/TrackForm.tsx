@@ -6,6 +6,7 @@ import { Check, X } from 'lucide-react';
 import { useI18n } from '../layout/I18nProvider';
 import { trackOrder, type TrackView } from '@/app/actions/shop';
 import { cx, formatDate, formatMoney, toLatinDigits } from '@/lib/utils';
+import { displayImage } from '@/lib/db/images';
 
 const STEPS = ['pending', 'confirmed', 'shipped', 'delivered'] as const;
 
@@ -58,7 +59,7 @@ export function TrackForm() {
           <ul className="mt-8 space-y-3 border-t border-line pt-6">
             {order.items.map((i, idx) => (
               <li key={idx} className="flex items-center gap-3 text-sm">
-                <div className="relative h-16 w-[52px] flex-none bg-surface"><Image src={i.image} alt="" fill sizes="52px" quality={70} className="object-cover" /></div>
+                <div className="relative h-16 w-[52px] flex-none bg-surface"><Image src={displayImage(i.image)} alt="" fill sizes="52px" quality={70} className="object-cover" /></div>
                 <span className="min-w-0 flex-1">{locale === 'ar' ? i.nameAr : i.nameEn}<span className="block text-xs text-muted">{locale === 'ar' ? i.colorAr : i.colorEn}{i.size !== 'ONE' ? ` / ${i.size}` : ''} × {i.qty}</span></span>
               </li>
             ))}

@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { useI18n, fill } from '../layout/I18nProvider';
 import { CarouselShell } from '../product/CarouselShell';
 import type { Review } from '@/lib/types';
+import { displayImage } from '@/lib/db/images';
 
 export function Stars({ value, size = 13 }: { value: number; size?: number }) {
   const { t } = useI18n();
@@ -24,7 +25,7 @@ export function ReviewsSlider({ reviews }: { reviews: Review[] }) {
     <CarouselShell ariaLabel={t.home.reviews}>
       {reviews.map((r) => (
         <figure key={r.id} className="flex w-[82vw] max-w-[440px] flex-col border border-line bg-surface sm:w-[46vw] lg:w-[31vw]">
-          {r.image && <div className="relative aspect-[5/4] overflow-hidden bg-raised"><Image src={r.image} alt="" fill loading="lazy" sizes="(min-width:1024px) 31vw, 82vw" quality={70} className="object-cover object-top" /></div>}
+          {r.image && <div className="relative aspect-[5/4] overflow-hidden bg-raised"><Image src={displayImage(r.image)} alt="" fill loading="lazy" sizes="(min-width:1024px) 31vw, 82vw" quality={70} className="object-cover object-top" /></div>}
           <div className="flex flex-1 flex-col p-5 md:p-7">
             <Stars value={r.rating} />
             <blockquote className="mt-4 flex-1 text-sm leading-[1.9] text-[#d8d8d8]">{r.body}</blockquote>

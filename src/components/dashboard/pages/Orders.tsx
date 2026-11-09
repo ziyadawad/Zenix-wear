@@ -6,6 +6,7 @@ import { DASHBOARD_CONFIG as C } from '../../../../config/dashboard.config';
 import { act, useDetail, usePage } from '../data';
 import { useShell } from '../App';
 import { Big, Card, DataList, Offline, PAY, Row, StatusPill, Waiting, Warn, egp, num, pct, statusOf, toneText, when, type Tone } from '../ui';
+import { displayImage } from '@/lib/db/images';
 
 type OrderRow = { id: string; number: string; name: string; phone: string; governorate: string; total: number; payment_method: string; payment_status: string; status: string; created_at: string };
 type Late = { id: string; number: string; name: string; phone: string; status: string; total: number; governorate: string; since: string; days: number };
@@ -148,7 +149,7 @@ export function OrderPanel({ id }: { id: string }) {
         <ul className="divide-y divide-line border border-line">
           {o.items.map((i, x) => (
             <li key={x} className="flex items-center gap-3 p-2.5 text-sm">
-              <span className="relative h-14 w-11 flex-none bg-raised">{i.image && <Image src={i.image} alt="" fill sizes="44px" className="object-cover" />}</span>
+              <span className="relative h-14 w-11 flex-none bg-raised">{<Image src={displayImage(i.image)} alt="" fill sizes="44px" className="object-cover" />}</span>
               <span className="min-w-0 flex-1"><span className="block truncate">{i.nameAr}</span><span className="block text-[12px] text-muted">مقاس {i.size} · {i.colorAr} · {num(i.qty)} قطعة</span></span>
               <span className="flex-none tabular-nums">{egp(i.price * i.qty)}</span>
             </li>

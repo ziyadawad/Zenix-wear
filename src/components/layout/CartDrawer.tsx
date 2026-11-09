@@ -7,6 +7,7 @@ import { Minus, Plus, ShoppingBag, X } from 'lucide-react';
 import { fill, useI18n } from './I18nProvider';
 import { cartCount, cartSubtotal, cartUi, changeSize, lineId, removeLine, setQty, track, useCart, type CartItem } from '@/lib/client/store';
 import { formatMoney, pName } from '@/lib/utils';
+import { displayImage } from '@/lib/db/images';
 
 export function FreeShippingBar({ subtotal }: { subtotal: number }) {
   const { t, locale, settings } = useI18n();
@@ -28,7 +29,7 @@ export function CartLine({ item, onNavigate }: { item: CartItem; onNavigate?: ()
   return (
     <li className="flex gap-4 border-b border-line py-5">
       <Link href={lp(`/product/${item.slug}`)} onClick={onNavigate} className="relative h-[120px] w-[96px] flex-none overflow-hidden bg-surface">
-        <Image src={item.image} alt={pName(item, locale)} fill sizes="96px" quality={70} className="object-cover" />
+        <Image src={displayImage(item.image)} alt={pName(item, locale)} fill sizes="96px" quality={70} className="object-cover" />
       </Link>
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-start justify-between gap-3">

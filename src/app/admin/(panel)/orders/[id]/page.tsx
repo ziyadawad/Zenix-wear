@@ -9,6 +9,7 @@ import { getShippingRates } from '@/lib/catalog';
 import { customerWhatsapp } from '@/lib/utils';
 import { Card, PageHead, StatusBadge, egp, when } from '@/components/admin/ui';
 import { OrderStatusControl, PaymentToggle } from '@/components/admin/SmallActions';
+import { displayImage } from '@/lib/db/images';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,7 +47,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
             <ul className="divide-y divide-line">
               {o.items.map((i, idx) => (
                 <li key={idx} className="flex items-center gap-3 py-2.5 text-sm">
-                  <span className="relative h-16 w-[52px] flex-none bg-raised"><Image src={i.image} alt="" fill sizes="52px" quality={70} className="object-cover" /></span>
+                  <span className="relative h-16 w-[52px] flex-none bg-raised"><Image src={displayImage(i.image)} alt="" fill sizes="52px" quality={70} className="object-cover" /></span>
                   <span className="min-w-0 flex-1">{i.nameEn}<span className="block text-xs text-muted">{i.colorEn} / {i.size} / {i.sku}</span></span>
                   <span className="flex-none text-end">{egp(i.price * i.qty)}<span className="block text-xs text-muted">{i.qty} × {egp(i.price)}</span></span>
                 </li>

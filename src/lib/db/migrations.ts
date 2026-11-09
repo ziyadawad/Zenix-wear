@@ -1,5 +1,6 @@
 import type { Queryable } from './index';
 import { CATEGORY_MOCKUP, SCENES, cleanImage, isOwnPhoto, mockupsFor, typeFromOldImage } from './images';
+import LEGACY_AR from './legacy-ar.json';
 
 /**
  * Ordered, run-once database changes. Each runs inside a transaction and is recorded in
@@ -115,6 +116,34 @@ const MIGRATIONS: Migration[] = [
   },
   // No photos of people at all, including the approved ones: every shipped image is a product mockup.
   { id: '2026-11-09-mockups-only', up: useMockups },
+  {
+    // Databases seeded by the first version still hold women's, unisex and oversized products and the
+    // first, more formal Arabic. Men only, no oversized, Egyptian colloquial.
+    id: '2026-11-09-men-only-catalogue',
+    up: async (q) => {
+      const gone = await q.query<{ id: string }>(`SELECT id FROM products WHERE gender = 'women' OR fit = 'oversized' OR slug ILIKE '%oversize%' OR name_en ILIKE '%oversize%'`);
+      for (const { id } of gone) {
+        // A product someone already ordered stays in the database (order history), hidden from the store.
+        const [used] = await q.query(`SELECT 1 FROM orders WHERE items @> $1::jsonb LIMIT 1`, [JSON.stringify([{ productId: id }])]);
+        if (used) await q.query(`UPDATE products SET status = 'draft', fit = NULL, gender = 'men' WHERE id = $1`, [id]);
+        else await q.query('DELETE FROM products WHERE id = $1', [id]);
+      }
+      await q.query(`UPDATE products SET gender = 'men' WHERE gender <> 'men'`);
+      await q.query(`UPDATE products SET fit = NULL WHERE fit NOT IN ('regular','compression')`);
+      // Replace a text only where it is still exactly the first version's wording, so the owner's own edits stay.
+      const pairs = Object.entries(LEGACY_AR as Record<string, string>);
+      for (const [from, to] of pairs) {
+        for (const col of ['name_ar', 'desc_ar', 'fabric_ar', 'care_ar', 'fit_ar']) await q.query(`UPDATE products SET ${col} = $1 WHERE ${col} = $2`, [to, from]);
+        for (const col of ['name_ar', 'story_ar']) await q.query(`UPDATE collections SET ${col} = $1 WHERE ${col} = $2`, [to, from]);
+      }
+      const [row] = await q.query<{ value: unknown }>(`SELECT value FROM settings WHERE key = 'content'`);
+      if (row) {
+        const map = new Map(pairs);
+        const walk = (v: unknown): unknown => (typeof v === 'string' ? map.get(v) ?? v : Array.isArray(v) ? v.map(walk) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, walk(x)])) : v);
+        await q.query(`UPDATE settings SET value = $1::jsonb WHERE key = 'content'`, [JSON.stringify(walk(row.value))]);
+      }
+    },
+  },
 ];
 
 /** Applies pending migrations. Safe to call on every cold start: one small query when nothing is pending. */

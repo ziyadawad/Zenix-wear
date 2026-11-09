@@ -12,6 +12,7 @@ import type { Quote } from '@/lib/orders';
 import type { PaymentMethod, ShippingRate } from '@/lib/types';
 import { cx, formatMoney, isEgPhone, pName } from '@/lib/utils';
 import { compressImage } from '@/lib/client/image';
+import { displayImage } from '@/lib/db/images';
 
 interface Address { id: string; name: string; phone: string; governorate: string; city: string; address: string }
 type Props = {
@@ -233,7 +234,7 @@ export function CheckoutForm({ config, rates, user, addresses }: Props) {
             {items.map((i) => (
               <li key={`${i.productId}${i.colorId}${i.size}`} className="flex gap-3">
                 <div className="relative h-20 w-16 flex-none bg-raised">
-                  <Image src={i.image} alt="" fill sizes="64px" quality={70} className="object-cover" />
+                  <Image src={displayImage(i.image)} alt="" fill sizes="64px" quality={70} className="object-cover" />
                   <span className="absolute -end-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-white text-[10px] font-medium text-black">{i.qty}</span>
                 </div>
                 <div className="min-w-0 flex-1 text-[13px]">

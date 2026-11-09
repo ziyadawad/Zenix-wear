@@ -74,3 +74,6 @@ export function cleanImage(src: string): string {
   if (src.startsWith('/images/editorial/rack') || src.startsWith('/images/hero/')) return SCENES.zenith;
   return SCENES.all;
 }
+
+/** For images saved before the switch (carts in the browser, order snapshots): always a real file, never a broken box. */
+export const displayImage = (src?: string | null) => (src ? cleanImage(src) : mockup('tee-a', 'black'));

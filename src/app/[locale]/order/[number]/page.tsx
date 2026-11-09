@@ -8,6 +8,7 @@ import { getOrderForConfirmation } from '@/app/actions/shop';
 import { getShippingRates } from '@/lib/catalog';
 import type { Locale } from '@/lib/types';
 import { formatMoney, whatsappLink } from '@/lib/utils';
+import { displayImage } from '@/lib/db/images';
 
 export const metadata: Metadata = { title: 'Order', robots: { index: false } };
 export const dynamic = 'force-dynamic';
@@ -46,7 +47,7 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
         <ul className="space-y-4">
           {o.items.map((i) => (
             <li key={`${i.productId}${i.colorId}${i.size}`} className="flex gap-4">
-              <div className="relative h-24 w-[76px] flex-none bg-surface"><Image src={i.image} alt="" fill sizes="76px" quality={70} className="object-cover" /></div>
+              <div className="relative h-24 w-[76px] flex-none bg-surface"><Image src={displayImage(i.image)} alt="" fill sizes="76px" quality={70} className="object-cover" /></div>
               <div className="min-w-0 flex-1 text-sm">
                 <p>{locale === 'ar' ? i.nameAr : i.nameEn}</p>
                 <p className="mt-1 text-xs text-muted">{locale === 'ar' ? i.colorAr : i.colorEn}{i.size !== 'ONE' ? ` / ${i.size}` : ''} × {i.qty}</p>
