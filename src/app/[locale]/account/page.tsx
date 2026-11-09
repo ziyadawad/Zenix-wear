@@ -24,7 +24,8 @@ export default async function AccountPage({ params }: { params: Promise<{ locale
     );
   }
   const [orders, addresses, rates] = await Promise.all([
-    db.query('SELECT * FROM orders WHERE customer_id = $1 ORDER BY created_at DESC LIMIT 50', [user.id]),
+    // Their orders, including ones placed as a guest with the same phone or email before signing up.
+    db.query(`SELECT * FROM orders WHERE customer_id = $1 OR (customer_id IS NULL AND ((phone = $2 AND $2 <> '') OR (lower(email) = $3 AND $3 <> ''))) ORDER BY created_at DESC LIMIT 50`, [user.id, user.phone ?? '', (user.email ?? '').toLowerCase()]),
     db.query<{ id: string; name: string; phone: string; governorate: string; city: string; address: string }>('SELECT id,name,phone,governorate,city,address FROM addresses WHERE customer_id = $1 ORDER BY created_at DESC', [user.id]),
     getShippingRates(),
   ]);
@@ -33,14 +34,14 @@ export default async function AccountPage({ params }: { params: Promise<{ locale
       <div className="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-6">
         <div>
           <h1 className="display text-[clamp(1.7rem,3.8vw,2.8rem)]">{t.account.welcome.replace('{name}', user.name.split(' ')[0])}</h1>
-          <p className="mt-2 text-sm text-muted"><span dir="ltr">{user.phone}</span> · <span className="break-all">{user.email}</span></p>
+          <p className="mt-2 text-sm text-muted">{[user.phone && <span key="p" dir="ltr">{user.phone}</span>, user.email && <span key="e" className="break-all">{user.email}</span>].filter(Boolean).reduce<React.ReactNode[]>((acc, x, i) => (i ? [...acc, ' · ', x] : [x]), [])}</p>
         </div>
         <LogoutButton />
       </div>
       <section className="mt-10" aria-labelledby="acc-o">
         <h2 id="acc-o" className="eyebrow mb-5">{t.account.orders}</h2>
         {orders.length === 0 ? (
-          <div className="border border-line p-8 text-center"><p className="text-muted">{t.account.noOrders}</p><Link href={`/${locale}/shop/t-shirts`} className="btn btn-ghost mt-5">{t.home.shopNow}</Link></div>
+          <div className="border border-line p-8 text-center"><p className="text-muted">{t.account.noOrders}</p><Link href={`/${locale}/shop`} className="btn btn-ghost mt-5">{t.home.shopNow}</Link></div>
         ) : (
           <ul className="space-y-3">{orders.map((r) => <OrderCard key={r.id} order={toOrder(r)} />)}</ul>
         )}

@@ -198,6 +198,16 @@ const MIGRATIONS: Migration[] = [
       await q.query(`UPDATE settings SET value = $1::jsonb WHERE key = 'content'`, [JSON.stringify({ ...row.value, hero })]);
     },
   },
+  {
+    // Sign-up needs an email or a phone, not both. Emails are matched without regard to capital letters.
+    id: '2026-11-09-signup-email-or-phone',
+    up: async (q) => {
+      await q.query('ALTER TABLE customers ALTER COLUMN email DROP NOT NULL');
+      await q.query('ALTER TABLE customers ALTER COLUMN phone DROP NOT NULL');
+      await q.query(`UPDATE customers SET email = lower(email) WHERE email <> lower(email)`);
+      await q.query('CREATE INDEX IF NOT EXISTS orders_customer_idx ON orders(customer_id)');
+    },
+  },
 ];
 
 /** Applies pending migrations. Safe to call on every cold start: one small query when nothing is pending. */

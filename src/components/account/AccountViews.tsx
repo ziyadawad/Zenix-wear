@@ -19,15 +19,23 @@ export function AuthForms() {
   const [pending, start] = useTransition();
   const set = (k: keyof typeof v) => (e: React.ChangeEvent<HTMLInputElement>) => setV({ ...v, [k]: e.target.value });
   const message = (r: Exclude<AuthResult, { ok: true }>) => ({
-    invalid: a.invalid, exists: a.exists, password: a.passwordMin, phone: t.checkout.errors.phone, email: t.checkout.errors.email, name: t.checkout.errors.name, rate: a.rate,
+    invalid: a.invalid, emailExists: a.emailExists, phoneExists: a.phoneExists, contact: a.contact, server: a.server,
+    password: a.passwordMin, phone: t.checkout.errors.phone, email: t.checkout.errors.email, name: t.checkout.errors.name, rate: a.rate,
   })[r.error];
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    // Checked here first so the customer sees the message at once; the server checks everything again.
+    if (mode === 'register' && !v.email.trim() && !v.phone.trim()) { setError(a.contact); return; }
+    if (mode === 'register' && v.password.length < 8) { setError(a.passwordMin); return; }
     start(async () => {
-      const r = mode === 'login' ? await login({ identifier: v.identifier, password: v.password }) : await register(v);
-      if (r.ok) router.refresh();
-      else setError(message(r));
+      try {
+        const r = mode === 'login' ? await login({ identifier: v.identifier, password: v.password }) : await register(v);
+        if (r.ok) router.refresh();
+        else setError(message(r));
+      } catch {
+        setError(a.server); // network error or server down: never a silent button
+      }
     });
   };
   return (
@@ -35,22 +43,23 @@ export function AuthForms() {
       <h1 className="display mb-8 text-center text-[clamp(1.7rem,3.8vw,2.6rem)]">{mode === 'login' ? a.login : a.register}</h1>
       <div className="grid grid-cols-2 border-b border-line" role="tablist">
         {(['login', 'register'] as const).map((m) => (
-          <button key={m} role="tab" aria-selected={mode === m} onClick={() => { setMode(m); setError(null); }} className={cx('-mb-px min-h-12 border-b text-sm', mode === m ? 'border-white' : 'border-transparent text-muted')}>{m === 'login' ? a.login : a.register}</button>
+          <button key={m} role="tab" aria-selected={mode === m} onClick={() => { setMode(m); setError(null); }} className={cx('-mb-px min-h-12 border-b text-sm', mode === m ? 'tab-active' : 'border-transparent text-muted')}>{m === 'login' ? a.login : a.register}</button>
         ))}
       </div>
       <form className="mt-8 space-y-4" onSubmit={submit}>
         {mode === 'register' ? (
           <>
             <div><label className="label" htmlFor="a-name">{a.name}</label><input id="a-name" className="field" autoComplete="name" required value={v.name} onChange={set('name')} /></div>
-            <div><label className="label" htmlFor="a-email">{a.email}</label><input id="a-email" className="field" type="email" dir="ltr" autoComplete="email" required value={v.email} onChange={set('email')} /></div>
-            <div><label className="label" htmlFor="a-phone">{a.phone}</label><input id="a-phone" className="field" type="tel" dir="ltr" autoComplete="tel-national" placeholder="01xxxxxxxxx" required value={v.phone} onChange={set('phone')} /></div>
+            <p className="text-[13px] text-muted">{a.contactHint}</p>
+            <div><label className="label" htmlFor="a-email">{a.email}</label><input id="a-email" className="field" type="email" dir="ltr" autoComplete="email" value={v.email} onChange={set('email')} /></div>
+            <div><label className="label" htmlFor="a-phone">{a.phone}</label><input id="a-phone" className="field" type="tel" dir="ltr" autoComplete="tel-national" placeholder="01xxxxxxxxx" value={v.phone} onChange={set('phone')} /></div>
           </>
         ) : (
           <div><label className="label" htmlFor="a-id">{a.emailOrPhone}</label><input id="a-id" className="field" dir="ltr" autoComplete="username" required value={v.identifier} onChange={set('identifier')} /></div>
         )}
-        <div><label className="label" htmlFor="a-pw">{a.password}</label><input id="a-pw" className="field" type="password" dir="ltr" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} required minLength={mode === 'register' ? 8 : undefined} value={v.password} onChange={set('password')} /></div>
-        {error && <p className="error-text" role="alert">{error}</p>}
-        <button className="btn btn-primary w-full" disabled={pending}>{mode === 'login' ? a.login : a.register}</button>
+        <div><label className="label" htmlFor="a-pw">{a.password}</label><input id="a-pw" className="field" type="password" dir="ltr" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} required value={v.password} onChange={set('password')} /></div>
+        {error && <p className="rounded-md border border-danger/60 bg-danger/10 px-3 py-2.5 text-sm text-[#ff9a9d]" role="alert">{error}</p>}
+        <button className="btn btn-primary w-full" disabled={pending}>{pending ? t.common.loading : mode === 'login' ? a.login : a.register}</button>
         {mode === 'login' && <Link href={lp('/account/forgot')} className="block py-2 text-center text-sm text-muted underline-offset-4 hover:underline">{a.forgot}</Link>}
       </form>
     </div>

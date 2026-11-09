@@ -2,38 +2,68 @@
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { db, newId } from '@/lib/db';
-import { clientIp, currentUserId, endUserSession, hashPassword, rateLimit, signResetToken, startUserSession, verifyPassword, verifyResetToken } from '@/lib/auth';
+import { clientIp, currentUserId, endUserSession, hashPassword, needsRehash, rateLimit, signResetToken, startUserSession, verifyPassword, verifyResetToken } from '@/lib/auth';
 import { emailConfigured, sendEmail } from '@/lib/services';
 import { isEgPhone, normalizePhone, SITE_URL } from '@/lib/utils';
 
-export type AuthResult = { ok: true } | { ok: false; error: 'invalid' | 'exists' | 'password' | 'phone' | 'email' | 'name' | 'rate' };
+export type AuthError = 'invalid' | 'emailExists' | 'phoneExists' | 'contact' | 'password' | 'phone' | 'email' | 'name' | 'rate' | 'server';
+export type AuthResult = { ok: true } | { ok: false; error: AuthError };
 
+/** Unexpected failures (database down…) come back as a message the form can show, never as a crash. */
+async function safely(fn: () => Promise<AuthResult>, what: string): Promise<AuthResult> {
+  try {
+    return await fn();
+  } catch (e) {
+    console.error(`[account] ${what} failed:`, e instanceof Error ? e.message : 'unknown error');
+    return { ok: false, error: 'server' };
+  }
+}
+
+/**
+ * Sign-up: name + email or phone (at least one) + password. Stored in our own database with a bcrypt hash,
+ * signed in straight away, no email verification.
+ */
 export async function register(input: { name: string; email: string; phone: string; password: string }): Promise<AuthResult> {
-  if (!(await rateLimit(`register:${await clientIp()}`, 8, 3600))) return { ok: false, error: 'rate' };
-  const name = input.name.trim();
-  const email = input.email.trim().toLowerCase();
-  if (name.length < 3 || name.length > 120) return { ok: false, error: 'name' };
-  if (!z.string().email().safeParse(email).success) return { ok: false, error: 'email' };
-  if (!isEgPhone(input.phone)) return { ok: false, error: 'phone' };
-  if (input.password.length < 8 || input.password.length > 200) return { ok: false, error: 'password' };
-  const phone = normalizePhone(input.phone);
-  const exists = await db.query('SELECT 1 FROM customers WHERE email = $1 OR phone = $2', [email, phone]);
-  if (exists.length) return { ok: false, error: 'exists' };
-  const id = newId();
-  await db.query('INSERT INTO customers (id,name,email,phone,password_hash) VALUES ($1,$2,$3,$4,$5)', [id, name, email, phone, await hashPassword(input.password)]);
-  await startUserSession(id);
-  return { ok: true };
+  return safely(async () => {
+    const name = input.name.trim();
+    const email = input.email.trim().toLowerCase();
+    const rawPhone = input.phone.trim();
+    if (name.length < 2 || name.length > 120) return { ok: false, error: 'name' };
+    if (!email && !rawPhone) return { ok: false, error: 'contact' };
+    if (email && !z.email().safeParse(email).success) return { ok: false, error: 'email' };
+    if (rawPhone && !isEgPhone(rawPhone)) return { ok: false, error: 'phone' };
+    if (input.password.length < 8 || input.password.length > 200) return { ok: false, error: 'password' };
+    if (!(await rateLimit(`register:${await clientIp()}`, 8, 3600))) return { ok: false, error: 'rate' };
+    const phone = rawPhone ? normalizePhone(rawPhone) : null;
+    if (email && (await db.query('SELECT 1 FROM customers WHERE lower(email) = $1', [email])).length) return { ok: false, error: 'emailExists' };
+    if (phone && (await db.query('SELECT 1 FROM customers WHERE phone = $1', [phone])).length) return { ok: false, error: 'phoneExists' };
+    const id = newId();
+    const hash = await hashPassword(input.password);
+    try {
+      await db.query('INSERT INTO customers (id,name,email,phone,password_hash) VALUES ($1,$2,$3,$4,$5)', [id, name, email || null, phone, hash]);
+    } catch (e) {
+      // Two sign-ups with the same details at the same moment: the database's unique rule wins.
+      if (e instanceof Error && /unique|duplicate/i.test(e.message)) return { ok: false, error: /phone/i.test(e.message) ? 'phoneExists' : 'emailExists' };
+      throw e;
+    }
+    await startUserSession(id);
+    return { ok: true };
+  }, 'sign-up');
 }
 
 export async function login(input: { identifier: string; password: string }): Promise<AuthResult> {
-  const ip = await clientIp();
-  const idf = input.identifier.trim().toLowerCase();
-  if (!(await rateLimit(`login:${ip}`, 12, 900)) || !(await rateLimit(`login-id:${idf}`, 8, 900))) return { ok: false, error: 'rate' };
-  const phone = normalizePhone(idf);
-  const [c] = await db.query<{ id: string; password_hash: string }>('SELECT id, password_hash FROM customers WHERE email = $1 OR phone = $2', [idf, phone]);
-  if (!c || !(await verifyPassword(input.password, c.password_hash))) return { ok: false, error: 'invalid' };
-  await startUserSession(c.id);
-  return { ok: true };
+  return safely(async () => {
+    const ip = await clientIp();
+    const idf = input.identifier.trim().toLowerCase();
+    if (!idf || !input.password) return { ok: false, error: 'invalid' };
+    if (!(await rateLimit(`login:${ip}`, 12, 900)) || !(await rateLimit(`login-id:${idf}`, 8, 900))) return { ok: false, error: 'rate' };
+    const phone = isEgPhone(idf) ? normalizePhone(idf) : null;
+    const [c] = await db.query<{ id: string; password_hash: string }>('SELECT id, password_hash FROM customers WHERE lower(email) = $1 OR ($2::text IS NOT NULL AND phone = $2) LIMIT 1', [idf, phone]);
+    if (!c || !(await verifyPassword(input.password, c.password_hash))) return { ok: false, error: 'invalid' };
+    if (needsRehash(c.password_hash)) await db.query('UPDATE customers SET password_hash = $1 WHERE id = $2', [await hashPassword(input.password), c.id]);
+    await startUserSession(c.id);
+    return { ok: true };
+  }, 'login');
 }
 
 export async function logout(locale: string) {
@@ -44,7 +74,7 @@ export async function logout(locale: string) {
 export async function requestPasswordReset(email: string, locale: string): Promise<{ ok: boolean; off?: boolean }> {
   if (!emailConfigured()) return { ok: false, off: true };
   if (!(await rateLimit(`reset:${await clientIp()}`, 5, 3600))) return { ok: true };
-  const [c] = await db.query<{ id: string; password_hash: string; email: string }>('SELECT id, password_hash, email FROM customers WHERE email = $1', [email.trim().toLowerCase()]);
+  const [c] = await db.query<{ id: string; password_hash: string; email: string }>('SELECT id, password_hash, email FROM customers WHERE lower(email) = $1', [email.trim().toLowerCase()]);
   if (c) {
     const token = await signResetToken(c.id, c.password_hash);
     const url = `${SITE_URL}/${locale === 'en' ? 'en' : 'ar'}/account/reset?token=${encodeURIComponent(token)}`;

@@ -4,6 +4,7 @@ import { promisify } from 'node:util';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { SignJWT, jwtVerify } from 'jose';
+import bcrypt from 'bcryptjs';
 import { db } from './db';
 import { OWNER_COOKIE, verifyOwnerToken } from './session';
 
@@ -11,20 +12,37 @@ const scrypt = promisify(scryptCb) as (p: string, s: Buffer, l: number) => Promi
 
 export const USER_COOKIE = 'zenix_session';
 
-function secretString() {
-  const s = process.env.SESSION_SECRET;
-  if (s && s.length >= 32) return s;
-  if (process.env.NODE_ENV === 'production') throw new Error('SESSION_SECRET must be set to at least 32 characters.');
-  return 'local-development-only-not-a-secret';
+/**
+ * The key that signs customer sessions and order links. It can never be missing (a missing SESSION_SECRET
+ * used to break sign-up and guest checkout in production):
+ * 1. SESSION_SECRET when it is set (32+ characters);
+ * 2. otherwise a key derived from DASHBOARD_SESSION_SECRET (a separate key: one cannot be used as the other);
+ * 3. otherwise a random key made once and kept in the database.
+ */
+let cachedSecret: string | null = null;
+async function secretString() {
+  if (cachedSecret) return cachedSecret;
+  const own = process.env.SESSION_SECRET;
+  const dash = process.env.DASHBOARD_SESSION_SECRET;
+  if (own && own.length >= 32) cachedSecret = own;
+  else if (dash && dash.length >= 32) cachedSecret = createHmac('sha256', dash).update('zenix:customer-sessions:v1').digest('hex');
+  else if (process.env.NODE_ENV !== 'production') cachedSecret = 'local-development-only-not-a-secret';
+  else {
+    await db.query(`INSERT INTO settings (key, value) VALUES ('session_secret', $1::jsonb) ON CONFLICT (key) DO NOTHING`, [JSON.stringify(randomBytes(48).toString('hex'))]);
+    const [row] = await db.query<{ value: string }>(`SELECT value FROM settings WHERE key = 'session_secret'`);
+    cachedSecret = row.value;
+  }
+  return cachedSecret;
 }
-const secret = () => new TextEncoder().encode(secretString());
+const secret = async () => new TextEncoder().encode(await secretString());
 
+/** bcrypt, cost 12. Accounts made before the switch keep their scrypt hash and are upgraded at their next login. */
 export async function hashPassword(password: string) {
-  const salt = randomBytes(16);
-  const hash = await scrypt(password, salt, 64);
-  return `scrypt:${salt.toString('hex')}:${hash.toString('hex')}`; // No $ signs: .env files would expand them
+  return bcrypt.hash(password, 12);
 }
+export const needsRehash = (stored: string) => !stored.startsWith('$2');
 export async function verifyPassword(password: string, stored: string) {
+  if (stored.startsWith('$2')) return bcrypt.compare(password, stored);
   const [alg, saltHex, hashHex] = stored.split(':');
   if (alg !== 'scrypt' || !saltHex || !hashHex) return false;
   const expected = Buffer.from(hashHex, 'hex');
@@ -33,12 +51,12 @@ export async function verifyPassword(password: string, stored: string) {
 }
 
 async function sign(payload: Record<string, unknown>, exp: string) {
-  return new SignJWT(payload).setProtectedHeader({ alg: 'HS256' }).setIssuedAt().setExpirationTime(exp).sign(secret());
+  return new SignJWT(payload).setProtectedHeader({ alg: 'HS256' }).setIssuedAt().setExpirationTime(exp).sign(await secret());
 }
 async function verify(token: string | undefined) {
   if (!token) return null;
   try {
-    return (await jwtVerify(token, secret(), { algorithms: ['HS256'] })).payload;
+    return (await jwtVerify(token, await secret(), { algorithms: ['HS256'] })).payload;
   } catch {
     return null;
   }
@@ -74,7 +92,7 @@ export async function currentUserId() {
 export async function currentUser() {
   const id = await currentUserId();
   if (!id) return null;
-  const rows = await db.query<{ id: string; name: string; email: string; phone: string }>('SELECT id,name,email,phone FROM customers WHERE id = $1', [id]);
+  const rows = await db.query<{ id: string; name: string; email: string | null; phone: string | null }>('SELECT id,name,email,phone FROM customers WHERE id = $1', [id]);
   return rows[0] ?? null;
 }
 
@@ -89,12 +107,12 @@ export async function verifyResetToken(token: string) {
 
 // ---- Order links ------------------------------------------------------------------------------
 /** Lets the guest who placed an order open its confirmation page, without exposing order numbers to guessing. */
-export function orderToken(number: string) {
-  return createHmac('sha256', secretString()).update(`order:${number}`).digest('base64url').slice(0, 24);
+export async function orderToken(number: string) {
+  return createHmac('sha256', await secretString()).update(`order:${number}`).digest('base64url').slice(0, 24);
 }
-export function checkOrderToken(number: string, token: string | undefined) {
+export async function checkOrderToken(number: string, token: string | undefined) {
   if (!token) return false;
-  const a = Buffer.from(orderToken(number));
+  const a = Buffer.from(await orderToken(number));
   const b = Buffer.from(token);
   return a.length === b.length && timingSafeEqual(a, b);
 }

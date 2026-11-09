@@ -99,7 +99,7 @@ export async function submitCheckout(form: FormData): Promise<CheckoutResult> {
   revalidatePath('/[locale]/product/[slug]', 'page');
   after(() => notifyNewOrder(order));
 
-  const t = orderToken(order.number);
+  const t = await orderToken(order.number);
   const confirmUrl = `/${d.locale}/order/${order.number}?t=${t}`;
   if (d.paymentMethod === 'card') {
     try {
@@ -114,7 +114,7 @@ export async function submitCheckout(form: FormData): Promise<CheckoutResult> {
 }
 
 export async function getOrderForConfirmation(number: string, token: string | undefined) {
-  if (!checkOrderToken(number, token)) return null;
+  if (!(await checkOrderToken(number, token))) return null;
   return findOrderByNumber(number);
 }
 

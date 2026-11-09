@@ -57,8 +57,8 @@ CREATE TABLE IF NOT EXISTS product_variants (
 CREATE TABLE IF NOT EXISTS customers (
   id text PRIMARY KEY,
   name text NOT NULL,
-  email text UNIQUE NOT NULL,
-  phone text UNIQUE NOT NULL,
+  email text UNIQUE,            -- email or phone: at least one
+  phone text UNIQUE,
   password_hash text NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now()
 );

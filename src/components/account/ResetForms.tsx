@@ -6,24 +6,28 @@ import { useI18n } from '../layout/I18nProvider';
 import { requestPasswordReset, resetPassword } from '@/app/actions/account';
 import { CONTACT } from '@/lib/utils';
 
+/** Forgot password: handled on WhatsApp for now (no email service needed). Email reset links still work once email is set up. */
 export function ForgotForm() {
   const { t, locale } = useI18n();
   const a = t.account;
-  const [email, setEmail] = useState('');
-  const [state, setState] = useState<'idle' | 'sent' | 'off'>('idle');
+  const [contact, setContact] = useState('');
+  const [state, setState] = useState<'idle' | 'sent'>('idle');
   const [pending, start] = useTransition();
+  const wa = `${CONTACT.whatsappUrl}?text=${encodeURIComponent(a.forgotMessage + contact.trim())}`;
   return (
     <>
       <h1 className="display text-[clamp(1.6rem,3.4vw,2.4rem)]">{a.forgotTitle}</h1>
-      <p className="mt-3 text-sm text-muted">{a.forgotIntro}</p>
-      {state === 'sent' && <p role="status" className="mt-6 border border-line p-4 text-sm text-silver">{a.linkSent}</p>}
-      {state === 'off' && <p role="status" className="mt-6 border border-line p-4 text-sm text-silver">{a.emailOff} <a className="underline" href={CONTACT.whatsappUrl}>{t.contact.whatsapp}</a></p>}
-      {state === 'idle' && (
-        <form className="mt-6 space-y-4" onSubmit={(e) => { e.preventDefault(); start(async () => { const r = await requestPasswordReset(email, locale); setState(r.off ? 'off' : 'sent'); }); }}>
-          <div><label className="label" htmlFor="f-e">{a.email}</label><input id="f-e" className="field" type="email" dir="ltr" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-          <button className="btn btn-primary w-full" disabled={pending}>{a.sendLink}</button>
-        </form>
-      )}
+      <p className="mt-3 text-sm leading-relaxed text-muted">{a.forgotWhatsapp}</p>
+      <div className="mt-6 space-y-4">
+        <div><label className="label" htmlFor="f-c">{a.emailOrPhone}</label><input id="f-c" className="field" dir="ltr" autoComplete="username" value={contact} onChange={(e) => setContact(e.target.value)} /></div>
+        <a href={wa} target="_blank" rel="noopener noreferrer" className="btn btn-primary w-full">{a.forgotButton}</a>
+        {/* Email reset, only when an email service is set up (RESEND_API_KEY). Otherwise the server says "off" and nothing is sent. */}
+        {state === 'idle' && contact.includes('@') && (
+          <button type="button" className="btn btn-ghost w-full !min-h-11" disabled={pending}
+            onClick={() => start(async () => { const r = await requestPasswordReset(contact, locale); if (!r.off) setState('sent'); })}>{a.sendLink}</button>
+        )}
+        {state === 'sent' && <p role="status" className="border border-line p-4 text-sm text-silver">{a.linkSent}</p>}
+      </div>
     </>
   );
 }

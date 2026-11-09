@@ -33,7 +33,7 @@ To go back to a clean starter catalogue, stop the server and run `npm run db:res
 ```bash
 npm run admin:password
 ```
-It prints `DASHBOARD_PASSWORD`, `DASHBOARD_SESSION_SECRET` and `SESSION_SECRET`. Add them in Vercel in step 4 and keep the password in a password manager. They are never in code or Git. Wrong passwords are limited to 5 tries, then a 15-minute wait. The old `ADMIN_EMAIL` and `ADMIN_PASSWORD_HASH` variables are no longer used and can be deleted.
+It prints `DASHBOARD_PASSWORD`, `DASHBOARD_SESSION_SECRET` and `SESSION_SECRET`. Add them in Vercel in step 4 and keep the password in a password manager. `SESSION_SECRET` (customer logins and order links) is recommended but no longer required: without it the site derives its own key from `DASHBOARD_SESSION_SECRET`, so sign-up and checkout keep working. They are never in code or Git. Wrong passwords are limited to 5 tries, then a 15-minute wait. The old `ADMIN_EMAIL` and `ADMIN_PASSWORD_HASH` variables are no longer used and can be deleted.
 
 ### 3. New-order emails
 Create a free [Resend](https://resend.com) account **using ziyadawad14@gmail.com** and copy an API key. Until you verify a domain, Resend only delivers to your own account's address, which is all order alerts need. Password-reset emails to customers need a verified domain, then set `EMAIL_FROM` to an address on it.
@@ -62,10 +62,11 @@ Open **/admin/settings**. The **Launch checklist** shows what is still missing. 
 |---|---|
 | Dashboard | Sales today / 7 days / month, best sellers, low stock, launch checklist |
 | Orders | Filter, change status, print invoice, one-click WhatsApp, view transfer screenshots |
-| Products | Add/edit, photos per colour, stock per size and colour, sale prices, tags, collections |
+| Products | Add/edit, photos per colour, stock per size and colour, sale prices, tags |
+| Categories | Add/edit categories (name, short line, tile photo, order, in the menu). Each gets a page, a menu link and a homepage tile |
 | Promo codes | Percentage or fixed, expiry, usage limit, minimum order, first-order-only |
 | Shipping fees | Fee per governorate |
-| Homepage | Hero, announcement bar, category photos, featured collection and products, gallery |
+| Homepage | Hero, announcement bar, shop banner, product order, gallery |
 | Reviews | Approve, hide, delete, choose which appear on the homepage |
 | Inbox | Contact messages, back-in-stock requests, newsletter emails |
 | Settings | Free-shipping threshold, payment details, social links, tracking pixels |
@@ -75,6 +76,18 @@ Cancelling an order puts its items back in stock.
 **Tracking pixels:** paste your Facebook, TikTok and Google Analytics IDs in Settings. Page views, product views, add to cart, checkout and purchase events are then sent automatically.
 
 **Back-in-stock requests** are collected in the Inbox with WhatsApp and email links; messaging those customers is a manual step.
+
+## The catalogue
+
+The store sells two products for now: **تيشيرت نص كم** (short-sleeve T-shirt) and **تيشيرت كت** (sleeveless T-shirt), sizes S to XXL, in black, white and gray. Add colours, products or categories from the admin; the menu, shop tabs, footer and homepage follow by themselves. Old links (collections, new drops, removed products and categories) redirect to the shop.
+
+## Customer accounts
+
+Sign-up is name + email or phone (at least one) + password, stored in our own database with a bcrypt hash. The customer is signed in straight away; there is no email verification. "نسيت الباسورد" opens WhatsApp with a ready message (email reset links work too once Resend is set up). The account page shows the customer's orders, including ones placed as a guest with the same phone or email. Guest checkout needs no account.
+
+## Colours
+
+All colours are in one block at the top of `src/app/globals.css`. Change the three `--color-accent-*` values to recolour every glow line, focus ring, underline, price, chart and progress bar.
 
 ## Card payments (Paymob)
 
@@ -90,7 +103,7 @@ The logos in `public/brand/` were cut from the supplied JPEGs. The wordmark sour
 
 ### Images: product mockups only
 
-The site shows no photos of people. Every image (hero, tiles, banners, collections, gallery, products) is a flat product mockup on the dark ZENIX background with the Z printed on it, made by `npm run mockups` (`scripts/render-mockups.mjs`, output in `public/images/mockups/`). Each product colour has a front and a back view, so the colour swatches switch the image.
+The site shows no photos of people. Every image (hero, tiles, banners, gallery, products) is a flat product mockup on the dark ZENIX background with the Z printed on it, made by `npm run mockups` (`scripts/render-mockups.mjs`, output in `public/images/mockups/`). Each product colour has a front and a back view, so the colour swatches switch the image.
 
 When you upload your own photo for a colour in the admin, it replaces that colour's mockups when you save. A colour without a photo always gets its mockup, so there are no empty boxes.
 
@@ -108,7 +121,7 @@ When you upload your own photo for a colour in the admin, it replaces that colou
 
 ```
 src/app/[locale]/    Store pages (/ar and /en)
-src/app/dashboard/   Owner dashboard (login, overview, orders, stock, money, products, customers)
+src/app/dashboard/   Owner dashboard (login, overview, orders, stock, money, products, customers), Arabic / English
 src/app/admin/       Product, content and settings management, and its server actions
 config/dashboard.config.ts  Dashboard settings: pages, refresh, stock minimums, wallets, expense types, target
 src/app/actions/     Checkout, tracking, forms, accounts
