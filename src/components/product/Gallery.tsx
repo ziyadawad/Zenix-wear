@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { ArrowLeft, ArrowRight, Expand, X } from 'lucide-react';
 import { fill, useI18n } from '../layout/I18nProvider';
 import { useProductState } from './ProductClient';
-import { ProductScene } from './ProductScene';
+import { ProductPhoto } from './ProductPhoto';
 import { cx, pName } from '@/lib/utils';
 import { displayImage } from '@/lib/db/images';
 
@@ -12,7 +12,7 @@ export function Gallery() {
   const { t, locale } = useI18n();
   const { product: p, colorId } = useProductState();
   const color = p.colors.find((c) => c.id === colorId) ?? p.colors[0];
-  // Saved paths may predate the current scenes folder: displayImage maps them (thumbnails and lightbox use them as is).
+  // Older saved paths (generated images) map to the real photos (thumbnails and lightbox use them as is).
   const images = (color?.images ?? []).map((src) => displayImage(src));
   const [index, setIndex] = useState(0);
   const [lightbox, setLightbox] = useState<number | null>(null);
@@ -39,7 +39,7 @@ export function Gallery() {
           {/* Keyed by position, so a new colour fades in over the old one instead of replacing the slide. */}
           {images.map((src, i) => (
             <button key={i} type="button" className="relative aspect-[4/5] w-full" onClick={() => setLightbox(i)} aria-label={`${t.product.fullScreen}: ${fill(t.product.imageOf, { i: i + 1, n: images.length })}`}>
-              <ProductScene src={src} alt={`${name}, ${fill(t.product.imageOf, { i: i + 1, n: images.length })}`} priority={i === 0} sizes="100vw" quality={80} />
+              <ProductPhoto src={src} alt={`${name}, ${fill(t.product.imageOf, { i: i + 1, n: images.length })}`} priority={i === 0} sizes="100vw" quality={80} />
             </button>
           ))}
         </div>
@@ -65,7 +65,7 @@ export function Gallery() {
           )}
         </ul>
         <button type="button" onClick={() => setLightbox(index)} className="group relative block aspect-[4/5] w-full overflow-hidden" aria-label={t.product.fullScreen}>
-          {images[index] && <ProductScene src={images[index]} alt={name} priority sizes="(min-width:1024px) 50vw, 100vw" quality={80} />}
+          {images[index] && <ProductPhoto src={images[index]} alt={name} priority sizes="(min-width:1024px) 50vw, 100vw" quality={80} />}
           <span className="absolute bottom-4 end-4 flex size-11 items-center justify-center bg-black/60 opacity-0 backdrop-blur transition-opacity group-hover:opacity-100"><Expand size={16} strokeWidth={1.25} /></span>
         </button>
       </div>

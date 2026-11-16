@@ -7,7 +7,7 @@ import { useI18n } from './I18nProvider';
 import { searchUi } from '@/lib/client/store';
 import { searchProducts, type SearchHit } from '@/app/actions/shop';
 import { formatMoney } from '@/lib/utils';
-import { ProductScene } from '../product/ProductScene';
+import { ProductPhoto } from '../product/ProductPhoto';
 
 export function SearchOverlay() {
   const { t, lp, locale } = useI18n();
@@ -55,7 +55,7 @@ export function SearchOverlay() {
           {hits?.map((h) => (
             <li key={h.slug}>
               <Link href={lp(`/product/${h.slug}`)} onClick={close} className="group block">
-                <div className="relative aspect-[4/5] overflow-hidden"><ProductScene src={h.image} alt={locale === 'ar' ? h.nameAr : h.nameEn} sizes="(min-width:1024px) 16vw, 50vw" /></div>
+                <div className="relative aspect-[4/5] overflow-hidden"><ProductPhoto src={h.image} alt={locale === 'ar' ? h.nameAr : h.nameEn} sizes="(min-width:1024px) 16vw, 50vw" /></div>
                 <p className="mt-2 text-[13px]">{locale === 'ar' ? h.nameAr : h.nameEn}</p>
                 <p className="text-[13px] text-muted">{formatMoney(h.price, locale)}</p>
               </Link>

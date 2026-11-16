@@ -6,7 +6,7 @@ import { Minus, Plus, ShoppingBag, X } from 'lucide-react';
 import { fill, useI18n } from './I18nProvider';
 import { cartCount, cartSubtotal, cartUi, changeSize, lineId, removeLine, setQty, track, useCart, type CartItem } from '@/lib/client/store';
 import { formatMoney, pName } from '@/lib/utils';
-import { ProductScene } from '../product/ProductScene';
+import { ProductPhoto } from '../product/ProductPhoto';
 
 /** Progress towards free shipping. Only when free shipping is set in Admin → Settings (above 0). */
 export function FreeShippingBar({ subtotal, className }: { subtotal: number; className?: string }) {
@@ -30,7 +30,7 @@ export function CartLine({ item, onNavigate }: { item: CartItem; onNavigate?: ()
   return (
     <li className="flex gap-4 border-b border-line py-5">
       <Link href={lp(`/product/${item.slug}`)} onClick={onNavigate} className="group relative h-[120px] w-[96px] flex-none overflow-hidden bg-surface">
-        <ProductScene src={item.image} alt={pName(item, locale)} sizes="96px" />
+        <ProductPhoto src={item.image} alt={pName(item, locale)} sizes="96px" />
       </Link>
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-start justify-between gap-3">

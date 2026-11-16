@@ -8,7 +8,7 @@ import { Marquee, SectionHead } from '@/components/home/Bits';
 import { Newsletter } from '@/components/home/Newsletter';
 import { ReviewsSlider } from '@/components/home/ReviewsSlider';
 import { ProductCard } from '@/components/product/ProductCard';
-import { ProductScene } from '@/components/product/ProductScene';
+import { ProductPhoto } from '@/components/product/ProductPhoto';
 
 export const revalidate = 300;
 
@@ -81,7 +81,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
         <div className="grid grid-cols-3 gap-1 md:grid-cols-6">
           {content.community.slice(0, 6).map((src, i) => (
             <a key={src + i} href={settings.instagram || lp('/contact')} {...(settings.instagram ? { target: '_blank', rel: 'noopener noreferrer' } : {})} aria-label={`${t.home.followUs} ${i + 1}`} className="group relative block aspect-square overflow-hidden bg-surface">
-              <ProductScene src={src} alt="" sizes="(min-width:768px) 17vw, 33vw" />
+              <ProductPhoto src={src} alt="" sizes="(min-width:768px) 17vw, 33vw" />
             </a>
           ))}
         </div>

@@ -1,7 +1,7 @@
 import type { Queryable } from './index';
 import type { ProductColor, SiteContent, SiteSettings } from '../types';
 
-import { DEFAULT_COMMUNITY, SCENES, mockupsFor } from './images';
+import { BANNERS, DEFAULT_COMMUNITY, photosFor } from './images';
 
 /** Governorate id, Arabic, English, placeholder fee (editable in admin > Shipping). */
 export const GOVERNORATES: [string, string, string, number][] = [
@@ -17,14 +17,14 @@ export const GOVERNORATES: [string, string, string, number][] = [
 ];
 
 const COLOR: Record<string, [string, string, string]> = {
-  black: ['أسود', 'Black', '#0d0d0d'], white: ['أبيض', 'White', '#f4f4f4'], gray: ['رمادي', 'Gray', '#85878d'],
+  black: ['أسود', 'Black', '#0d0d0d'], white: ['أبيض', 'White', '#f4f4f4'],
 };
 
-/** "tee-a:black" = mockup type and colour. Front and back. */
+/** "short-sleeve:black" = photo folder and colour. Front and back. */
 function color(spec: string): ProductColor {
   const [type, id] = spec.split(':');
   const [nameAr, nameEn, hex] = COLOR[id];
-  return { id, nameAr, nameEn, hex, images: mockupsFor(type, id, hex) };
+  return { id, nameAr, nameEn, hex, images: photosFor(type, id) };
 }
 
 const FABRIC = {
@@ -39,8 +39,8 @@ const FIT = { ar: 'قصّة عادية ومريحة. خد مقاسك العاد�
 
 /** The store's categories. More can be added from Admin → Categories. */
 export const STARTER_CATEGORIES = [
-  { slug: 't-shirts', nameAr: 'تيشيرت نص كم', nameEn: 'Short-Sleeve T-Shirt', blurbAr: 'التيشيرت الأساسي: قطن تقيل وقصّة نضيفة تنفع لكل يوم.', blurbEn: 'The essential tee: heavy cotton and a clean cut for every day.', image: SCENES.tees, sort: 1 },
-  { slug: 'sleeveless', nameAr: 'تيشيرت كت', nameEn: 'Sleeveless T-Shirt', blurbAr: 'من غير كم، للتمرين والحر. حركة براحتك.', blurbEn: 'No sleeves, for training and hot days. Move freely.', image: SCENES.sleeveless, sort: 2 },
+  { slug: 't-shirts', nameAr: 'تيشيرت نص كم', nameEn: 'Short-Sleeve T-Shirt', blurbAr: 'التيشيرت الأساسي: قطن تقيل وقصّة نضيفة تنفع لكل يوم.', blurbEn: 'The essential tee: heavy cotton and a clean cut for every day.', image: BANNERS.shortSleeve, sort: 1 },
+  { slug: 'sleeveless', nameAr: 'تيشيرت كت', nameEn: 'Sleeveless T-Shirt', blurbAr: 'من غير كم، للتمرين والحر. حركة براحتك.', blurbEn: 'No sleeves, for training and hot days. Move freely.', image: BANNERS.sleeveless, sort: 2 },
 ];
 
 export const SIZES_STARTER = ['S', 'M', 'L', 'XL', 'XXL'];
@@ -49,13 +49,13 @@ export const STARTER_PRODUCTS = [
     slug: 'regular-tee', sku: 'ZX-001', ar: 'تيشيرت نص كم', en: 'Short-Sleeve T-Shirt', category: 't-shirts', price: 650,
     da: 'تيشيرت نص كم بقصّة عادية مريحة، قطن تقيل وخياطة متينة. بسيط ويتلبس مع أي حاجة.',
     de: 'A short-sleeve tee in a regular, comfortable fit, with heavy cotton and strong seams. Simple and easy to wear with anything.',
-    colors: ['tee-a:black', 'tee-a:white', 'tee-a:gray'],
+    colors: ['short-sleeve:black', 'short-sleeve:white'],
   },
   {
     slug: 'sleeveless-tee', sku: 'ZX-002', ar: 'تيشيرت كت', en: 'Sleeveless T-Shirt', category: 'sleeveless', price: 550,
     da: 'تيشيرت من غير كم، فتحة دراع مريحة وقماش خفيف. مثالي للجيم والجو الحر.',
     de: 'A sleeveless tee with comfortable armholes and light fabric. Made for the gym and hot days.',
-    colors: ['tank:black', 'tank:white', 'tank:gray'],
+    colors: ['sleeveless:black', 'sleeveless:white'],
   },
 ];
 
@@ -83,10 +83,10 @@ export async function insertStarterCatalogue(q: Queryable) {
 export const DEFAULT_CONTENT: SiteContent = {
   hero: [
     { id: 'h1', kind: 'brand', image: '', headlineAr: 'ZENIX WEAR', headlineEn: 'ZENIX WEAR', subAr: 'تيشيرتات متصممة في مصر: قطن تقيل وقصّة مريحة.', subEn: 'T-shirts designed in Egypt: heavy cotton and a comfortable fit.' },
-    { id: 'h2', kind: 'brand', image: '', headlineAr: 'ZENIX WEAR', headlineEn: 'ZENIX WEAR', subAr: 'نص كم وكت، بالأسود والأبيض والرمادي.', subEn: 'Short-sleeve and sleeveless, in black, white and gray.' },
+    { id: 'h2', kind: 'brand', image: '', headlineAr: 'ZENIX WEAR', headlineEn: 'ZENIX WEAR', subAr: 'نص كم وكت، بالأسود والأبيض.', subEn: 'Short-sleeve and sleeveless, in black and white.' },
     { id: 'h3', kind: 'brand', image: '', headlineAr: 'ZENIX WEAR', headlineEn: 'ZENIX WEAR', subAr: 'توصيل لكل مصر، والدفع عند الاستلام.', subEn: 'Delivered across Egypt, cash on delivery.' },
   ],
-  shopImage: SCENES.all,
+  shopImage: BANNERS.shop,
   bestSellerIds: [],
   community: DEFAULT_COMMUNITY,
 };

@@ -5,15 +5,15 @@ import Link from 'next/link';
 import { useI18n } from '../layout/I18nProvider';
 import { OrbitMark } from './Bits';
 import type { HeroSlide } from '@/lib/types';
-import { SCENES } from '@/lib/db/images';
+import { BANNERS } from '@/lib/db/images';
 import { cx } from '@/lib/utils';
 
-/** T-shirt mockups on the dark brand background, dimmed under the logo. No people, never a broken image. */
+/** The real T-shirt photos on black, dimmed under the logo. No people, never a broken image. */
 function BrandBackground({ eager }: { eager: boolean }) {
   return (
     <>
       <div className="absolute inset-0" style={{ background: 'radial-gradient(70% 60% at 50% 38%, #1c1a2c 0%, #0b0b10 52%, #050507 100%)' }} />
-      <Image src={SCENES.hero} alt="" fill preload={eager} fetchPriority={eager ? 'high' : 'auto'} loading={eager ? 'eager' : 'lazy'} sizes="100vw" quality={75} className="object-cover object-[50%_35%] opacity-60" />
+      <Image src={BANNERS.hero} alt="" fill preload={eager} fetchPriority={eager ? 'high' : 'auto'} loading={eager ? 'eager' : 'lazy'} sizes="100vw" quality={75} className="object-cover object-[50%_35%] opacity-60" />
       <div className="brand-sheen absolute inset-0" aria-hidden="true" />
     </>
   );
@@ -44,7 +44,7 @@ export function Hero({ slides }: { slides: HeroSlide[] }) {
       {slides.map((s, idx) => {
         if (idx !== 0 && !loadAll) return null;
         const on = idx === i;
-        // A slide without its own photo or video shows the brand background (T-shirt mockups).
+        // A slide without its own photo or video shows the brand background (the T-shirt photos).
         const brand = !s.video && (s.kind === 'brand' || !s.image);
         return (
           <div key={s.id} aria-hidden={!on} className={cx('absolute inset-0 transition-opacity duration-[1400ms]', on ? 'opacity-100' : 'opacity-0')}>

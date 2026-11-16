@@ -6,7 +6,7 @@ import { getDictionary } from '@/lib/i18n/dictionaries';
 import { getCategories, getSettings } from '@/lib/catalog';
 import { isLocale, type Locale } from '@/lib/types';
 import { SITE_URL } from '@/lib/utils';
-import { SCENES } from '@/lib/db/images';
+import { BANNERS } from '@/lib/db/images';
 import { I18nProvider } from '@/components/layout/I18nProvider';
 import { Header } from '@/components/layout/Header';
 import { BottomNav, RevealObserver, WhatsAppFloat } from '@/components/layout/Chrome';
@@ -40,8 +40,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     applicationName: 'ZENIX WEAR',
     manifest: '/manifest.webmanifest',
     alternates: { canonical: `/${locale}`, languages: { ar: '/ar', en: '/en', 'x-default': '/ar' } },
-    openGraph: { type: 'website', siteName: 'ZENIX WEAR', title, description, locale: ar ? 'ar_EG' : 'en_EG', images: [{ url: SCENES.og, width: 1200, height: 630, alt: 'ZENIX WEAR', type: 'image/webp' }] },
-    twitter: { card: 'summary_large_image', title, description, images: [SCENES.og] },
+    openGraph: { type: 'website', siteName: 'ZENIX WEAR', title, description, locale: ar ? 'ar_EG' : 'en_EG', images: [{ url: BANNERS.og, width: 1200, height: 630, alt: 'ZENIX WEAR', type: 'image/webp' }] },
+    twitter: { card: 'summary_large_image', title, description, images: [BANNERS.og] },
   };
 }
 

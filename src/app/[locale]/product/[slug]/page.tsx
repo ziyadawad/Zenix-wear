@@ -23,11 +23,11 @@ export async function generateMetadata({ params }: P): Promise<Metadata> {
   const name = pName(p, locale);
   const description = (locale === 'ar' ? p.descAr : p.descEn).slice(0, 160);
   const image = p.colors[0]?.images[0];
-  const own = !!image && isOwnPhoto(image);
+  const own = !!image && isOwnPhoto(image) && ogImage(image) === image;
   return {
     title: name, description,
     alternates: { canonical: `/${locale}/product/${slug}`, languages: { ar: `/ar/product/${slug}`, en: `/en/product/${slug}` } },
-    // The 1200 x 630 scene of the first colour (or the owner's own photo as it is).
+    // The 1200 x 630 social image of the first colour (front and back), or the owner's own upload as it is.
     openGraph: { title: `${name} | ZENIX WEAR`, description, type: 'website', images: [own && image ? { url: image, alt: name } : { url: ogImage(image), width: 1200, height: 630, alt: name, type: 'image/webp' }] },
     twitter: { card: 'summary_large_image', images: [own && image ? image : ogImage(image)] },
   };

@@ -12,7 +12,7 @@ import type { Quote } from '@/lib/orders';
 import type { PaymentMethod, ShippingRate } from '@/lib/types';
 import { cx, formatMoney, isEgPhone, pName } from '@/lib/utils';
 import { compressImage } from '@/lib/client/image';
-import { ProductScene } from '../product/ProductScene';
+import { ProductPhoto } from '../product/ProductPhoto';
 
 interface Address { id: string; name: string; phone: string; governorate: string; city: string; address: string }
 type Props = {
@@ -234,7 +234,7 @@ export function CheckoutForm({ config, rates, user, addresses }: Props) {
             {items.map((i) => (
               <li key={`${i.productId}${i.colorId}${i.size}`} className="flex gap-3">
                 <div className="relative h-20 w-16 flex-none bg-raised">
-                  <ProductScene src={i.image} alt="" sizes="64px" />
+                  <ProductPhoto src={i.image} alt="" sizes="64px" />
                   <span className="absolute -end-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-white text-[10px] font-medium text-black">{i.qty}</span>
                 </div>
                 <div className="min-w-0 flex-1 text-[13px]">

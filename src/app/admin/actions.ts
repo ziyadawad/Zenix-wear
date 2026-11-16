@@ -11,7 +11,7 @@ import { saveImage, UploadError } from '@/lib/services';
 import { FITS, GENDERS, ORDER_STATUSES, SIZES, TAGS } from '@/lib/types';
 import { DEFAULT_CONTENT, DEFAULT_SETTINGS } from '@/lib/db/seed';
 import { slugify } from '@/lib/utils';
-import { CATEGORY_MOCKUP, isOwnPhoto, mockupType, mockupsFor } from '@/lib/db/images';
+import { CATEGORY_PRODUCT, isOwnPhoto, photoProduct, photosFor } from '@/lib/db/images';
 
 function refreshStorefront(...tags: string[]) {
   tags.forEach((t) => updateTag(t));
@@ -81,12 +81,12 @@ export async function saveProduct(input: ProductInput): Promise<{ ok: boolean; e
   const id = p.id ?? newId();
   const dupe = await db.query('SELECT 1 FROM products WHERE slug = $1 AND id <> $2', [slug, id]);
   if (dupe.length) return { ok: false, error: `Another product already uses the URL "${slug}". Change the URL field.` };
-  // Your own photos replace the mockups for that colour; a colour without any photo gets its mockup (front and back),
-  // in the same type as the product's other mockups, or the category's default.
-  const mockType = p.colors.flatMap((c) => c.images).map(mockupType).find(Boolean) ?? CATEGORY_MOCKUP[p.category] ?? 'tee-a';
+  // Photos are kept as they are. A colour without any photo gets the shipped photos for that product and colour
+  // (black and white exist), or the placeholder until its photos are uploaded.
+  const photoSet = p.colors.flatMap((c) => c.images).map(photoProduct).find(Boolean) ?? CATEGORY_PRODUCT[p.category] ?? 'short-sleeve';
   const colors = p.colors.map(({ id: cid, nameAr, nameEn, hex, images }) => {
     const own = images.filter(isOwnPhoto);
-    return { id: cid, nameAr, nameEn, hex, images: own.length ? own : mockupsFor(mockType, cid, hex) };
+    return { id: cid, nameAr, nameEn, hex, images: own.length ? own : photosFor(photoSet, cid) };
   });
   const collection = null; // Collections were removed; the column stays for older data.
 

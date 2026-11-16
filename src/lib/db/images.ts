@@ -1,121 +1,85 @@
 /**
- * Every shipped image is an "ambient light" product scene from public/images/scenes-v2/, rendered by
- * scripts/render-scenes.mts (npm run scenes), unless the owner uploads a real photo from the admin, which then
- * takes its place. A colour added from the admin that was not pre-rendered is drawn on demand by /api/scene.
+ * Every shipped image is a real product photo from public/products/, made from the originals in product-photos/
+ * by scripts/product-photos.mts (npm run photos). Photos the owner uploads from the admin are kept as they are.
+ * Older saved paths (generated mockups and scenes, in carts, order snapshots or settings) map to the photos.
  */
-import { neonFor } from '../../../config/scene.config';
-import { SCENE_COLOURS, SWATCH } from '../scene/colours';
+export const PHOTOS = '/products';
 
-/**
- * Where the scenes live. The folder carries a version: when the drawings change, render them into a new folder
- * (and bump SCENE_VERSION) so no browser, CDN or image cache keeps showing the old pictures under the same URL.
- */
-export const SCENE_VERSION = 2;
-export const MOCKUPS = `/images/scenes-v${SCENE_VERSION}`;
-/** Where earlier versions lived. Saved references are rewritten to MOCKUPS. */
-export const OLD_MOCKUPS = ['/images/mockups', '/images/scenes'];
-
-/** tee-a = short-sleeve T-shirt, tank = sleeveless T-shirt. The only two products for now. */
-export const MOCKUP_TYPES: Record<string, string[]> = { 'tee-a': SCENE_COLOURS, tank: SCENE_COLOURS };
-/** Default mockup for a product category (admin-created products). A new category gets the short-sleeve tee. */
-export const CATEGORY_MOCKUP: Record<string, string> = { 't-shirts': 'tee-a', sleeveless: 'tank' };
-/** Removed garment types and the one that takes their place, so old order snapshots never show a broken image. */
-const RETIRED: Record<string, string> = { 'tee-b': 'tee-a', stringer: 'tank', shorts: 'tee-a', shorts2: 'tee-a', socks: 'tee-a', cap: 'tee-a', towel: 'tee-a', bag: 'tee-a' };
-
-export const SCENES = {
-  hero: `${MOCKUPS}/hero.webp`, tees: `${MOCKUPS}/scene-tees.webp`, sleeveless: `${MOCKUPS}/scene-sleeveless.webp`, all: `${MOCKUPS}/scene-all.webp`,
-  og: `${MOCKUPS}/og-home.webp`,
+/** Photo folder per product, and the colours photographed. */
+export const PHOTO_PRODUCTS: Record<string, string[]> = { 'short-sleeve': ['black', 'white'], sleeveless: ['black', 'white'] };
+/** Which product's photos a category uses (for a product created in the admin before its own photos are uploaded). */
+export const CATEGORY_PRODUCT: Record<string, string> = { 't-shirts': 'short-sleeve', sleeveless: 'sleeveless' };
+/** Earlier generated garment types → the product folder that replaces them. */
+const LEGACY_TYPE: Record<string, string> = {
+  'tee-a': 'short-sleeve', 'tee-b': 'short-sleeve', tank: 'sleeveless', stringer: 'sleeveless',
+  shorts: 'short-sleeve', shorts2: 'short-sleeve', socks: 'short-sleeve', cap: 'short-sleeve', towel: 'short-sleeve', bag: 'short-sleeve',
 };
-/** Homepage gallery default: both products in every starter colour. */
-export const DEFAULT_COMMUNITY = ['tee-a:black', 'tank:white', 'tee-a:gray', 'tank:black', 'tee-a:white', 'tank:gray'].map((s) => `${MOCKUPS}/${s.replace(':', '-')}-front.webp`);
-export const mockup = (type: string, colour: string, view: 'front' | 'back' = 'front') => `${MOCKUPS}/${type}-${colour}-${view}.webp`;
-/** A scene drawn on demand, for a colour that is not pre-rendered (its neon is DEFAULT_NEON unless listed in the config). */
-export const liveScene = (type: string, colourId: string, hex: string, view: 'front' | 'back' | 'og' = 'front') =>
-  `/api/scene/${type}/${colourId}/${hex.replace('#', '').toLowerCase().slice(0, 6)}/${view}-v${SCENE_VERSION}.webp`;
+/** Earlier colours shown as the nearest photographed one. */
+const LIGHT_COLOURS = new Set(['white', 'bone', 'silver', 'sand', 'stone']);
 
-function rgb(hex: string) {
-  const n = parseInt(hex.replace('#', '').padEnd(6, '0').slice(0, 6), 16);
-  return [n >> 16, (n >> 8) & 255, n & 255];
-}
-/** The rendered colour for a colour id, or the nearest one by swatch. */
-export function mockupColour(type: string, colourId: string, hex?: string) {
-  const available = MOCKUP_TYPES[type] ?? SCENE_COLOURS;
-  if (available.includes(colourId)) return colourId;
-  const [r, g, b] = rgb(hex ?? '#0d0d0d');
-  let best = available[0], dist = Infinity;
-  for (const c of available) {
-    const [r2, g2, b2] = rgb(SWATCH[c]);
-    const d = (r - r2) ** 2 + (g - g2) ** 2 + (b - b2) ** 2;
-    if (d < dist) { dist = d; best = c; }
-  }
-  return best;
-}
-const SAFE_ID = /^[a-z0-9-]{1,80}$/;
-/** Front and back scenes for one product colour: pre-rendered when available, else drawn on demand in its own colour. */
-export function mockupsFor(type: string, colourId: string, hex?: string) {
-  if ((MOCKUP_TYPES[type] ?? []).includes(colourId) || !hex || !/^#?[0-9a-f]{6}$/i.test(hex) || !SAFE_ID.test(colourId)) {
-    const c = mockupColour(type, colourId, hex);
-    return [mockup(type, c, 'front'), mockup(type, c, 'back')];
-  }
-  return [liveScene(type, colourId, hex, 'front'), liveScene(type, colourId, hex, 'back')];
+export const BANNERS = {
+  hero: `${PHOTOS}/banners/hero.webp`, shop: `${PHOTOS}/banners/shop.webp`, og: `${PHOTOS}/banners/og.webp`,
+  shortSleeve: `${PHOTOS}/banners/short-sleeve.webp`, sleeveless: `${PHOTOS}/banners/sleeveless.webp`,
+};
+/** Shown for a colour added in the admin until its photos are uploaded: the logo on black. */
+export const PLACEHOLDER = `${PHOTOS}/placeholder.webp`;
+
+export const photo = (product: string, colour: string, view: 'front' | 'back' = 'front') => `${PHOTOS}/${product}/${colour}-${view}.webp`;
+/** Homepage gallery default. */
+export const DEFAULT_COMMUNITY = [
+  photo('short-sleeve', 'black'), photo('sleeveless', 'white'), photo('short-sleeve', 'white'),
+  photo('sleeveless', 'black'), photo('short-sleeve', 'black', 'back'), photo('sleeveless', 'white', 'back'),
+];
+
+/** Front and back photos for one product colour, or the placeholder when that colour has no photos yet. */
+export function photosFor(product: string, colourId: string): string[] {
+  return (PHOTO_PRODUCTS[product] ?? []).includes(colourId) ? [photo(product, colourId, 'front'), photo(product, colourId, 'back')] : [PLACEHOLDER];
 }
 
-const STATIC_RE = /^\/images\/scenes-v\d+\/(.+)-([a-z]+)-(front|back)\.webp$/;
-const LIVE_RE = /^\/api\/scene\/([a-z-]+)\/([a-z0-9-]+)\/([0-9a-f]{6})\/(front|back|og)(?:-v\d+)?\.webp$/;
+const PHOTO_RE = /^\/products\/([a-z-]+)\/([a-z]+)-(front|back)\.webp$/;
+const LEGACY_RE = /^\/images\/(?:mockups|scenes|scenes-v\d+)\/(.+)-([a-z]+)-(front|back)\.webp$/;
+const LEGACY_LIVE_RE = /^\/api\/scene\/([a-z-]+)\/[a-z0-9-]+\/([0-9a-f]{6})\/(front|back|og)(?:-v\d+)?\.webp$/;
+const LEGACY_OLD_RE = /^\/images\/products\/(tee-a|tee-b|tank|stringer|shorts2|shorts|socks|cap|towel|bag)-([a-z]+)-(p?\d)\.webp$/;
 
-/** What a scene image shows: garment type, colour id and its neon colour. Null for the owner's own photos. */
-export function sceneInfo(src?: string | null): { type: string; colourId: string; neon: string } | null {
-  if (!src) return null;
-  const m = STATIC_RE.exec(src) ?? LIVE_RE.exec(src);
-  return m ? { type: m[1], colourId: m[2], neon: neonFor(m[2]) } : null;
-}
-/** The 1200 x 630 social-sharing version of a product image. */
-export function ogImage(src?: string | null): string {
-  if (!src) return SCENES.og;
-  src = cleanImage(src);
-  const live = LIVE_RE.exec(src);
-  if (live) return `/api/scene/${live[1]}/${live[2]}/${live[3]}/og-v${SCENE_VERSION}.webp`;
-  const m = STATIC_RE.exec(src);
-  return m ? `${MOCKUPS}/og-${m[1]}-${m[2]}.webp` : src;
-}
+/** A generated image from before the real photos (mockups, scenes, the on-demand scene route). */
+const isLegacy = (src: string) => src.startsWith('/images/') || src.startsWith('/api/scene/');
+/** A real photo (shipped in public/products/ or uploaded by the owner), as opposed to a generated image or the placeholder. */
+export const isOwnPhoto = (src: string) => !!src && !isLegacy(src) && !src.startsWith('/brand/') && src !== PLACEHOLDER;
 
-/** An image the owner uploaded (or linked), as opposed to one shipped with the site. */
-export const isOwnPhoto = (src: string) => !src.startsWith('/images/') && !src.startsWith('/brand/') && !src.startsWith('/api/scene/');
-
-/** The mockup type of a mockup path, e.g. "tee-a" for /images/mockups/tee-a-black-front.webp. */
-export function mockupType(src: string): string | null {
-  const t = (STATIC_RE.exec(src) ?? LIVE_RE.exec(src) ?? /^\/images\/mockups\/(.+)-[a-z]+-(front|back)\.webp$/.exec(src))?.[1] ?? null;
-  return t && (MOCKUP_TYPES[t] ? t : RETIRED[t] ?? 'tee-a');
+/** The product folder a photo (or an older generated image) belongs to, e.g. "short-sleeve". */
+export function photoProduct(src: string): string | null {
+  const m = PHOTO_RE.exec(src);
+  if (m) return m[1];
+  const t = (LEGACY_RE.exec(src) ?? LEGACY_LIVE_RE.exec(src) ?? LEGACY_OLD_RE.exec(src))?.[1];
+  return t ? LEGACY_TYPE[t] ?? 'short-sleeve' : null;
 }
 
-/** Works out which mockup type an older shipped image belonged to, from its file name. */
-export function typeFromOldImage(src: string): string | null {
-  const m = /^\/images\/products\/(tee-a|tee-b|tank|stringer|shorts2|shorts|socks|cap|towel|bag)-/.exec(src);
-  return m?.[1] ?? null;
-}
+const lightHex = (hex: string) => {
+  const n = parseInt(hex.slice(0, 6), 16);
+  return 0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255) > 150;
+};
 
-/**
- * Maps any older shipped image (people photos, gym photos, the first product renders) to a mockup.
- * Mockups and the owner's own uploads pass through unchanged.
- */
+/** Maps any older generated image to the matching real photo. Real photos and uploads pass through unchanged. */
 export function cleanImage(src: string): string {
-  if (!src || isOwnPhoto(src) || LIVE_RE.test(src)) return src;
-  for (const old of OLD_MOCKUPS) if (src.startsWith(`${old}/`)) src = MOCKUPS + src.slice(old.length);
-  src = src.replace(/^\/images\/scenes-v\d+\//, `${MOCKUPS}/`);
-  const m = STATIC_RE.exec(src);
-  if (m) {
-    if (MOCKUP_TYPES[m[1]]) return src;
-    const type = RETIRED[m[1]] ?? 'tee-a';
-    return mockup(type, mockupColour(type, m[2], SWATCH[m[2]]), m[3] as 'front' | 'back');
-  }
-  if (src.startsWith(`${MOCKUPS}/`)) return Object.values(SCENES).includes(src) ? src : SCENES.all;
-  const p = /^\/images\/products\/(tee-a|tee-b|tank|stringer|shorts2|shorts|socks|cap|towel|bag)-([a-z]+)-(p?\d)\.webp$/.exec(src);
-  if (p) {
-    const type = MOCKUP_TYPES[p[1]] ? p[1] : RETIRED[p[1]] ?? 'tee-a';
-    return mockup(type, mockupColour(type, p[2], SWATCH[p[2]]), p[3] === '1' || p[3] === 'p1' ? 'front' : 'back');
-  }
-  return SCENES.all;
+  if (!src || !isLegacy(src)) return src;
+  let m = LEGACY_RE.exec(src);
+  if (m) return photo(LEGACY_TYPE[m[1]] ?? 'short-sleeve', LIGHT_COLOURS.has(m[2]) ? 'white' : 'black', m[3] as 'front' | 'back');
+  m = LEGACY_LIVE_RE.exec(src);
+  if (m) return photo(LEGACY_TYPE[m[1]] ?? 'short-sleeve', lightHex(m[2]) ? 'white' : 'black', m[3] === 'back' ? 'back' : 'front');
+  m = LEGACY_OLD_RE.exec(src);
+  if (m) return photo(LEGACY_TYPE[m[1]] ?? 'short-sleeve', LIGHT_COLOURS.has(m[2]) ? 'white' : 'black', m[3] === '1' || m[3] === 'p1' ? 'front' : 'back');
+  if (/scene-tees|tees/.test(src)) return BANNERS.shortSleeve;
+  if (/sleeveless/.test(src)) return BANNERS.sleeveless;
+  if (/hero/.test(src)) return BANNERS.hero;
+  return BANNERS.shop;
 }
 
-/** For images saved before the switch (carts in the browser, order snapshots): always a real file, never a broken box. */
-export const displayImage = (src?: string | null) => (src ? cleanImage(src) : mockup('tee-a', 'black'));
+/** For images saved earlier (carts in the browser, order snapshots): always a real file, never a broken box. */
+export const displayImage = (src?: string | null) => (src ? cleanImage(src) : PLACEHOLDER);
+
+/** The 1200 x 630 social-sharing (Open Graph) image for a product photo. */
+export function ogImage(src?: string | null): string {
+  if (!src) return BANNERS.og;
+  const m = PHOTO_RE.exec(cleanImage(src));
+  return m ? `${PHOTOS}/${m[1]}/${m[2]}-og.webp` : src;
+}

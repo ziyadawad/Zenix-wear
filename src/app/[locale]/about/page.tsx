@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import type { Locale } from '@/lib/types';
-import { SCENES } from '@/lib/db/images';
+import { BANNERS } from '@/lib/db/images';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -18,7 +18,7 @@ export default async function About({ params }: { params: Promise<{ locale: Loca
     <>
       <section className="relative flex min-h-[64svh] items-end overflow-hidden bg-black">
         <div className="brand-texture absolute inset-0" aria-hidden="true" />
-        <Image src={SCENES.all} alt="" fill preload fetchPriority="high" loading="eager" sizes="100vw" quality={75} className="object-cover object-[50%_30%] opacity-55" />
+        <Image src={BANNERS.shop} alt="" fill preload fetchPriority="high" loading="eager" sizes="100vw" quality={75} className="object-cover object-[50%_30%] opacity-55" />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-black/25" />
         <div className="container-zx relative pb-12 md:pb-20">
           <p className="eyebrow mb-5">{t.eyebrow}</p>

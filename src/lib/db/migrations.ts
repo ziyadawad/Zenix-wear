@@ -1,5 +1,5 @@
 import type { Queryable } from './index';
-import { CATEGORY_MOCKUP, DEFAULT_COMMUNITY, MOCKUPS, SCENES, cleanImage, isOwnPhoto, mockupType, mockupsFor, typeFromOldImage } from './images';
+import { BANNERS, CATEGORY_PRODUCT, DEFAULT_COMMUNITY, PHOTO_PRODUCTS, PLACEHOLDER, cleanImage, isOwnPhoto, photoProduct, photosFor } from './images';
 import LEGACY_AR from './legacy-ar.json';
 import { insertStarterCatalogue } from './seed';
 
@@ -9,7 +9,15 @@ import { insertStarterCatalogue } from './seed';
  */
 interface Migration { id: string; up: (q: Queryable) => Promise<void> }
 
-/** Homepage defaults: every tile, banner and gallery image is a mockup. */
+// The older migrations below were written for the generated mockups. These stand-ins keep them running on a new
+// database; the last migration ('2026-11-16-real-photos') then brings every database to the real product photos.
+const SCENES = { tees: BANNERS.shortSleeve, sleeveless: BANNERS.sleeveless, all: BANNERS.shop };
+const CATEGORY_MOCKUP = CATEGORY_PRODUCT;
+const MOCKUPS = '/images/scenes-v2';
+const typeFromOldImage = photoProduct, mockupType = photoProduct;
+const mockupsFor = (type: string, colourId: string, _hex?: string) => photosFor(PHOTO_PRODUCTS[type] ? type : type === 'tank' ? 'sleeveless' : 'short-sleeve', colourId);
+
+/** Homepage defaults (older migrations). */
 /** Used by the older migrations below. Category images now live on each category (Admin → Categories). */
 const DEFAULT_CATEGORY_IMAGES: Record<string, string> = { 't-shirts': SCENES.tees, sleeveless: SCENES.sleeveless, collections: SCENES.all };
 const COLLECTION_SCENES: Record<string, string> = {};
@@ -257,6 +265,50 @@ const MIGRATIONS: Migration[] = [
       await q.query(`UPDATE settings SET ${move('value')}::jsonb WHERE value::text ~ '/images/(mockups|scenes)/'`);
       await q.query(`UPDATE categories SET ${move('image')} WHERE image ~ '^/images/(mockups|scenes)/'`);
       await q.query(`UPDATE reviews SET ${move('image')} WHERE image ~ '^/images/(mockups|scenes)/'`);
+    },
+  },
+  {
+    // Real product photos (public/products/) everywhere, and only two colours: black and white. Gray is removed from
+    // both products with its stock and back-in-stock requests. Past orders keep their gray lines (shown with the
+    // black photo). Photos the owner uploaded are kept.
+    id: '2026-11-16-real-photos',
+    up: async (q) => {
+      for (const p of await q.query<{ id: string; category: string; colors: { id: string; hex: string; images: string[] }[] }>('SELECT id, category, colors FROM products')) {
+        const folder = p.colors.flatMap((c) => c.images ?? []).map(photoProduct).find(Boolean) ?? CATEGORY_PRODUCT[p.category] ?? 'short-sleeve';
+        const colors = p.colors.filter((c) => c.id !== 'gray').map((c) => {
+          const own = (c.images ?? []).filter(isOwnPhoto);
+          return { ...c, images: own.length ? own : photosFor(folder, c.id) };
+        });
+        if (JSON.stringify(colors) !== JSON.stringify(p.colors)) await q.query('UPDATE products SET colors = $1::jsonb WHERE id = $2', [JSON.stringify(colors), p.id]);
+      }
+      await q.query(`DELETE FROM product_variants WHERE color_id = 'gray'`);
+      await q.query(`DELETE FROM stock_alerts WHERE color_id = 'gray'`);
+      for (const o of await q.query<{ id: string; items: { image?: string }[] }>(`SELECT id, items FROM orders WHERE items::text ~ '/images/|/api/scene/'`)) {
+        const items = o.items.map((i) => (i.image ? { ...i, image: cleanImage(i.image) } : i));
+        await q.query('UPDATE orders SET items = $1::jsonb WHERE id = $2', [JSON.stringify(items), o.id]);
+      }
+      for (const c of await q.query<{ slug: string; image: string }>(`SELECT slug, image FROM categories WHERE image ~ '^/images/'`)) {
+        await q.query('UPDATE categories SET image = $1 WHERE slug = $2', [cleanImage(c.image), c.slug]);
+      }
+      for (const v of await q.query<{ id: string; image: string }>(`SELECT id, image FROM reviews WHERE image ~ '^/images/'`)) {
+        await q.query('UPDATE reviews SET image = $1 WHERE id = $2', [cleanImage(v.image), v.id]);
+      }
+      const [row] = await q.query<{ value: { shopImage?: string; community?: string[]; hero?: { image?: string; subAr?: string; subEn?: string }[] } & Record<string, unknown> }>(`SELECT value FROM settings WHERE key = 'content'`);
+      if (row) {
+        const v = row.value;
+        const next = {
+          ...v,
+          shopImage: v.shopImage ? cleanImage(v.shopImage) : BANNERS.shop,
+          community: (v.community ?? []).map(cleanImage).filter((src) => src !== PLACEHOLDER),
+          hero: (v.hero ?? []).map((h) => ({
+            ...h, image: h.image ? cleanImage(h.image) : h.image,
+            subAr: h.subAr === 'نص كم وكت، بالأسود والأبيض والرمادي.' ? 'نص كم وكت، بالأسود والأبيض.' : h.subAr,
+            subEn: h.subEn === 'Short-sleeve and sleeveless, in black, white and gray.' ? 'Short-sleeve and sleeveless, in black and white.' : h.subEn,
+          })),
+        };
+        for (const f of DEFAULT_COMMUNITY) if (next.community.length < 6 && !next.community.includes(f)) next.community.push(f);
+        if (JSON.stringify(next) !== JSON.stringify(v)) await q.query(`UPDATE settings SET value = $1::jsonb WHERE key = 'content'`, [JSON.stringify(next)]);
+      }
     },
   },
 ];

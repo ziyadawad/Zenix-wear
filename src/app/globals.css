@@ -265,32 +265,10 @@ html.js [data-reveal].in { opacity: 1; transform: none; }
 }
 @keyframes glowBreathe { 50% { opacity: 0.85; transform: scale(1.05); } }
 
-/* Product scenes (components/product/ProductScene.tsx). The scene itself is in the image; these are the live layers.
-   --neon is the scene's neon colour (config/scene.config.ts); registered so it fades when the colour changes. */
-@property --neon { syntax: '<color>'; inherits: true; initial-value: #9b5cff; }
-.pscene { background: #050507; transition: --neon 0.7s ease; isolation: isolate; }
-.pscene-layer { opacity: 0; transition: opacity 0.6s ease; }
-.pscene-layer.on { opacity: 1; }
-/* The neon glow: only in the background (the beam's corner and the floor), never over the garment, so the
-   shirt keeps its true colour. Faint at rest, it grows slowly while the pointer is on the card (desktop only). */
-.pscene-glow {
-  mix-blend-mode: screen; opacity: 0.15; transition: opacity 1.2s ease;
-  background: radial-gradient(30% 22% at 0% 0%, color-mix(in srgb, var(--neon) 70%, transparent), transparent 100%),
-              radial-gradient(60% 9% at 50% 100%, color-mix(in srgb, var(--neon) 55%, transparent), transparent 100%);
-}
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .group:hover .pscene-glow, .pscene:hover .pscene-glow { opacity: 0.6; }
-}
-/* The same studio, built in CSS, behind the owner's own photos: haze, a diagonal neon beam, a glossy floor. */
-.pscene-stage {
-  background:
-    linear-gradient(to bottom, transparent 80%, color-mix(in srgb, var(--neon) 10%, #020203) 80.4%, #020203),
-    linear-gradient(141deg, transparent 33.6%, color-mix(in srgb, var(--neon) 85%, white) 34%, transparent 34.4%),
-    linear-gradient(141deg, transparent 30%, color-mix(in srgb, var(--neon) 30%, transparent) 34%, transparent 38%),
-    radial-gradient(55% 45% at 50% 50%, color-mix(in srgb, var(--neon) 22%, transparent), transparent 75%),
-    radial-gradient(80% 60% at 30% 30%, rgb(120 130 150 / 0.12), transparent 70%),
-    #060609;
-}
+/* Product photos (components/product/ProductPhoto.tsx): the photos' own black background, no overlay. */
+.pphoto { background: #000; }
+.pphoto-layer { opacity: 0; transition: opacity 0.6s ease; }
+.pphoto-layer.on { opacity: 1; }
 
 /* Newsletter band: dark, with a soft violet light from below. */
 .newsletter-glow { background: radial-gradient(60% 90% at 50% 120%, color-mix(in srgb, var(--color-accent-2) 18%, transparent), transparent 70%), var(--color-ink); }

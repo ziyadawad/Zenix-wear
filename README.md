@@ -101,18 +101,16 @@ Everything can be replaced from the admin. Recommended sizes: products 1200×150
 
 The logos in `public/brand/` were cut from the supplied JPEGs. The wordmark source is only 831 px wide: if you have a vector (SVG) or high-resolution version, replace `wordmark.webp` for sharper rendering on large screens.
 
-### Images: "ambient light" product scenes
+### Images: real product photos
 
-The site shows no photos of people. Every product image is a night studio scene: smoky haze, a diagonal neon beam from the top-left, the T-shirt standing big and centred on a wet, reflective floor, and the silver ZENIX logo in the top-right corner. The neon stays in the background: the garment is lit with neutral white light and always shows its true colour. Light garments get a near-black scene; dark garments get a brighter neutral backlight behind them so they never blend into the background.
+Every product image is a real photo of the T-shirt (no people), on a black background, with no tint or effect on top. The two products come in black and white.
 
-The drawings follow the real products: the short-sleeve tee is an athletic raglan tee with contrast piping along the raglan seams and sleeve hems (piping colour per shirt colour in `PIPING`, `config/scene.config.ts`); the sleeveless top has wide front straps and a racerback. Photos of the real T-shirts can be kept in `design-reference/` for comparison: that folder is git-ignored and never published.
+- **Originals:** `product-photos/` (outside `public/`): one file per product and colour, front view on the left half and back view on the right.
+- **`npm run photos`** (`scripts/product-photos.mts`) splits each file into front and back, crops them centred with even padding at one shared scale, and writes 1000×1250 WebP files to `public/products/<product>/<colour>-front.webp` and `-back.webp`, plus the 1200×630 social-sharing images and the banners in `public/products/banners/`. Next.js serves each photo at the right size for phones and computers.
+- **On the page:** `ProductPhoto` (`src/components/product/ProductPhoto.tsx`): front on cards, back on hover (desktop), front and back in the gallery, and a fade when a colour swatch is clicked.
+- **From the admin:** each colour's photos are saved with the product (Products → edit). Add, remove or replace them there. A new colour without photos shows the ZENIX placeholder until you upload its photos.
 
-- **Neon colour per garment colour:** `config/scene.config.ts` (one map, `NEON`; a colour that is not listed gets `DEFAULT_NEON`). After changing it, run `npm run scenes` and commit the scenes folder. When the drawings change, bump `SCENE_VERSION` in `src/lib/db/images.ts` first so the images get new URLs and no cache shows the old ones.
-- **Drawing:** `src/lib/scene/` (garments and the scene layers). `npm run scenes` (`scripts/render-scenes.mts`) renders WebP files for every colour, front and back, the 1200×630 social-sharing (Open Graph) versions and the banners into `public/images/scenes-v2/`.
-- **Colours added in the admin** that were not pre-rendered are drawn on demand at `/api/scene/...` in their own colour, with the default neon, and cached.
-- **On the page:** `ProductScene` (`src/components/product/ProductScene.tsx`) shows the scene, fades to the new one when a colour swatch is clicked, and makes the neon glow slowly stronger on hover (not with reduced motion).
-
-When you upload your own photo for a colour in the admin, it replaces that colour's scenes when you save, and is shown inside the same studio (built in CSS). A colour without a photo always gets its scene, so there are no empty boxes.
+For sharper images on high-resolution screens, export the originals at 2000 px wide or more and run `npm run photos` again.
 
 ## Dashboard
 
