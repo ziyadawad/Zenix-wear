@@ -18,7 +18,7 @@ const LEGACY_TYPE: Record<string, string> = {
 const LIGHT_COLOURS = new Set(['white', 'bone', 'silver', 'sand', 'stone']);
 
 export const BANNERS = {
-  hero: `${PHOTOS}/banners/hero.webp`, shop: `${PHOTOS}/banners/shop.webp`, og: `${PHOTOS}/banners/og.webp`,
+  hero: `${PHOTOS}/banners/hero-2.webp`, shop: `${PHOTOS}/banners/shop.webp`, og: `${PHOTOS}/banners/og.webp`,
   shortSleeve: `${PHOTOS}/banners/short-sleeve.webp`, sleeveless: `${PHOTOS}/banners/sleeveless.webp`,
 };
 /** Shown for a colour added in the admin until its photos are uploaded: the logo on black. */

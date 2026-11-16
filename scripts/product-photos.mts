@@ -99,7 +99,10 @@ for (const p of Object.values(PRODUCTS)) {
   for (const c of COLOURS) await row(`${p}/${c}-og.webp`, 1200, 630, [find(p, c, 'front'), find(p, c, 'back')], 0.74, 24, true);
 }
 const ss = 'short-sleeve', sl = 'sleeveless';
-await row('banners/hero.webp', 2400, 1350, [find(sl, 'white', 'front'), find(ss, 'black', 'front'), find(ss, 'white', 'front')], 0.56, 80);
+// Hero (behind the big logo): the black sleeveless in the centre, the white short-sleeve on both sides. The sides
+// match, so the centre garment sits exactly in the middle (phones, which crop to the middle, show it alone).
+// A new file name when the arrangement changes, so no browser or CDN keeps the old picture.
+await row('banners/hero-2.webp', 2400, 1350, [find(ss, 'white', 'front'), find(sl, 'black', 'front'), find(ss, 'white', 'front')], 0.56, 80);
 // Shop and category banners: wide (the page headers are about 3.5:1 on computers), garments whole and centred.
 await row('banners/shop.webp', 2400, 720, [find(sl, 'white', 'front'), find(ss, 'black', 'front'), find(sl, 'black', 'front'), find(ss, 'white', 'front')], 0.86, 60);
 await row('banners/short-sleeve.webp', 2400, 720, [find(ss, 'black', 'front'), find(ss, 'white', 'front'), find(ss, 'black', 'back')], 0.86, 80);
