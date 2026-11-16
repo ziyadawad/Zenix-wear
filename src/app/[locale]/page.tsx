@@ -1,4 +1,3 @@
-import { Gem, Repeat2, Ruler, Truck } from 'lucide-react';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { cardProps, getCatalog, getContent, getHomeReviews, getSettings } from '@/lib/catalog';
 import type { Locale } from '@/lib/types';
@@ -20,7 +19,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
   // Every product on sale, the owner's picks first (Admin → Homepage), then best sellers.
   const chosen = content.bestSellerIds.map((id) => catalog.find((p) => p.id === id)).filter((p) => p != null);
   const products = [...chosen, ...[...catalog].sort((a, b) => b.soldCount - a.soldCount).filter((p) => !chosen.includes(p))].slice(0, 8).map(cardProps);
-  const whyIcons = [Gem, Ruler, Truck, Repeat2];
 
   return (
     <>
@@ -43,32 +41,14 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
         </section>
       )}
 
-      <div className="ambient-divider container-zx" aria-hidden="true"><span className="ambient-strip" /></div>
-
-      {/* Why ZENIX */}
-      <section className="cv section container-zx" aria-labelledby="why-h">
-        <SectionHead id="why-h" title={t.home.why} center />
-        <ul className="grid grid-cols-2 gap-px bg-line lg:grid-cols-4">
-          {t.home.whyItems.map(([title, text], i) => {
-            const Icon = whyIcons[i];
-            return (
-              <li key={title} className="bg-ink p-5 text-center md:p-10" data-reveal style={{ '--d': `${i * 80}ms` } as React.CSSProperties}>
-                <Icon size={28} strokeWidth={1} className="mx-auto text-silver" />
-                <h3 className="mt-5 text-sm font-medium">{title}</h3>
-                <p className="mt-2 text-[13px] leading-relaxed text-muted">{text}</p>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
-
       {/* Reviews */}
-      {reviews.length > 0 && (
-        <section className="cv pb-14 md:pb-24" aria-labelledby="rev-h">
+      {reviews.length > 0 && (<>
+        <div className="ambient-divider container-zx" aria-hidden="true"><span className="ambient-strip" /></div>
+        <section className="cv pt-[clamp(3.5rem,8vw,7.5rem)] pb-14 md:pb-24" aria-labelledby="rev-h">
           <div className="container-zx"><SectionHead id="rev-h" title={t.home.reviews} withArrowSpace /></div>
           <ReviewsSlider reviews={reviews} />
         </section>
-      )}
+      </>)}
 
       <Newsletter />
     </>
