@@ -1,14 +1,13 @@
 'use client';
 import { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Heart, Plus } from 'lucide-react';
 import { CarouselShell } from './CarouselShell';
+import { ProductScene } from './ProductScene';
 import { useI18n } from '../layout/I18nProvider';
 import { addToCart, cartUi, toggleWish, track, useWishlist } from '@/lib/client/store';
 import type { Product } from '@/lib/types';
 import { cx, discountPercent, effectivePrice, formatMoney, pName, sizesOf, stockOf } from '@/lib/utils';
-import { displayImage } from '@/lib/db/images';
 
 export function buildCartItem(p: Product, colorId: string, size: string, qty = 1) {
   const c = p.colors.find((x) => x.id === colorId)!;
@@ -36,8 +35,8 @@ export function ProductCard({ product: p, priority, sizes = '(min-width:1024px) 
   const wish = useWishlist();
   const [colorId, setColorId] = useState(p.colors[0]?.id);
   const [quick, setQuick] = useState(false);
-  // The hover photo is only requested once a mouse actually arrives.
-  const [hovered, setHovered] = useState(false);
+  // With a mouse on the card, the back view fades in (and the neon glow grows, in CSS).
+  const [back, setBack] = useState(false);
   const color = p.colors.find((c) => c.id === colorId) ?? p.colors[0];
   const name = pName(p, locale);
   const wished = wish.includes(p.id);
@@ -54,14 +53,14 @@ export function ProductCard({ product: p, priority, sizes = '(min-width:1024px) 
   };
 
   return (
-    <article className="group relative" onPointerEnter={(e) => { if (e.pointerType === 'mouse') setHovered(true); }}>
-      <div className="mockup-stage glow-card relative aspect-[4/5] overflow-hidden">
+    <article className="group relative" onPointerEnter={(e) => { if (e.pointerType === 'mouse') setBack(true); }} onPointerLeave={() => setBack(false)}>
+      <div className="glow-card relative aspect-[4/5] overflow-hidden">
         <Link href={lp(`/product/${p.slug}`)} aria-label={name} className="absolute inset-0 block">
-          <Image src={color?.images[0] ?? displayImage(null)} alt={`${name}, ${locale === 'ar' ? color.nameAr : color.nameEn}`} fill sizes={sizes} quality={70} loading={priority ? 'eager' : 'lazy'} className={cx('zoom-img object-contain p-[5%]', hovered && color.images[1] && 'group-hover:opacity-0', 'transition-opacity duration-700')} />
-          {hovered && color?.images[1] && <Image src={color.images[1]} alt="" fill sizes={sizes} quality={70} className="object-contain p-[5%] opacity-0 transition-opacity duration-700 group-hover:opacity-100" />}
+          <ProductScene src={(back && color?.images[1]) || color?.images[0]} alt={`${name}, ${locale === 'ar' ? color.nameAr : color.nameEn}`} sizes={sizes} priority={priority} />
         </Link>
-        {tag && <span className={cx('pointer-events-none absolute start-2.5 top-2.5 px-2 py-1 text-[9px] tracking-[.14em] uppercase rtl:text-[11px] rtl:tracking-normal md:start-3 md:top-3', soldOut ? 'bg-raised text-muted' : 'bg-white text-black')}>{tag}{!soldOut && p.tags[0] === 'sale' && pct > 0 ? ` -${pct}%` : ''}</span>}
-        <button aria-label={wished ? t.shop.removeWish : t.shop.addWish} aria-pressed={wished} onClick={() => toggleWish(p.id)} className="absolute end-0.5 top-0.5 flex size-11 items-center justify-center">
+        {/* The scene's logo is in the top-right corner, so the heart sits top-left and the tag at the bottom. */}
+        {tag && <span className={cx('pointer-events-none absolute bottom-2.5 start-2.5 px-2 py-1 text-[9px] tracking-[.14em] uppercase rtl:text-[11px] rtl:tracking-normal md:bottom-3 md:start-3', soldOut ? 'bg-raised text-muted' : 'bg-white text-black')}>{tag}{!soldOut && p.tags[0] === 'sale' && pct > 0 ? ` -${pct}%` : ''}</span>}
+        <button aria-label={wished ? t.shop.removeWish : t.shop.addWish} aria-pressed={wished} onClick={() => toggleWish(p.id)} className="absolute left-0.5 top-0.5 flex size-11 items-center justify-center">
           <Heart size={18} strokeWidth={1.25} fill={wished ? '#fff' : 'none'} />
         </button>
 

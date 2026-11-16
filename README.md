@@ -101,11 +101,16 @@ Everything can be replaced from the admin. Recommended sizes: products 1200×150
 
 The logos in `public/brand/` were cut from the supplied JPEGs. The wordmark source is only 831 px wide: if you have a vector (SVG) or high-resolution version, replace `wordmark.webp` for sharper rendering on large screens.
 
-### Images: product mockups only
+### Images: "ambient light" product scenes
 
-The site shows no photos of people. Every image (hero, tiles, banners, gallery, products) is a flat product mockup on the dark ZENIX background with the Z printed on it, made by `npm run mockups` (`scripts/render-mockups.mjs`, output in `public/images/mockups/`). Each product colour has a front and a back view, so the colour swatches switch the image.
+The site shows no photos of people. Every product image is a night studio scene: smoky haze, a diagonal neon beam from the top-left, the T-shirt standing on a wet, reflective floor with a neon rim light, and the silver ZENIX logo in the top-right corner. Light garments get a near-black scene; dark garments get a brighter, glowing one so they never blend into the background.
 
-When you upload your own photo for a colour in the admin, it replaces that colour's mockups when you save. A colour without a photo always gets its mockup, so there are no empty boxes.
+- **Neon colour per garment colour:** `config/scene.config.ts` (one map; a colour that is not listed gets `DEFAULT_NEON`). After changing it, run `npm run scenes` and commit `public/images/scenes/`.
+- **Drawing:** `src/lib/scene/` (garments and the scene layers). `npm run scenes` (`scripts/render-scenes.mts`) renders WebP files for every colour, front and back, the 1200×630 social-sharing (Open Graph) versions and the banners into `public/images/scenes/`.
+- **Colours added in the admin** that were not pre-rendered are drawn on demand at `/api/scene/...` in their own colour, with the default neon, and cached.
+- **On the page:** `ProductScene` (`src/components/product/ProductScene.tsx`) shows the scene, fades to the new one when a colour swatch is clicked, and makes the neon glow slowly stronger on hover (not with reduced motion).
+
+When you upload your own photo for a colour in the admin, it replaces that colour's scenes when you save, and is shown inside the same studio (built in CSS). A colour without a photo always gets its scene, so there are no empty boxes.
 
 ## Dashboard
 

@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { ArrowLeft, ArrowRight, Expand, X } from 'lucide-react';
 import { fill, useI18n } from '../layout/I18nProvider';
 import { useProductState } from './ProductClient';
+import { ProductScene } from './ProductScene';
 import { cx, pName } from '@/lib/utils';
 
 export function Gallery() {
@@ -33,9 +34,10 @@ export function Gallery() {
       {/* Mobile: swipe slider */}
       <div className="relative lg:hidden">
         <div ref={rowRef} onScroll={onScroll} className="snap-row !gap-0" tabIndex={0} aria-label={name} role="region">
+          {/* Keyed by position, so a new colour fades in over the old one instead of replacing the slide. */}
           {images.map((src, i) => (
-            <button key={src} type="button" className="relative aspect-[4/5] w-full mockup-stage" onClick={() => setLightbox(i)} aria-label={`${t.product.fullScreen}: ${fill(t.product.imageOf, { i: i + 1, n: images.length })}`}>
-              <Image src={src} alt={`${name}, ${fill(t.product.imageOf, { i: i + 1, n: images.length })}`} fill preload={i === 0} fetchPriority={i === 0 ? 'high' : 'auto'} loading={i === 0 ? 'eager' : 'lazy'} sizes="100vw" quality={80} className="object-contain p-[4%]" />
+            <button key={i} type="button" className="relative aspect-[4/5] w-full" onClick={() => setLightbox(i)} aria-label={`${t.product.fullScreen}: ${fill(t.product.imageOf, { i: i + 1, n: images.length })}`}>
+              <ProductScene src={src} alt={`${name}, ${fill(t.product.imageOf, { i: i + 1, n: images.length })}`} priority={i === 0} sizes="100vw" quality={80} />
             </button>
           ))}
         </div>
@@ -52,7 +54,7 @@ export function Gallery() {
           {images.map((src, i) => (
             <li key={src}>
               <button type="button" onClick={() => setIndex(i)} aria-label={fill(t.product.imageOf, { i: i + 1, n: images.length })} aria-current={i === index} className={cx('relative block aspect-[4/5] w-full overflow-hidden border bg-surface transition-colors', i === index ? 'border-white' : 'border-transparent hover:border-line-strong')}>
-                <Image src={src} alt="" fill sizes="76px" quality={70} className="object-contain" />
+                <Image src={src} alt="" fill sizes="76px" quality={70} className="object-cover" />
               </button>
             </li>
           ))}
@@ -60,8 +62,8 @@ export function Gallery() {
             <li><a href={p.video} target="_blank" rel="noopener noreferrer" className="flex aspect-[4/5] items-center justify-center border border-line text-[10px] text-muted hover:text-white">{t.product.video}</a></li>
           )}
         </ul>
-        <button type="button" onClick={() => setLightbox(index)} className="group relative block aspect-[4/5] w-full overflow-hidden mockup-stage" aria-label={t.product.fullScreen}>
-          {images[index] && <Image key={images[index]} src={images[index]} alt={name} fill loading="eager" fetchPriority="high" sizes="(min-width:1024px) 50vw, 100vw" quality={80} className="zoom-img object-contain p-[4%]" style={{ animation: 'fadeIn .5s ease both' }} />}
+        <button type="button" onClick={() => setLightbox(index)} className="group relative block aspect-[4/5] w-full overflow-hidden" aria-label={t.product.fullScreen}>
+          {images[index] && <ProductScene src={images[index]} alt={name} priority sizes="(min-width:1024px) 50vw, 100vw" quality={80} />}
           <span className="absolute bottom-4 end-4 flex size-11 items-center justify-center bg-black/60 opacity-0 backdrop-blur transition-opacity group-hover:opacity-100"><Expand size={16} strokeWidth={1.25} /></span>
         </button>
       </div>

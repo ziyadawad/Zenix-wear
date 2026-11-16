@@ -1,5 +1,5 @@
 import type { Queryable } from './index';
-import { CATEGORY_MOCKUP, DEFAULT_COMMUNITY, SCENES, cleanImage, isOwnPhoto, mockupsFor, typeFromOldImage } from './images';
+import { CATEGORY_MOCKUP, DEFAULT_COMMUNITY, SCENES, cleanImage, isOwnPhoto, mockupType, mockupsFor, typeFromOldImage } from './images';
 import LEGACY_AR from './legacy-ar.json';
 import { insertStarterCatalogue } from './seed';
 
@@ -206,6 +206,27 @@ const MIGRATIONS: Migration[] = [
       await q.query('ALTER TABLE customers ALTER COLUMN phone DROP NOT NULL');
       await q.query(`UPDATE customers SET email = lower(email) WHERE email <> lower(email)`);
       await q.query('CREATE INDEX IF NOT EXISTS orders_customer_idx ON orders(customer_id)');
+    },
+  },
+  {
+    // Product images become "ambient light" studio scenes in /images/scenes/ (new file names, so no browser or CDN
+    // keeps showing the old mockups). Colours that were not pre-rendered get their own scene from /api/scene.
+    id: '2026-11-16-ambient-scenes',
+    up: async (q) => {
+      for (const p of await q.query<{ id: string; category: string; colors: { id: string; hex: string; images: string[] }[] }>('SELECT id, category, colors FROM products')) {
+        const colors = p.colors.map((c) => {
+          const images = c.images ?? [];
+          if (images.some(isOwnPhoto)) return { ...c, images: images.filter(isOwnPhoto) };
+          const type = images.map(mockupType).find(Boolean) ?? CATEGORY_MOCKUP[p.category] ?? 'tee-a';
+          return { ...c, images: mockupsFor(type, c.id, c.hex) };
+        });
+        if (JSON.stringify(colors) !== JSON.stringify(p.colors)) await q.query('UPDATE products SET colors = $1::jsonb WHERE id = $2', [JSON.stringify(colors), p.id]);
+      }
+      const move = (col: string) => `${col} = replace(${col}::text, '/images/mockups/', '/images/scenes/')`;
+      await q.query(`UPDATE orders SET ${move('items')}::jsonb WHERE items::text LIKE '%/images/mockups/%'`);
+      await q.query(`UPDATE settings SET ${move('value')}::jsonb WHERE value::text LIKE '%/images/mockups/%'`);
+      await q.query(`UPDATE categories SET ${move('image')} WHERE image LIKE '/images/mockups/%'`);
+      await q.query(`UPDATE reviews SET ${move('image')} WHERE image LIKE '/images/mockups/%'`);
     },
   },
 ];

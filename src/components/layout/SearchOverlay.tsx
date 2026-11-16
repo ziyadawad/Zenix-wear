@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Search, X } from 'lucide-react';
@@ -8,7 +7,7 @@ import { useI18n } from './I18nProvider';
 import { searchUi } from '@/lib/client/store';
 import { searchProducts, type SearchHit } from '@/app/actions/shop';
 import { formatMoney } from '@/lib/utils';
-import { displayImage } from '@/lib/db/images';
+import { ProductScene } from '../product/ProductScene';
 
 export function SearchOverlay() {
   const { t, lp, locale } = useI18n();
@@ -56,7 +55,7 @@ export function SearchOverlay() {
           {hits?.map((h) => (
             <li key={h.slug}>
               <Link href={lp(`/product/${h.slug}`)} onClick={close} className="group block">
-                <div className="relative aspect-[4/5] overflow-hidden mockup-stage"><Image src={displayImage(h.image)} alt={locale === 'ar' ? h.nameAr : h.nameEn} fill sizes="(min-width:1024px) 16vw, 50vw" quality={70} className="zoom-img object-contain p-[5%]" /></div>
+                <div className="relative aspect-[4/5] overflow-hidden"><ProductScene src={h.image} alt={locale === 'ar' ? h.nameAr : h.nameEn} sizes="(min-width:1024px) 16vw, 50vw" /></div>
                 <p className="mt-2 text-[13px]">{locale === 'ar' ? h.nameAr : h.nameEn}</p>
                 <p className="text-[13px] text-muted">{formatMoney(h.price, locale)}</p>
               </Link>

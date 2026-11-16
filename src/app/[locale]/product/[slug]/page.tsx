@@ -4,6 +4,7 @@ import { getDictionary } from '@/lib/i18n/dictionaries';
 import { cardProps, getCatalog, getCategories, getProduct, getProductReviews, getSettings } from '@/lib/catalog';
 import type { Locale, Product } from '@/lib/types';
 import { effectivePrice, formatMoney, jsonLd, pName, SITE_URL, totalStock } from '@/lib/utils';
+import { isOwnPhoto, ogImage } from '@/lib/db/images';
 import { Gallery } from '@/components/product/Gallery';
 import { BuyBox } from '@/components/product/BuyBox';
 import { Accordion } from '@/components/ui/Accordion';
@@ -22,10 +23,13 @@ export async function generateMetadata({ params }: P): Promise<Metadata> {
   const name = pName(p, locale);
   const description = (locale === 'ar' ? p.descAr : p.descEn).slice(0, 160);
   const image = p.colors[0]?.images[0];
+  const own = !!image && isOwnPhoto(image);
   return {
     title: name, description,
     alternates: { canonical: `/${locale}/product/${slug}`, languages: { ar: `/ar/product/${slug}`, en: `/en/product/${slug}` } },
-    openGraph: { title: `${name} | ZENIX WEAR`, description, type: 'website', images: image ? [{ url: image, width: 1200, height: 1500, alt: name }] : ['/brand/og.jpg'] },
+    // The 1200 x 630 scene of the first colour (or the owner's own photo as it is).
+    openGraph: { title: `${name} | ZENIX WEAR`, description, type: 'website', images: [own && image ? { url: image, alt: name } : { url: ogImage(image), width: 1200, height: 630, alt: name, type: 'image/webp' }] },
+    twitter: { card: 'summary_large_image', images: [own && image ? image : ogImage(image)] },
   };
 }
 

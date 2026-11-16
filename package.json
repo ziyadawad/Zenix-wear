@@ -10,7 +10,7 @@
     "db:setup": "tsx --env-file-if-exists=.env.local scripts/db-setup.ts",
     "admin:password": "tsx scripts/admin-password.ts",
     "db:reset": "tsx --env-file-if-exists=.env.local scripts/db-reset.ts",
-    "mockups": "node scripts/render-mockups.mjs"
+    "scenes": "tsx scripts/render-scenes.mts"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.15",
@@ -23,6 +23,7 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "server-only": "^0.0.1",
+    "sharp": "^0.35.5",
     "zod": "^4.6.7"
   },
   "devDependencies": {
