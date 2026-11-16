@@ -17,19 +17,6 @@ export function ContentForm({ initial, products }: { initial: SiteContent; produ
 
   return (
     <form className="max-w-[1000px] space-y-4 pb-20" onSubmit={(e) => { e.preventDefault(); start(async () => { const r = await saveContent(v); setMsg(r.ok ? { ok: true, text: 'Saved' } : { ok: false, text: r.error ?? 'Could not save.' }); }); }}>
-      <Card title="Announcement bar">
-        <div className="space-y-2">
-          {v.announcements.map((a, i) => (
-            <div key={i} className="grid grid-cols-[1fr_44px] gap-2 sm:grid-cols-[1fr_1fr_44px]">
-              <input className="field" aria-label={`Announcement ${i + 1} English`} placeholder="English" value={a.en} onChange={(e) => up({ announcements: v.announcements.map((x, j) => (j === i ? { ...x, en: e.target.value } : x)) })} />
-              <input className="field order-3 col-span-2 sm:order-none sm:col-span-1" dir="rtl" aria-label={`Announcement ${i + 1} Arabic`} placeholder="العربية" value={a.ar} onChange={(e) => up({ announcements: v.announcements.map((x, j) => (j === i ? { ...x, ar: e.target.value } : x)) })} />
-              <button type="button" aria-label="Remove announcement" onClick={() => up({ announcements: v.announcements.filter((_, j) => j !== i) })} className="flex h-[50px] items-center justify-center text-muted hover:text-[#ff9a9d]"><Trash2 size={16} strokeWidth={1.25} /></button>
-            </div>
-          ))}
-          <button type="button" className="btn btn-ghost !min-h-11 w-full" onClick={() => up({ announcements: [...v.announcements, { ar: '', en: '' }] })}><Plus size={15} />Add line</button>
-        </div>
-      </Card>
-
       <Card title="Hero slides">
         <div className="space-y-4">
           {v.hero.map((s, i) => (

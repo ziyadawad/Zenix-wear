@@ -1,31 +1,11 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Heart, Home, Search, ShoppingBag, Store } from 'lucide-react';
 import { useI18n } from './I18nProvider';
 import { cartCount, cartUi, searchUi, useCart, useWishlist } from '@/lib/client/store';
 import { CONTACT, cx } from '@/lib/utils';
-import type { Localized } from '@/lib/types';
-
-/** Slim rotating announcement bar. */
-export function AnnouncementBar({ items }: { items: Localized[] }) {
-  const { locale } = useI18n();
-  const [i, setI] = useState(0);
-  useEffect(() => {
-    if (items.length < 2) return;
-    const id = setInterval(() => setI((x) => (x + 1) % items.length), 4200);
-    return () => clearInterval(id);
-  }, [items.length]);
-  if (!items.length) return null;
-  return (
-    <div className="no-print relative z-50 flex h-[var(--ann)] items-center justify-center overflow-hidden border-b border-line bg-black px-4 text-center">
-      <p key={i} className="announce-item truncate text-[11px] tracking-[.14em] uppercase text-silver rtl:text-[12px] rtl:tracking-normal" aria-live="off">
-        {items[i % items.length]?.[locale]}
-      </p>
-    </div>
-  );
-}
 
 export function BottomNav() {
   const { t, lp, locale } = useI18n();

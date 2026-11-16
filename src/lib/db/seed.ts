@@ -86,18 +86,13 @@ export const DEFAULT_CONTENT: SiteContent = {
     { id: 'h2', kind: 'brand', image: '', headlineAr: 'ZENIX WEAR', headlineEn: 'ZENIX WEAR', subAr: 'نص كم وكت، بالأسود والأبيض والرمادي.', subEn: 'Short-sleeve and sleeveless, in black, white and gray.' },
     { id: 'h3', kind: 'brand', image: '', headlineAr: 'ZENIX WEAR', headlineEn: 'ZENIX WEAR', subAr: 'توصيل لكل مصر، والدفع عند الاستلام.', subEn: 'Delivered across Egypt, cash on delivery.' },
   ],
-  announcements: [
-    { ar: 'الشحن مجاني فوق ١٥٠٠ ج.م', en: 'Free shipping on orders over 1500 EGP' },
-    { ar: 'ادفع كاش لما الأوردر يوصلك، في كل مصر', en: 'Cash on delivery all over Egypt' },
-    { ar: 'تبديل سهل في خلال ١٤ يوم', en: 'Easy exchange within 14 days' },
-  ],
   shopImage: SCENES.all,
   bestSellerIds: [],
   community: DEFAULT_COMMUNITY,
 };
 
 export const DEFAULT_SETTINGS: SiteSettings = {
-  freeShippingThreshold: 1500,
+  freeShippingThreshold: 0, // 0 = no free shipping; set an amount in Admin → Settings to turn it on
   instagram: '', tiktok: '', facebook: '',
   instapayHandle: '01003965158', walletNumber: '01003965158',
   metaPixelId: '', tiktokPixelId: '', gaId: '',

@@ -96,7 +96,6 @@ export interface HeroSlide {
 export interface Localized { ar: string; en: string }
 export interface SiteContent {
   hero: HeroSlide[];
-  announcements: Localized[];
   /** Banner at the top of the shop page. */
   shopImage: string;
   bestSellerIds: string[];

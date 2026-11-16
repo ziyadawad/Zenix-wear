@@ -8,12 +8,14 @@ import { cartCount, cartSubtotal, cartUi, changeSize, lineId, removeLine, setQty
 import { formatMoney, pName } from '@/lib/utils';
 import { ProductScene } from '../product/ProductScene';
 
-export function FreeShippingBar({ subtotal }: { subtotal: number }) {
+/** Progress towards free shipping. Only when free shipping is set in Admin → Settings (above 0). */
+export function FreeShippingBar({ subtotal, className }: { subtotal: number; className?: string }) {
   const { t, locale, settings } = useI18n();
+  if (settings.freeShippingThreshold <= 0) return null;
   const left = settings.freeShippingThreshold - subtotal;
   const pct = Math.min(100, (subtotal / Math.max(settings.freeShippingThreshold, 1)) * 100);
   return (
-    <div>
+    <div className={className}>
       <p className="mb-2 text-[13px] text-silver">{left > 0 ? fill(t.cart.away, { amount: formatMoney(left, locale) }) : t.cart.unlocked}</p>
       <div className="h-px w-full bg-line" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
         <div className="h-[2px] -translate-y-[0.5px] transition-[width] duration-700" style={{ width: `${pct}%`, background: 'var(--chrome)' }} />
@@ -91,7 +93,7 @@ export function CartDrawer() {
           </div>
         ) : (
           <>
-            <div className="flex-none border-b border-line px-5 py-4"><FreeShippingBar subtotal={subtotal} /></div>
+            <FreeShippingBar subtotal={subtotal} className="flex-none border-b border-line px-5 py-4" />
             <ul className="flex-1 overflow-y-auto px-5">
               {items.map((i) => <CartLine key={lineId(i)} item={i} onNavigate={close} />)}
             </ul>

@@ -249,7 +249,6 @@ const contentSchema = z.object({
     id: z.string().max(60), kind: z.enum(['brand', 'figure', 'cover']), image: z.union([z.literal(''), imageUrl]), video: z.string().max(600).optional(),
     headlineAr: z.string().max(120), headlineEn: z.string().max(120), subAr: z.string().max(240), subEn: z.string().max(240),
   })).min(1).max(6),
-  announcements: z.array(localized).max(8),
   shopImage: z.union([z.literal(''), imageUrl]),
   bestSellerIds: z.array(z.string().max(100)).max(12),
   community: z.array(imageUrl).max(6),

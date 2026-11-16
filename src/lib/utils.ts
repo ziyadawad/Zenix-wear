@@ -74,6 +74,6 @@ export function jsonLd(data: unknown) {
 export function isNavActive(pathname: string, locale: string, section: string) {
   const p = pathname.replace(new RegExp(`^/${locale}(?=/|$)`), '') || '/';
   if (section === '/') return p === '/';
-  if (section === '/shop') return p === '/shop' || p.startsWith('/product/');
+  if (section === '/shop') return p === '/shop' || p.startsWith('/shop/') || p.startsWith('/product/');
   return p === section || p.startsWith(`${section}/`);
 }

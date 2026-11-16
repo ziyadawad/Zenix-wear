@@ -20,7 +20,7 @@ export function SettingsForm({ initial }: { initial: SiteSettings }) {
       <Card title="Shipping">
         <label className="label" htmlFor="st-free">Free shipping on orders over (EGP)</label>
         <input id="st-free" type="number" inputMode="numeric" min={0} className="field" value={v.freeShippingThreshold} onChange={(e) => setV({ ...v, freeShippingThreshold: Math.max(0, Number(e.target.value) || 0) })} />
-        <p className="mt-2 text-xs text-muted">Remember to update the announcement bar text under Homepage if you change this.</p>
+        <p className="mt-2 text-xs text-muted">0 = no free shipping (every order pays its governorate's fee). Above 0, orders over this amount ship free and the cart shows the progress.</p>
       </Card>
       <Card title="Payment accounts">
         <div className="space-y-3">

@@ -12,13 +12,13 @@ export const LEGAL: Record<string, Record<Locale, LegalDoc>> = {
   'shipping-policy': {
     en: doc('Shipping Policy', 'We deliver to all 27 governorates of Egypt.', [
       ['Delivery time', 'Orders are confirmed by phone or WhatsApp and normally arrive within 2 to 5 working days. Remote areas may take a little longer. Delivery does not take place on official holidays.'],
-      ['Shipping fees', 'The fee depends on your governorate and is shown at checkout before you confirm your order.', 'Orders over the free-shipping threshold shown on the site ship free.'],
+      ['Shipping fees', 'The fee depends on your governorate and is shown at checkout before you confirm your order.', 'When a free-shipping offer is running, it is shown in the cart and at checkout.'],
       ['Receiving your order', 'Our courier will call you before delivery, so please keep your phone available. You are welcome to inspect the item before paying the courier.', 'If delivery fails after several attempts, the order may be cancelled.'],
       ['Track your order', 'Use the Track Order page with your order number and phone number at any time.'],
     ]),
     ar: doc('سياسة الشحن', 'بنوصل لكل محافظات مصر الـ ٢٧.', [
       ['التوصيل بياخد قد إيه', 'بنأكد الأوردر معاك على التليفون أو واتساب، وعادةً بيوصل في خلال ٢ لـ ٥ أيام شغل. المناطق البعيدة ممكن تاخد وقت أطول شوية. مفيش توصيل في الإجازات الرسمية.'],
-      ['مصاريف الشحن', 'المصاريف على حسب المحافظة، وبتظهرلك قبل ما تأكد الأوردر.', 'الأوردرات اللي بتعدي حد الشحن المجاني المكتوب في الموقع شحنها مجاني.'],
+      ['مصاريف الشحن', 'المصاريف على حسب المحافظة، وبتظهرلك قبل ما تأكد الأوردر.', 'لو فيه عرض شحن مجاني شغال، هتلاقيه مكتوب في السلة وفي صفحة الدفع.'],
       ['استلام الأوردر', 'المندوب هيكلمك قبل ما يوصل، فخلي موبايلك جنبك. وتقدر تشوف القطعة قبل ما تدفع للمندوب.', 'لو التوصيل منفعش بعد كذا محاولة، ممكن الأوردر يتلغي.'],
       ['متابعة الأوردر', 'تقدر تتابع الأوردر في أي وقت من صفحة «تابع الأوردر» برقم الأوردر ورقم الموبايل.'],
     ]),
@@ -78,7 +78,7 @@ export const FAQ: Record<Locale, [string, string][]> = {
     ['What payment methods do you accept?', 'Cash on delivery, InstaPay and mobile wallets such as Vodafone Cash. Card payments will be available soon.'],
     ['Can I exchange an item?', 'Yes, within 14 days, as long as it is unworn with its tags on. Message us on WhatsApp to start.'],
     ['How do I choose my size?', 'Open the Size Guide on any product page. It has measurements in centimetres and a fit tip for that piece.'],
-    ['How much is shipping?', 'The fee depends on your governorate and appears at checkout. Orders over the free-shipping threshold ship free.'],
+    ['How much is shipping?', 'The fee depends on your governorate and appears at checkout.'],
     ['Do I need an account to order?', 'No. Guest checkout takes under a minute. An account simply makes tracking and reordering easier.'],
     ['Do you have a physical store?', 'No. ZENIX WEAR is online only, which lets us focus everything on the product and the delivery.'],
     ['How do I track my order?', 'Use the Track Order page with your order number and phone number.'],
@@ -89,7 +89,7 @@ export const FAQ: Record<Locale, [string, string][]> = {
     ['بتقبلوا الدفع بإيه؟', 'الدفع عند الاستلام، إنستاباي، والمحافظ زي فودافون كاش. والدفع بالكارت قريب.'],
     ['ينفع أبدّل القطعة؟', 'أيوه، في خلال ١٤ يوم بشرط متكونش اتلبست وبالتيكت بتاعها. كلمنا على واتساب ونبدأ.'],
     ['أختار مقاسي إزاي؟', 'افتح دليل المقاسات في صفحة أي قطعة. هتلاقي المقاسات بالسنتي ونصيحة للمقاس.'],
-    ['الشحن بكام؟', 'على حسب المحافظة وبيظهرلك قبل ما تأكد الأوردر. والأوردرات اللي بتعدي حد الشحن المجاني شحنها مجاني.'],
+    ['الشحن بكام؟', 'على حسب المحافظة وبيظهرلك قبل ما تأكد الأوردر.'],
     ['لازم أعمل حساب عشان أطلب؟', 'لأ. تقدر تطلب من غير حساب في أقل من دقيقة. الحساب بس بيسهّل المتابعة والطلب تاني.'],
     ['عندكم فرع؟', 'لأ. ZENIX WEAR أونلاين بس، وده بيخلينا نركز على القطعة والتوصيل.'],
     ['أتابع الأوردر إزاي؟', 'من صفحة «تابع الأوردر» برقم الأوردر ورقم الموبايل.'],

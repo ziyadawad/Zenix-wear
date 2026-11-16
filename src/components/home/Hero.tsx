@@ -40,7 +40,7 @@ export function Hero({ slides }: { slides: HeroSlide[] }) {
   const active = slides[i] ?? slides[0];
   if (!active) return null;
   return (
-    <section className="relative h-[calc(100svh-var(--ann))] min-h-[560px] overflow-hidden bg-black" aria-roledescription="carousel" aria-label="ZENIX WEAR" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+    <section className="relative h-svh min-h-[560px] overflow-hidden bg-black" aria-roledescription="carousel" aria-label="ZENIX WEAR" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
       {slides.map((s, idx) => {
         if (idx !== 0 && !loadAll) return null;
         const on = idx === i;

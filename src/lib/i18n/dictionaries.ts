@@ -38,7 +38,7 @@ const en = {
     addToCart: 'Add to Cart', buyNow: 'Buy Now', whatsapp: 'Order via WhatsApp', selectSize: 'Select a size', size: 'Size', color: 'Color', quantity: 'Quantity',
     sizeGuide: 'Size Guide', sizeGuideTitle: 'Size Guide', sizeGuideIntro: 'All measurements are in centimetres, taken with the garment flat.', chest: 'Chest', length: 'Length', shoulder: 'Shoulder', waist: 'Waist', inseam: 'Inseam', footLabel: 'EU shoe size',
     fitTip: 'Fit tip', description: 'Description', fabricCare: 'Fabric & Care', shippingExchange: 'Shipping & Exchange', fit: 'Fit', sku: 'SKU',
-    shippingText: 'Delivery in 2 to 5 working days across Egypt. Free shipping over {amount}. Cash on delivery is available everywhere. Exchange within 14 days, as long as the item is unworn with its tags on.',
+    shippingText: 'Delivery in 2 to 5 working days across Egypt.{free} Cash on delivery is available everywhere. Exchange within 14 days, as long as the item is unworn with its tags on.',
     completeLook: 'Complete the Look', youMayLike: 'You May Also Like', recentlyViewed: 'Recently Viewed',
     lowStock: 'Only {n} left!', soldOutVariant: 'This size is sold out', notifyMe: 'Notify me when back in stock', notifyPlaceholder: 'Email or phone number', notifySend: 'Notify me', notifyDone: 'We will let you know as soon as it is back.', notifyInvalid: 'Enter a valid email or Egyptian mobile number.',
     off: 'off', reviews: 'Reviews', noReviews: 'No reviews yet. Be the first.', writeReview: 'Write a review', reviewName: 'Your name', reviewCity: 'City (optional)', reviewBody: 'Your review', reviewRating: 'Your rating', reviewSubmit: 'Submit review', reviewThanks: 'Thank you. Your review will appear once approved.', reviewError: 'Please add your name and a few words, then try again.',
@@ -49,7 +49,7 @@ const en = {
   cart: {
     title: 'Your Cart', empty: 'Your cart is empty.', continueShopping: 'Continue shopping', checkout: 'Checkout', viewCart: 'View full cart', subtotal: 'Subtotal', shipping: 'Shipping', discount: 'Discount', total: 'Total',
     remove: 'Remove', promo: 'Promo code', applyPromo: 'Apply', promoApplied: 'Code applied', shippingAtCheckout: 'Calculated at checkout', free: 'Free',
-    away: 'You’re {amount} away from free shipping', unlocked: 'You’ve unlocked free shipping', onlyLeft: 'Only {n} available', unavailable: 'No longer available', items: 'items',
+    freeOver: ' Free shipping over {amount}.', away: 'You’re {amount} away from free shipping', unlocked: 'You’ve unlocked free shipping', onlyLeft: 'Only {n} available', unavailable: 'No longer available', items: 'items',
     promoErrors: { invalid: 'That code is not valid.', expired: 'That code has expired.', limit: 'That code has reached its usage limit.', min: 'This code needs a minimum order of {amount}.', 'first-order': 'This code is for first orders only.' },
   },
   checkout: {
@@ -130,7 +130,7 @@ const ar: Dictionary = {
     addToCart: 'ضيف للسلة', buyNow: 'اشتري دلوقتي', whatsapp: 'اطلب على واتساب', selectSize: 'اختار المقاس', size: 'المقاس', color: 'اللون', quantity: 'الكمية',
     sizeGuide: 'دليل المقاسات', sizeGuideTitle: 'دليل المقاسات', sizeGuideIntro: 'كل المقاسات بالسنتي، والقطعة مفرودة.', chest: 'الصدر', length: 'الطول', shoulder: 'الكتف', waist: 'الوسط', inseam: 'طول الرجل', footLabel: 'مقاس الجزمة',
     fitTip: 'نصيحة للمقاس', description: 'الوصف', fabricCare: 'الخامة والغسيل', shippingExchange: 'الشحن والتبديل', fit: 'القصّة', sku: 'الكود',
-    shippingText: 'بنوصل في كل مصر من ٢ لـ ٥ أيام شغل. الشحن مجاني فوق {amount}. الدفع عند الاستلام متاح في كل حتة. تقدر تبدّل في خلال ١٤ يوم، بشرط إن القطعة متكونش اتلبست وبالتيكت بتاعها.',
+    shippingText: 'بنوصل في كل مصر من ٢ لـ ٥ أيام شغل.{free} الدفع عند الاستلام متاح في كل حتة. تقدر تبدّل في خلال ١٤ يوم، بشرط إن القطعة متكونش اتلبست وبالتيكت بتاعها.',
     completeLook: 'كمّل اللوك', youMayLike: 'ممكن يعجبك كمان', recentlyViewed: 'شوفته قريب',
     lowStock: 'فاضل {n} بس!', soldOutVariant: 'المقاس ده خلص', notifyMe: 'قولّي لما يرجع', notifyPlaceholder: 'الإيميل أو رقم الموبايل', notifySend: 'قولّي', notifyDone: 'هنقولك أول ما يرجع.', notifyInvalid: 'اكتب إيميل صح أو رقم موبايل مصري.',
     off: 'خصم', reviews: 'التقييمات', noReviews: 'لسه مفيش تقييمات. قيّم إنت الأول.', writeReview: 'اكتب تقييمك', reviewName: 'اسمك', reviewCity: 'المدينة (مش لازم)', reviewBody: 'تقييمك', reviewRating: 'كام نجمة؟', reviewSubmit: 'ابعت التقييم', reviewThanks: 'شكرًا ليك. تقييمك هيظهر بعد ما نراجعه.', reviewError: 'اكتب اسمك وكام كلمة وجرب تاني.',
@@ -141,7 +141,7 @@ const ar: Dictionary = {
   cart: {
     title: 'السلة بتاعتك', empty: 'سلتك فاضية.', continueShopping: 'كمّل تسوق', checkout: 'كمّل الأوردر', viewCart: 'شوف السلة كلها', subtotal: 'المجموع', shipping: 'الشحن', discount: 'الخصم', total: 'الإجمالي',
     remove: 'شيل', promo: 'كود الخصم', applyPromo: 'طبّق', promoApplied: 'الكود اتطبق', shippingAtCheckout: 'هيتحسب في الخطوة الجاية', free: 'مجاني',
-    away: 'فاضل {amount} وتاخد الشحن مجاني', unlocked: 'الشحن عليك مجاني', onlyLeft: 'متاح {n} بس', unavailable: 'مبقاش متاح', items: 'قطع',
+    freeOver: ' الشحن مجاني فوق {amount}.', away: 'فاضل {amount} وتاخد الشحن مجاني', unlocked: 'الشحن عليك مجاني', onlyLeft: 'متاح {n} بس', unavailable: 'مبقاش متاح', items: 'قطع',
     promoErrors: { invalid: 'الكود ده مش صح.', expired: 'الكود ده خلص وقته.', limit: 'الكود ده خلص استخدامه.', min: 'الكود ده محتاج أوردر بـ {amount} على الأقل.', 'first-order': 'الكود ده لأول أوردر بس.' },
   },
   checkout: {

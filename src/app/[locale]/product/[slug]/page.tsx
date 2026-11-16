@@ -87,7 +87,7 @@ export default async function ProductPage({ params }: P) {
                 <p className="pb-5 leading-[1.9] text-[#c8c8c8]">{locale === 'ar' ? p.careAr : p.careEn}</p>
               </Accordion>
               <Accordion title={t.product.shippingExchange}>
-                <p className="pb-5 leading-[1.9] text-[#c8c8c8]">{t.product.shippingText.replace('{amount}', formatMoney(settings.freeShippingThreshold, locale))}</p>
+                <p className="pb-5 leading-[1.9] text-[#c8c8c8]">{t.product.shippingText.replace('{free}', settings.freeShippingThreshold > 0 ? t.cart.freeOver.replace('{amount}', formatMoney(settings.freeShippingThreshold, locale)) : '')}</p>
               </Accordion>
             </div>
           </div>

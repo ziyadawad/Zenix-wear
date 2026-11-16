@@ -67,7 +67,7 @@ async function evalPromo(q: Queryable, code: string | undefined, subtotal: numbe
 
 async function shippingFee(q: Queryable, governorate: string | undefined, afterDiscount: number, threshold: number) {
   if (!governorate) return null;
-  if (afterDiscount >= threshold) return 0;
+  if (threshold > 0 && afterDiscount >= threshold) return 0; // 0 = no free shipping
   const [r] = await q.query('SELECT fee FROM shipping_rates WHERE id = $1', [governorate]);
   return r ? (r.fee as number) : null;
 }

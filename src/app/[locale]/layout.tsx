@@ -3,13 +3,13 @@ import { Cairo, Inter, Italiana, Michroma } from 'next/font/google';
 import { notFound } from 'next/navigation';
 import '../globals.css';
 import { getDictionary } from '@/lib/i18n/dictionaries';
-import { getCategories, getContent, getSettings } from '@/lib/catalog';
+import { getCategories, getSettings } from '@/lib/catalog';
 import { isLocale, type Locale } from '@/lib/types';
 import { SITE_URL } from '@/lib/utils';
 import { SCENES } from '@/lib/db/images';
 import { I18nProvider } from '@/components/layout/I18nProvider';
 import { Header } from '@/components/layout/Header';
-import { AnnouncementBar, BottomNav, RevealObserver, WhatsAppFloat } from '@/components/layout/Chrome';
+import { BottomNav, RevealObserver, WhatsAppFloat } from '@/components/layout/Chrome';
 import { Footer } from '@/components/layout/Footer';
 import { CartDrawer } from '@/components/layout/CartDrawer';
 import { SearchOverlay } from '@/components/layout/SearchOverlay';
@@ -53,7 +53,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   if (!isLocale(raw)) notFound();
   const locale: Locale = raw;
   const t = getDictionary(locale);
-  const [content, settings, allCategories] = await Promise.all([getContent(), getSettings(), getCategories()]);
+  const [settings, allCategories] = await Promise.all([getSettings(), getCategories()]);
   const categories = allCategories.filter((c) => c.inMenu).map((c) => ({ slug: c.slug, name: locale === 'ar' ? c.nameAr : c.nameEn }));
   const publicSettings = { freeShippingThreshold: settings.freeShippingThreshold, instagram: settings.instagram, tiktok: settings.tiktok, facebook: settings.facebook };
 
@@ -71,7 +71,6 @@ export default async function LocaleLayout({ children, params }: { children: Rea
         </div>
         <I18nProvider dict={t} locale={locale} settings={publicSettings} categories={categories}>
           <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:start-3 focus:top-3 focus:z-[120] focus:bg-white focus:px-4 focus:py-2 focus:text-black">{t.nav.skip}</a>
-          <AnnouncementBar items={content.announcements} />
           <Header />
           <main id="main">{children}</main>
           <Footer t={t} locale={locale} settings={settings} categories={categories} />

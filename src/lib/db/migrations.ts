@@ -229,6 +229,15 @@ const MIGRATIONS: Migration[] = [
       await q.query(`UPDATE reviews SET ${move('image')} WHERE image LIKE '/images/mockups/%'`);
     },
   },
+  {
+    // The announcement bar is gone: drop its saved texts. The starter "free shipping over 1500 EGP" rule is removed
+    // too (0 = no free shipping); a different amount the owner set in Admin → Settings is kept.
+    id: '2026-11-16-no-announcement-bar',
+    up: async (q) => {
+      await q.query(`UPDATE settings SET value = value - 'announcements' WHERE key = 'content' AND value->'announcements' IS NOT NULL`);
+      await q.query(`UPDATE settings SET value = jsonb_set(value, '{freeShippingThreshold}', '0') WHERE key = 'site' AND (value->>'freeShippingThreshold')::numeric = 1500`);
+    },
+  },
 ];
 
 /** Applies pending migrations. Safe to call on every cold start: one small query when nothing is pending. */

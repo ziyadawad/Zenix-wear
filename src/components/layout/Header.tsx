@@ -16,7 +16,7 @@ export function languageHref(pathname: string, locale: string) {
 }
 
 export function Header() {
-  const { t, locale, lp, categories } = useI18n();
+  const { t, locale, lp } = useI18n();
   const pathname = usePathname();
   const cart = useCart();
   const wish = useWishlist();
@@ -34,11 +34,10 @@ export function Header() {
   }, []);
   useEffect(() => { setQs(window.location.search); menuUi.set(false); }, [pathname]);
 
-  // Home / Shop / one link per menu category (Admin → Categories) / Contact. The dashboard link sits at the end.
+  // Only Home, Shop and Contact. The categories are tabs inside the Shop page; the dashboard link sits at the end.
   const links = ([
     ['/', t.nav.home],
     ['/shop', t.nav.shop],
-    ...categories.map((c) => [`/shop/${c.slug}`, c.name] as const),
     ['/contact', t.nav.contact],
   ] as const).map(([section, label]) => ({ href: lp(section), label, active: isNavActive(pathname, locale, section) }));
 
@@ -52,14 +51,14 @@ export function Header() {
         <span className={cx('ambient-strip bottom-0 transition-opacity duration-500', overHero && 'opacity-40')} aria-hidden="true" />
         <div className="container-zx grid h-full grid-cols-[1fr_auto_1fr] items-center">
           <div className="flex items-center">
-            <button className="icon-btn -ms-3 xl:hidden" aria-label={t.nav.menu} onClick={() => menuUi.set(true)}>
+            <button className="icon-btn -ms-3 lg:hidden" aria-label={t.nav.menu} onClick={() => menuUi.set(true)}>
               <Menu size={22} strokeWidth={STROKE} />
             </button>
             {/* Phones have Home in the bottom bar. Tablets and small laptops have no full menu, so it sits here. */}
-            <Link href={lp('/')} aria-current={isHome ? 'page' : undefined} className={cx('link-underline hidden whitespace-nowrap text-[11px] tracking-[.1em] uppercase transition-opacity hover:opacity-100 md:inline-block xl:hidden rtl:text-[14px] rtl:tracking-normal', !isHome && 'opacity-70')}>{t.nav.home}</Link>
-            <nav aria-label={t.nav.menu} className="hidden items-center gap-3.5 xl:flex min-[1400px]:gap-5 2xl:gap-7">
+            <Link href={lp('/')} aria-current={isHome ? 'page' : undefined} className={cx('link-underline hidden whitespace-nowrap text-[11px] tracking-[.1em] uppercase transition-opacity hover:opacity-100 md:inline-block lg:hidden rtl:text-[14px] rtl:tracking-normal', !isHome && 'opacity-70')}>{t.nav.home}</Link>
+            <nav aria-label={t.nav.menu} className="hidden items-center gap-7 lg:flex 2xl:gap-9">
               {links.map((l) => (
-                <Link key={l.href} href={l.href} aria-current={l.active ? 'page' : undefined} className={cx('link-underline whitespace-nowrap text-[11px] tracking-[.08em] uppercase transition-opacity hover:opacity-100 min-[1400px]:tracking-[.14em] rtl:text-[14px] rtl:tracking-normal', !l.active && 'opacity-70')}>
+                <Link key={l.href} href={l.href} aria-current={l.active ? 'page' : undefined} className={cx('link-underline whitespace-nowrap text-[11px] tracking-[.14em] uppercase transition-opacity hover:opacity-100 rtl:text-[15px] rtl:tracking-normal', !l.active && 'opacity-70')}>
                   {l.label}
                 </Link>
               ))}
