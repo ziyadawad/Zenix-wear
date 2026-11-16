@@ -21,10 +21,9 @@ export const BANNERS = {
   shop: `${PHOTOS}/banners/shop.webp`, og: `${PHOTOS}/banners/og.webp`,
   shortSleeve: `${PHOTOS}/banners/short-sleeve.webp`, sleeveless: `${PHOTOS}/banners/sleeveless.webp`,
 };
-/** Homepage hero, left to right: white short-sleeve, black sleeveless (centre, behind the logo), black short-sleeve. */
+/** Homepage hero: the white short-sleeve (left) and the black short-sleeve (right). The centre, behind the logo, stays empty. */
 export const HERO_GARMENTS = [
   { src: `${PHOTOS}/hero/short-sleeve-white.webp`, dark: false },
-  { src: `${PHOTOS}/hero/sleeveless-black.webp`, dark: true },
   { src: `${PHOTOS}/hero/short-sleeve-black.webp`, dark: true },
 ];
 /** Shown for a colour added in the admin until its photos are uploaded: the logo on black. */

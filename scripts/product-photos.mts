@@ -161,10 +161,9 @@ async function cutout(v: View, file: string) {
     .composite([{ input: g, left: Math.round((CW - s.w) / 2), top: base - s.h }])
     .webp({ quality: 88, alphaQuality: 90, effort: 6 }).toFile(path.join(OUT, file));
 }
-// Homepage hero (behind the big logo): white short-sleeve | black sleeveless | black short-sleeve.
+// Homepage hero: white short-sleeve (left) and black short-sleeve (right).
 await fs.mkdir(path.join(OUT, 'hero'), { recursive: true });
 await cutout(find(ss, 'white', 'front'), 'hero/short-sleeve-white.webp');
-await cutout(find(sl, 'black', 'front'), 'hero/sleeveless-black.webp');
 await cutout(find(ss, 'black', 'front'), 'hero/short-sleeve-black.webp');
 // Shop and category banners: wide (the page headers are about 3.5:1 on computers), garments whole and centred.
 await row('banners/shop.webp', 2400, 720, [find(sl, 'white', 'front'), find(ss, 'black', 'front'), find(sl, 'black', 'front'), find(ss, 'white', 'front')], 0.86, 60);

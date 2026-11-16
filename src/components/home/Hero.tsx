@@ -10,9 +10,10 @@ import { cx } from '@/lib/utils';
 
 /**
  * The brand background: the three real T-shirts behind the logo, in their true colours (no tint on them).
- * - Computers: white short-sleeve | black sleeveless | black short-sleeve, standing in a row.
- * - Phones: a slow 3D carousel. The shirts sit on a circle; every 3 seconds the next one turns to the front
- *   (bigger, brighter) while the others go to the back (smaller, faded, slightly blurred). CSS transforms only.
+ * - Computers: white short-sleeve on the left, black short-sleeve on the right; the centre (behind the logo) is an
+ *   empty slot of the same size, so the two keep their places.
+ * - Phones: a slow 3D carousel. The two shirts sit on a circle and take turns: every 3 seconds the other one turns
+ *   to the front (bigger, brighter) while this one goes to the back (smaller, faded, slightly blurred). CSS only.
  *   With reduced motion: no turning, one shirt at a time with a slow cross-fade.
  * Black shirts get a soft neutral light BEHIND them so they stand out from the dark background.
  */
@@ -27,7 +28,7 @@ function BrandStage({ eager }: { eager: boolean }) {
   const shirt = (g: (typeof HERO_GARMENTS)[number], i: number, sizes: string) => (
     <>
       {g.dark && <span className="hero-backlight" aria-hidden="true" />}
-      <Image src={g.src} alt="" fill sizes={sizes} quality={85} preload={eager && i === 1} fetchPriority={eager && i === 1 ? 'high' : 'auto'} loading={eager ? 'eager' : 'lazy'} className="object-contain" />
+      <Image src={g.src} alt="" fill sizes={sizes} quality={85} preload={eager && i === 0} fetchPriority={eager && i === 0 ? 'high' : 'auto'} loading={eager ? 'eager' : 'lazy'} className="object-contain" />
     </>
   );
   return (
@@ -35,8 +36,8 @@ function BrandStage({ eager }: { eager: boolean }) {
       <div className="absolute inset-0" style={{ background: 'radial-gradient(70% 60% at 50% 42%, #15151c 0%, #09090d 55%, #050507 100%)' }} />
       {/* Computers: a static row */}
       <div className="absolute inset-0 hidden items-center justify-center md:flex" aria-hidden="true">
-        {HERO_GARMENTS.map((g, i) => (
-          <div key={g.src} className="hero-garment relative h-[62%] aspect-[4/5]">{shirt(g, i, '(min-width:768px) 40vh, 1px')}</div>
+        {[HERO_GARMENTS[0], null, HERO_GARMENTS[1]].map((g, i) => (
+          <div key={g?.src ?? 'centre'} className="hero-garment relative h-[62%] aspect-[4/5]">{g && shirt(g, i === 0 ? 0 : 1, '(min-width:768px) 40vh, 1px')}</div>
         ))}
       </div>
       {/* Phones: the shirts turn on a circle, one at a time to the front */}
