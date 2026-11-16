@@ -99,10 +99,73 @@ for (const p of Object.values(PRODUCTS)) {
   for (const c of COLOURS) await row(`${p}/${c}-og.webp`, 1200, 630, [find(p, c, 'front'), find(p, c, 'back')], 0.74, 24, true);
 }
 const ss = 'short-sleeve', sl = 'sleeveless';
-// Hero (behind the big logo): the black sleeveless in the centre, the white short-sleeve on both sides. The sides
-// match, so the centre garment sits exactly in the middle (phones, which crop to the middle, show it alone).
-// A new file name when the arrangement changes, so no browser or CDN keeps the old picture.
-await row('banners/hero-2.webp', 2400, 1350, [find(ss, 'white', 'front'), find(sl, 'black', 'front'), find(ss, 'white', 'front')], 0.56, 80);
+/**
+ * The garment on a transparent background, for the homepage hero (which lights each shirt from behind in CSS).
+ * Background = every near-black pixel connected to the photo's border (flood fill), so dark shadows inside a black
+ * shirt are never cut out. The edge is softened by a pixel. All cut-outs share one 800 x 1000 frame and one scale,
+ * centred, standing on the same line.
+ */
+async function cutout(v: View, file: string) {
+  const { data, info } = await v.img.clone().greyscale().raw().toBuffer({ resolveWithObject: true });
+  const { width: w, height: h } = info;
+  const bg = new Uint8Array(w * h), stack: number[] = [];
+  const T = 2; // the photos' background is 0-1; dark folds in a black shirt start just above
+  const push = (i: number) => { if (!bg[i] && data[i] <= T) { bg[i] = 1; stack.push(i); } };
+  for (let x = 0; x < w; x++) { push(x); push((h - 1) * w + x); }
+  for (let y = 0; y < h; y++) { push(y * w); push(y * w + w - 1); }
+  while (stack.length) {
+    const i = stack.pop()!, x = i % w;
+    if (x > 0) push(i - 1);
+    if (x < w - 1) push(i + 1);
+    if (i >= w) push(i - w);
+    if (i < w * (h - 1)) push(i + w);
+  }
+  const mask = Buffer.alloc(w * h);
+  for (let i = 0; i < w * h; i++) mask[i] = bg[i] ? 0 : 255;
+  // Close the shape (grow then shrink by ~16px): fills deep shadows under the sleeves that are as black as the
+  // background, without changing the outline. Then soften the edge by a pixel.
+  // (sharp runs its operations in a fixed order, so the max / min filters are done here, row then column.)
+  const R = 16;
+  const morph = (src: Buffer, grow: boolean) => {
+    const pass = (a: Buffer, horizontal: boolean) => {
+      const out = Buffer.alloc(w * h);
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        let v = grow ? 0 : 255;
+        for (let d = -R; d <= R; d++) {
+          const xx = horizontal ? x + d : x, yy = horizontal ? y : y + d;
+          const s = xx < 0 || yy < 0 || xx >= w || yy >= h ? 0 : a[yy * w + xx];
+          v = grow ? Math.max(v, s) : Math.min(v, s);
+        }
+        out[y * w + x] = v;
+      }
+      return out;
+    };
+    return pass(pass(src, true), false);
+  };
+  const closed = morph(morph(mask, true), false);
+  const alpha = await sharp(closed, { raw: { width: w, height: h, channels: 1 } }).blur(0.8).extractChannel(0).raw().toBuffer();
+  // Interleave the colour pixels with the mask by hand (RGB + A).
+  const { data: rgb, info: ri } = await v.img.clone().raw().toBuffer({ resolveWithObject: true });
+  const c = ri.channels, ac = alpha.length / (w * h); // colour channels in, and the mask's channels (blur may widen it)
+  const px = Buffer.alloc(w * h * 4);
+  for (let i = 0; i < w * h; i++) {
+    const g = c === 1;
+    px[i * 4] = rgb[i * c]; px[i * 4 + 1] = rgb[i * c + (g ? 0 : 1)]; px[i * 4 + 2] = rgb[i * c + (g ? 0 : 2)]; px[i * 4 + 3] = alpha[i * ac];
+  }
+  const rgba = await sharp(px, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer();
+  const CW = 800, CH = 1000, k = (CH * 0.92) / maxH;
+  const g = await sharp(rgba).extract(v.box).resize({ width: Math.round(v.box.width * k), kernel: 'lanczos3' }).sharpen({ sigma: 0.6 }).png().toBuffer();
+  const s = await size(g);
+  const base = Math.round(CH / 2 + (maxH * k) / 2);
+  await sharp({ create: { width: CW, height: CH, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
+    .composite([{ input: g, left: Math.round((CW - s.w) / 2), top: base - s.h }])
+    .webp({ quality: 88, alphaQuality: 90, effort: 6 }).toFile(path.join(OUT, file));
+}
+// Homepage hero (behind the big logo): white short-sleeve | black sleeveless | black short-sleeve.
+await fs.mkdir(path.join(OUT, 'hero'), { recursive: true });
+await cutout(find(ss, 'white', 'front'), 'hero/short-sleeve-white.webp');
+await cutout(find(sl, 'black', 'front'), 'hero/sleeveless-black.webp');
+await cutout(find(ss, 'black', 'front'), 'hero/short-sleeve-black.webp');
 // Shop and category banners: wide (the page headers are about 3.5:1 on computers), garments whole and centred.
 await row('banners/shop.webp', 2400, 720, [find(sl, 'white', 'front'), find(ss, 'black', 'front'), find(sl, 'black', 'front'), find(ss, 'white', 'front')], 0.86, 60);
 await row('banners/short-sleeve.webp', 2400, 720, [find(ss, 'black', 'front'), find(ss, 'white', 'front'), find(ss, 'black', 'back')], 0.86, 80);

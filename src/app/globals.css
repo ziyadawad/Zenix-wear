@@ -270,6 +270,28 @@ html.js [data-reveal].in { opacity: 1; transform: none; }
 .pphoto-layer { opacity: 0; transition: opacity 0.6s ease; }
 .pphoto-layer.on { opacity: 1; }
 
+/* Homepage hero shirts (components/home/Hero.tsx). A soft neutral light behind the black shirts, never on them. */
+.hero-backlight {
+  position: absolute; inset: 6% 4% 2%; z-index: -1; pointer-events: none; border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(205 210 220 / 0.32), rgb(205 210 220 / 0.1) 60%, transparent 100%);
+  filter: blur(18px);
+}
+.hero-garment { isolation: isolate; margin-inline: -2.2%; }
+/* Phones: the shirts on a circle (3D), turning one step every 3 s. --a is each shirt's angle on the circle. */
+.hero-orbit { position: absolute; inset: 13% 0 auto; height: 44%; perspective: 760px; transform-style: preserve-3d; }
+.hero-orbit-item {
+  position: absolute; left: 50%; top: 0; height: 100%; aspect-ratio: 4 / 5; isolation: isolate;
+  transform: translateX(-50%) rotateY(var(--a)) translateZ(20vw) rotateY(calc(var(--a) * -1)) scale(0.8);
+  opacity: 0.38; filter: blur(2px) brightness(0.75);
+  transition: transform 1.6s cubic-bezier(0.45, 0, 0.2, 1), opacity 1.6s ease, filter 1.6s ease;
+}
+.hero-orbit-item.front { opacity: 1; filter: none; transform: translateX(-50%) rotateY(var(--a)) translateZ(20vw) rotateY(calc(var(--a) * -1)) scale(1); }
+@media (prefers-reduced-motion: reduce) {
+  /* No turning: one shirt at a time, centred, with a slow cross-fade. */
+  .hero-orbit-item, .hero-orbit-item.front { transform: translateX(-50%) !important; filter: none !important; transition: opacity 1.6s ease !important; }
+  .hero-orbit-item:not(.front) { opacity: 0 !important; }
+}
+
 /* Newsletter band: dark, with a soft violet light from below. */
 .newsletter-glow { background: radial-gradient(60% 90% at 50% 120%, color-mix(in srgb, var(--color-accent-2) 18%, transparent), transparent 70%), var(--color-ink); }
 

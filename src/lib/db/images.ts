@@ -18,9 +18,15 @@ const LEGACY_TYPE: Record<string, string> = {
 const LIGHT_COLOURS = new Set(['white', 'bone', 'silver', 'sand', 'stone']);
 
 export const BANNERS = {
-  hero: `${PHOTOS}/banners/hero-2.webp`, shop: `${PHOTOS}/banners/shop.webp`, og: `${PHOTOS}/banners/og.webp`,
+  shop: `${PHOTOS}/banners/shop.webp`, og: `${PHOTOS}/banners/og.webp`,
   shortSleeve: `${PHOTOS}/banners/short-sleeve.webp`, sleeveless: `${PHOTOS}/banners/sleeveless.webp`,
 };
+/** Homepage hero, left to right: white short-sleeve, black sleeveless (centre, behind the logo), black short-sleeve. */
+export const HERO_GARMENTS = [
+  { src: `${PHOTOS}/hero/short-sleeve-white.webp`, dark: false },
+  { src: `${PHOTOS}/hero/sleeveless-black.webp`, dark: true },
+  { src: `${PHOTOS}/hero/short-sleeve-black.webp`, dark: true },
+];
 /** Shown for a colour added in the admin until its photos are uploaded: the logo on black. */
 export const PLACEHOLDER = `${PHOTOS}/placeholder.webp`;
 
@@ -64,7 +70,6 @@ export function cleanImage(src: string): string {
   if (m) return photo(LEGACY_TYPE[m[1]] ?? 'short-sleeve', LIGHT_COLOURS.has(m[2]) ? 'white' : 'black', m[3] === '1' || m[3] === 'p1' ? 'front' : 'back');
   if (/scene-tees|tees/.test(src)) return BANNERS.shortSleeve;
   if (/sleeveless/.test(src)) return BANNERS.sleeveless;
-  if (/hero/.test(src)) return BANNERS.hero;
   return BANNERS.shop;
 }
 
