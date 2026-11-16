@@ -103,10 +103,12 @@ The logos in `public/brand/` were cut from the supplied JPEGs. The wordmark sour
 
 ### Images: "ambient light" product scenes
 
-The site shows no photos of people. Every product image is a night studio scene: smoky haze, a diagonal neon beam from the top-left, the T-shirt standing on a wet, reflective floor with a neon rim light, and the silver ZENIX logo in the top-right corner. Light garments get a near-black scene; dark garments get a brighter, glowing one so they never blend into the background.
+The site shows no photos of people. Every product image is a night studio scene: smoky haze, a diagonal neon beam from the top-left, the T-shirt standing big and centred on a wet, reflective floor, and the silver ZENIX logo in the top-right corner. The neon stays in the background: the garment is lit with neutral white light and always shows its true colour. Light garments get a near-black scene; dark garments get a brighter neutral backlight behind them so they never blend into the background.
 
-- **Neon colour per garment colour:** `config/scene.config.ts` (one map; a colour that is not listed gets `DEFAULT_NEON`). After changing it, run `npm run scenes` and commit `public/images/scenes/`.
-- **Drawing:** `src/lib/scene/` (garments and the scene layers). `npm run scenes` (`scripts/render-scenes.mts`) renders WebP files for every colour, front and back, the 1200×630 social-sharing (Open Graph) versions and the banners into `public/images/scenes/`.
+The drawings follow the real products: the short-sleeve tee is an athletic raglan tee with contrast piping along the raglan seams and sleeve hems (piping colour per shirt colour in `PIPING`, `config/scene.config.ts`); the sleeveless top has wide front straps and a racerback. Photos of the real T-shirts can be kept in `design-reference/` for comparison: that folder is git-ignored and never published.
+
+- **Neon colour per garment colour:** `config/scene.config.ts` (one map, `NEON`; a colour that is not listed gets `DEFAULT_NEON`). After changing it, run `npm run scenes` and commit the scenes folder. When the drawings change, bump `SCENE_VERSION` in `src/lib/db/images.ts` first so the images get new URLs and no cache shows the old ones.
+- **Drawing:** `src/lib/scene/` (garments and the scene layers). `npm run scenes` (`scripts/render-scenes.mts`) renders WebP files for every colour, front and back, the 1200×630 social-sharing (Open Graph) versions and the banners into `public/images/scenes-v2/`.
 - **Colours added in the admin** that were not pre-rendered are drawn on demand at `/api/scene/...` in their own colour, with the default neon, and cached.
 - **On the page:** `ProductScene` (`src/components/product/ProductScene.tsx`) shows the scene, fades to the new one when a colour swatch is clicked, and makes the neon glow slowly stronger on hover (not with reduced motion).
 

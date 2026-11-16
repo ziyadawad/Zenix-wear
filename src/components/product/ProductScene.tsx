@@ -8,13 +8,13 @@ import { cx } from '@/lib/utils';
 /**
  * A product image in its "ambient light" studio scene. Fills its parent (give the parent the aspect ratio, 4:5).
  *
- * - Shipped images are pre-rendered scenes (src/lib/scene/compose.ts: haze, neon beam, garment, rim light,
- *   wet floor, logo), shown whole. The owner's own photos get the same studio built in CSS around them.
- * - On top: a neon glow in the scene's colour that grows slowly on hover (desktop, not with reduced motion).
+ * - Shipped images are pre-rendered scenes (src/lib/scene/compose.ts: haze, neon beam, backlight, garment,
+ *   wet floor, logo), shown whole (contain: never cropped), the same 4:5 everywhere. The owner's own photos get the same studio built in CSS around them.
+ * - On top: a neon glow in the scene's colour, only in the background corner and floor, that grows slowly on hover (desktop, not with reduced motion).
  * - When `src` changes (a colour swatch), the new scene fades in over the old one once it has loaded,
  *   and the glow colour moves to the new neon.
  */
-export function ProductScene({ src, alt, sizes, priority = false, quality = 70, className }: {
+export function ProductScene({ src, alt, sizes, priority = false, quality = 80, className }: {
   src?: string | null; alt: string; sizes: string; priority?: boolean; quality?: number; className?: string;
 }) {
   const current = displayImage(src);
@@ -37,7 +37,7 @@ export function ProductScene({ src, alt, sizes, priority = false, quality = 70, 
               src={l.src} alt={i === layers.length - 1 ? alt : ''} fill sizes={sizes} quality={quality}
               preload={priority && i === 0} fetchPriority={priority ? 'high' : 'auto'} loading={priority ? 'eager' : 'lazy'}
               onLoad={() => show(l.src)}
-              className={own ? 'object-contain p-[6%]' : 'object-cover'}
+              className={own ? 'object-contain p-[6%]' : 'object-contain'}
             />
           </div>
         );

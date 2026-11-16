@@ -1,5 +1,5 @@
 import type { Queryable } from './index';
-import { CATEGORY_MOCKUP, DEFAULT_COMMUNITY, SCENES, cleanImage, isOwnPhoto, mockupType, mockupsFor, typeFromOldImage } from './images';
+import { CATEGORY_MOCKUP, DEFAULT_COMMUNITY, MOCKUPS, SCENES, cleanImage, isOwnPhoto, mockupType, mockupsFor, typeFromOldImage } from './images';
 import LEGACY_AR from './legacy-ar.json';
 import { insertStarterCatalogue } from './seed';
 
@@ -236,6 +236,27 @@ const MIGRATIONS: Migration[] = [
     up: async (q) => {
       await q.query(`UPDATE settings SET value = value - 'announcements' WHERE key = 'content' AND value->'announcements' IS NOT NULL`);
       await q.query(`UPDATE settings SET value = jsonb_set(value, '{freeShippingThreshold}', '0') WHERE key = 'site' AND (value->>'freeShippingThreshold')::numeric = 1500`);
+    },
+  },
+  {
+    // Redrawn garments (raglan tee with piping, racerback sleeveless, true colours) in a new folder, so no cache keeps
+    // the old pictures. Every saved image path moves to the current scenes folder.
+    id: '2026-11-16-scenes-v2',
+    up: async (q) => {
+      for (const p of await q.query<{ id: string; category: string; colors: { id: string; hex: string; images: string[] }[] }>('SELECT id, category, colors FROM products')) {
+        const colors = p.colors.map((c) => {
+          const images = c.images ?? [];
+          if (images.some(isOwnPhoto)) return { ...c, images: images.filter(isOwnPhoto) };
+          const type = images.map(mockupType).find(Boolean) ?? CATEGORY_MOCKUP[p.category] ?? 'tee-a';
+          return { ...c, images: mockupsFor(type, c.id, c.hex) };
+        });
+        if (JSON.stringify(colors) !== JSON.stringify(p.colors)) await q.query('UPDATE products SET colors = $1::jsonb WHERE id = $2', [JSON.stringify(colors), p.id]);
+      }
+      const move = (col: string) => `${col} = regexp_replace(${col}::text, '/images/(mockups|scenes)/', '${MOCKUPS}/', 'g')`;
+      await q.query(`UPDATE orders SET ${move('items')}::jsonb WHERE items::text ~ '/images/(mockups|scenes)/'`);
+      await q.query(`UPDATE settings SET ${move('value')}::jsonb WHERE value::text ~ '/images/(mockups|scenes)/'`);
+      await q.query(`UPDATE categories SET ${move('image')} WHERE image ~ '^/images/(mockups|scenes)/'`);
+      await q.query(`UPDATE reviews SET ${move('image')} WHERE image ~ '^/images/(mockups|scenes)/'`);
     },
   },
 ];

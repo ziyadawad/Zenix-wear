@@ -2,15 +2,18 @@
  * ProductScene, the image side: an "ambient light" night studio built as layered SVG.
  *
  *   1. background + coloured backlight      4. garment (back layer, fabric, folds, bands, stitching, Z print)
- *   2. smoky haze (fractal noise)           5. rim light in the neon colour (outer glow + inner edge)
+ *   2. smoky haze (fractal noise)           5. neutral backlight halo around dark garments (never tinted)
  *   3. diagonal neon beam from top-left     6. wet, glossy floor: mirrored garment, beam reflection, glints
  *                                           7. the silver ZENIX logo in the top corner
+ *
+ * The neon colour lives only in the background (beam, haze, backlight, floor): the garment itself is lit with
+ * neutral white studio light, so it always shows its true colour.
  *
  * Pure string building, no Node or browser APIs: `npm run scenes` renders it to WebP files and
  * /api/scene renders it on demand for colours added from the admin. The page-side layers (hover glow,
  * colour fade) are in src/components/product/ProductScene.tsx.
  */
-import { DEFAULT_NEON, LIGHT_GARMENT_THRESHOLD } from '../../../config/scene.config';
+import { DEFAULT_NEON, LIGHT_GARMENT_THRESHOLD, PIPING, PIPING_ON_DARK, PIPING_ON_LIGHT } from '../../../config/scene.config';
 import { FLOOR, garment, type GarmentType, type View } from './garments';
 
 export { FLOOR };
@@ -26,7 +29,7 @@ export interface SceneAssets {
 
 /** Fabric tones per rendered colour id (a little lifted for the darkest, so folds still read). */
 export const TONES: Record<string, string> = {
-  black: '#2b2b2f', charcoal: '#3a3b3f', graphite: '#5d5f63', stone: '#9a978f', bone: '#dcd6c8', white: '#ececec',
+  black: '#2b2b2f', charcoal: '#3a3b3f', graphite: '#5d5f63', stone: '#9a978f', bone: '#dcd6c8', white: '#f3f3f3',
   olive: '#4d5439', navy: '#27304a', wine: '#5a1d28', silver: '#b4b6ba', sand: '#b39e7c', gray: '#85878d',
 };
 
@@ -53,6 +56,9 @@ export function fabricTone(colourId: string, hex: string) {
   return l < 0.18 ? mix(hex, '#ffffff', 0.13) : l > 0.94 ? mix(hex, '#000000', 0.04) : hex;
 }
 
+/** Piping colour of the short-sleeve tee for a garment colour (config/scene.config.ts). */
+export const pipingFor = (colourId: string, hex: string) => PIPING[colourId] ?? (isLightGarment(hex) ? PIPING_ON_LIGHT : PIPING_ON_DARK);
+
 /** Small seeded random, so every render of a scene is identical. */
 function rand(seed: number) {
   let s = seed >>> 0;
@@ -65,6 +71,8 @@ export interface SceneItem {
   type: GarmentType; view: View;
   /** Swatch colour (decides light or dark treatment) and fabric tone. */
   hex: string; tone: string; neon: string;
+  /** Contrast piping colour (short-sleeve tee). */
+  piping: string;
   /** Placement of the 1200 x 1500 garment canvas in the scene. */
   x: number; y: number; s: number;
 }
@@ -80,15 +88,15 @@ export interface SceneOptions {
 /** Strength of each layer: light garments sit in a near-black scene, dark garments in a glowing one. */
 function mood(light: boolean) {
   return light
-    ? { bg: '#030305', ambient: 0.05, back: 0.16, haze: 0.2, halo: 0.2, beam: 0.5, core: 0.62, coreWhite: 0, rimOut: 0.5, rimIn: 0.34, floorGlow: 0.12, refl: 0.3 }
-    : { bg: '#07080d', ambient: 0.16, back: 0.82, haze: 0.5, halo: 0.42, beam: 0.9, core: 0.95, coreWhite: 0.55, rimOut: 0.85, rimIn: 0.95, floorGlow: 0.34, refl: 0.42 };
+    ? { bg: '#030305', ambient: 0.05, back: 0.12, haze: 0.2, halo: 0.2, beam: 0.5, core: 0.62, coreWhite: 0, sep: 0, floorGlow: 0.12, refl: 0.3 }
+    : { bg: '#07080d', ambient: 0.14, back: 0.8, haze: 0.55, halo: 0.42, beam: 0.9, core: 0.95, coreWhite: 0.55, sep: 0.42, floorGlow: 0.3, refl: 0.42 };
 }
 
 function garmentDefs(p: string, it: SceneItem, light: boolean, a: SceneAssets) {
   const g = garment(it.type, it.view);
   const base = it.tone;
-  const dark = shade(base, -0.42), mid = shade(base, -0.16), hi = shade(base, light ? 0.18 : 0.2);
-  const inside = shade(base, light ? -0.5 : -0.6);
+  const dark = shade(base, light ? -0.3 : -0.42), mid = shade(base, light ? -0.1 : -0.16), hi = shade(base, light ? 0.18 : 0.2);
+  const inside = shade(base, light ? -0.2 : -0.32);
   const stitchColour = light ? shade(base, -0.32) : shade(base, 0.3);
   const W = 1200, H = 1500;
   let n = 0;
@@ -105,17 +113,22 @@ function garmentDefs(p: string, it: SceneItem, light: boolean, a: SceneAssets) {
   };
   const outer = g.bands.filter((b) => !b.inner), inner = g.bands.filter((b) => b.inner);
   const shadows = g.folds.filter((x) => !x.light), lights = g.folds.filter((x) => x.light);
-  const zW = g.print.w, zH = (zW * a.zH) / a.zW;
+  const zW = g.print?.w ?? 0, zH = (zW * a.zH) / a.zW;
+  // The piping: a thin contrast cord with a soft shadow beside it, so it reads as sewn in.
+  const pipe = (pp: (typeof g.piping)[number]) => pp.dist
+    ? offsetLine(pp.d, pp.dist + 3, '#000', light ? 0.18 : 0.35) + offsetLine(pp.d, pp.dist, it.piping, 1)
+    : `<path d="${pp.d}" fill="none" stroke="#000" stroke-width="9" opacity="${light ? 0.15 : 0.35}" transform="translate(2 3)"/><path d="${pp.d}" fill="none" stroke="${it.piping}" stroke-width="5" stroke-linecap="round"/><path d="${pp.d}" fill="none" stroke="#fff" stroke-width="1.4" opacity=".22" transform="translate(-1 -1)"/>`;
   return `
   <linearGradient id="${p}side" x1="0" x2="1"><stop offset="0" stop-color="${dark}"/><stop offset=".2" stop-color="${mid}"/><stop offset=".46" stop-color="${base}"/><stop offset=".78" stop-color="${mid}"/><stop offset="1" stop-color="${dark}"/></linearGradient>
   <radialGradient id="${p}hi" cx=".34" cy=".24" r=".62"><stop offset="0" stop-color="${hi}" stop-opacity=".7"/><stop offset=".6" stop-color="${hi}" stop-opacity=".12"/><stop offset="1" stop-color="${hi}" stop-opacity="0"/></radialGradient>
   <linearGradient id="${p}diag" x1="0" y1="0" x2="1" y2="1"><stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="${light ? 0.22 : 0.38}"/></linearGradient>
-  <linearGradient id="${p}inside" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${inside}"/><stop offset=".3" stop-color="${shade(inside, -0.4)}"/></linearGradient>
+  <linearGradient id="${p}inside" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${inside}"/><stop offset=".3" stop-color="${shade(inside, -0.15)}"/></linearGradient>
   <clipPath id="${p}clip"><path d="${g.body}"/></clipPath>
   <clipPath id="${p}bclip"><path d="${g.back}"/></clipPath>
   <filter id="${p}fold" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="13"/></filter>
   <filter id="${p}fold2" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="6"/></filter>
   <filter id="${p}cloth" x="0" y="0" width="100%" height="100%" filterUnits="userSpaceOnUse"><feTurbulence type="fractalNoise" baseFrequency=".85 .55" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 ${light ? 0 : 1}  0 0 0 0 ${light ? 0 : 1}  0 0 0 0 ${light ? 0 : 1}  0.9 0 0 0 -0.32"/></filter>
+  <filter id="${p}wash" x="0" y="0" width="100%" height="100%" filterUnits="userSpaceOnUse"><feTurbulence type="fractalNoise" baseFrequency=".012 .02" numOctaves="3" seed="9"/><feColorMatrix values="0 0 0 0 ${light ? 0 : 1}  0 0 0 0 ${light ? 0 : 1}  0 0 0 0 ${light ? 0 : 1}  1.4 0 0 0 -0.62"/></filter>
   <g id="${p}g">
     <path d="${g.back}" fill="url(#${p}inside)"/>
     <g clip-path="url(#${p}bclip)">${inner.map(band).join('')}</g>
@@ -129,10 +142,12 @@ function garmentDefs(p: string, it: SceneItem, light: boolean, a: SceneAssets) {
       <g filter="url(#${p}fold2)" fill="none" stroke-linecap="round">${shadows.map((x) => `<path d="${x.d}" stroke="#000" stroke-width="${x.w * 0.35}" opacity="${f(x.o * (light ? 0.08 : 0.25))}"/>`).join('')}</g>
       <g filter="url(#${p}fold)" fill="none" stroke-linecap="round">${lights.map((x) => `<path d="${x.d}" stroke="#fff" stroke-width="${x.w * 1.4}" opacity="${f(x.o * (light ? 0.5 : 0.24))}"/>`).join('')}</g>
       ${g.seams.map((d) => `<path d="${d}" fill="none" stroke="#000" stroke-width="3" opacity="${light ? 0.25 : 0.5}"/><path d="${d}" transform="translate(-4 0)" fill="none" stroke="#fff" stroke-width="2" opacity="${light ? 0.35 : 0.1}"/>`).join('')}
+      ${g.washed ? `<rect width="${W}" height="${H}" filter="url(#${p}wash)" opacity="${light ? 0.07 : 0.06}"/>` : ''}
       ${outer.map(band).join('')}
+      ${g.piping.map(pipe).join('')}
       ${g.stitches.map((s) => offsetLine(s.d, s.dist, stitchColour, 0.75, '8 6')).join('')}
     </g>
-    <image href="${light ? a.zDark : a.z}" x="${g.print.x}" y="${g.print.y}" width="${zW}" height="${f(zH)}" opacity=".95"/>
+    ${g.print ? `<image href="${light ? a.zDark : a.z}" x="${g.print.x}" y="${g.print.y}" width="${zW}" height="${f(zH)}" opacity=".95"/>` : ''}
     <path d="${g.body}" fill="none" stroke="${light ? '#000' : '#fff'}" stroke-opacity="${light ? 0.12 : 0.08}" stroke-width="2"/>
   </g>`;
 }
@@ -140,31 +155,27 @@ function garmentDefs(p: string, it: SceneItem, light: boolean, a: SceneAssets) {
 /** The coloured backlight behind one garment. Drawn for every item before any garment, so it never covers one. */
 const backlight = (p: string, it: SceneItem) => `<rect x="${f(it.x - 200 * it.s)}" y="${f(it.y)}" width="${f(1600 * it.s)}" height="${f(1500 * it.s)}" fill="url(#${p}bl)"/>`;
 
-/** One garment with its reflection and rim light, in garment canvas coordinates. */
+/**
+ * One garment with its floor reflection, in garment canvas coordinates. Dark garments get a soft neutral white
+ * halo behind their outline (it sits behind the shirt, so the fabric keeps its true colour).
+ */
 function garmentLayers(p: string, it: SceneItem, light: boolean): { defs: string; layers: string } {
   const m = mood(light);
   const body = garment(it.type, it.view).body;
   const neon = it.neon;
   const defs = `
-    <radialGradient id="${p}bl" cx="${f(it.x + 600 * it.s)}" cy="${f(it.y + 740 * it.s)}" r="${f(620 * it.s)}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="${mix(neon, '#ffffff', 0.28)}" stop-opacity="${m.back}"/><stop offset=".42" stop-color="${neon}" stop-opacity="${f(m.back * 0.5)}"/><stop offset="1" stop-color="${neon}" stop-opacity="0"/></radialGradient>
+    <radialGradient id="${p}bl" cx="${f(it.x + 600 * it.s)}" cy="${f(it.y + 740 * it.s)}" r="${f(620 * it.s)}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="${mix(neon, '#ffffff', 0.7)}" stop-opacity="${m.back}"/><stop offset=".45" stop-color="${mix(neon, '#ffffff', 0.35)}" stop-opacity="${f(m.back * 0.5)}"/><stop offset="1" stop-color="${neon}" stop-opacity="0"/></radialGradient>
     <linearGradient id="${p}rf" x1="0" y1="${FLOOR}" x2="0" y2="${FLOOR + 300}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fff" stop-opacity="${m.refl}"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
     <mask id="${p}rm" maskUnits="userSpaceOnUse" x="0" y="${FLOOR}" width="1200" height="320"><rect x="0" y="${FLOOR}" width="1200" height="320" fill="url(#${p}rf)"/></mask>
-    <linearGradient id="${p}rimg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#fff" stop-opacity=".75"/><stop offset="1" stop-color="#fff" stop-opacity=".35"/></linearGradient>
-    <mask id="${p}rimm" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1500"><rect width="1200" height="1500" fill="url(#${p}rimg)"/></mask>
     <filter id="${p}b2" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.5"/></filter>
     <filter id="${p}b9" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="9"/></filter>
     <filter id="${p}b24" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="24"/></filter>
 `;
   const layers = `<g transform="translate(${it.x} ${it.y}) scale(${it.s})">
-    <g mask="url(#${p}rm)"><use href="#${p}g" transform="translate(0 ${FLOOR * 2}) scale(1 -1)" filter="url(#${p}b2)"/>
-      <path d="${body}" transform="translate(0 ${FLOOR * 2}) scale(1 -1)" fill="none" stroke="${neon}" stroke-width="18" opacity="${f(m.rimOut * 0.6)}" filter="url(#${p}b9)"/></g>
-    <ellipse cx="600" cy="${FLOOR + 4}" rx="330" ry="16" fill="#000" opacity=".75" filter="url(#${p}b9)"/>
-    <path d="${body}" fill="none" stroke="${neon}" stroke-width="34" opacity="${m.rimOut}" filter="url(#${p}b24)"/>
+    <g mask="url(#${p}rm)"><use href="#${p}g" transform="translate(0 ${FLOOR * 2}) scale(1 -1)" filter="url(#${p}b2)"/></g>
+    <ellipse cx="600" cy="${FLOOR + 4}" rx="300" ry="16" fill="#000" opacity=".75" filter="url(#${p}b9)"/>
+    ${m.sep ? `<path d="${body}" fill="none" stroke="#ffffff" stroke-width="40" opacity="${m.sep}" filter="url(#${p}b24)"/>` : ''}
     <use href="#${p}g"/>
-    <g clip-path="url(#${p}clip)" mask="url(#${p}rimm)">
-      <path d="${body}" fill="none" stroke="${mix(neon, '#ffffff', light ? 0.1 : 0.2)}" stroke-width="30" opacity="${m.rimIn}" filter="url(#${p}b9)"/>
-      <path d="${body}" fill="none" stroke="${mix(neon, '#ffffff', 0.45)}" stroke-width="3" opacity="${f(m.rimIn * (light ? 0.3 : 0.6))}" filter="url(#${p}b2)"/>
-    </g>
   </g>`;
   return { defs, layers };
 }
@@ -239,8 +250,9 @@ ${logo ? `<image href="${assets.logo}" x="${f(logo.x)}" y="${f(logo.y)}" width="
 export function productSceneSvg(type: GarmentType, view: View, colourId: string, hex: string, neon: string, assets: SceneAssets) {
   return sceneSvg({
     w: SCENE_W, h: SCENE_H, assets, neon, seed: 11,
-    items: [{ type, view, hex, tone: fabricTone(colourId, hex), neon, x: 0, y: 0, s: 1 }],
-    logo: { x: SCENE_W - 170 - 60, y: 62, w: 170 },
+    // Scaled up so the garment fills most of the frame (it reads clearly in small cards), centred, whole.
+    items: [{ type, view, hex, tone: fabricTone(colourId, hex), neon, piping: pipingFor(colourId, hex), x: -120, y: -164, s: 1.2 }],
+    logo: { x: SCENE_W - 150 - 48, y: 48, w: 150 },
   });
 }
 
@@ -249,7 +261,7 @@ export function ogSceneSvg(type: GarmentType, colourId: string, hex: string, neo
   const s = 0.42;
   return sceneSvg({
     w: OG_W, h: OG_H, assets, neon, seed: 5,
-    items: [{ type, view: 'front', hex, tone: fabricTone(colourId, hex), neon, x: 600, y: OG_H - 1500 * s + 20, s }],
+    items: [{ type, view: 'front', hex, tone: fabricTone(colourId, hex), neon, piping: pipingFor(colourId, hex), x: 600, y: OG_H - 1500 * s + 20, s }],
     logo: { x: 110, y: 170, w: 360 },
   });
 }

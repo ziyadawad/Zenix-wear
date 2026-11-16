@@ -1,14 +1,19 @@
 /**
- * Every shipped image is an "ambient light" product scene from public/images/scenes/, rendered by
+ * Every shipped image is an "ambient light" product scene from public/images/scenes-v2/, rendered by
  * scripts/render-scenes.mts (npm run scenes), unless the owner uploads a real photo from the admin, which then
  * takes its place. A colour added from the admin that was not pre-rendered is drawn on demand by /api/scene.
  */
 import { neonFor } from '../../../config/scene.config';
 import { SCENE_COLOURS, SWATCH } from '../scene/colours';
 
-export const MOCKUPS = '/images/scenes';
-/** Where the first version of the mockups lived. Saved references are rewritten to MOCKUPS. */
-const OLD_MOCKUPS = '/images/mockups';
+/**
+ * Where the scenes live. The folder carries a version: when the drawings change, render them into a new folder
+ * (and bump SCENE_VERSION) so no browser, CDN or image cache keeps showing the old pictures under the same URL.
+ */
+export const SCENE_VERSION = 2;
+export const MOCKUPS = `/images/scenes-v${SCENE_VERSION}`;
+/** Where earlier versions lived. Saved references are rewritten to MOCKUPS. */
+export const OLD_MOCKUPS = ['/images/mockups', '/images/scenes'];
 
 /** tee-a = short-sleeve T-shirt, tank = sleeveless T-shirt. The only two products for now. */
 export const MOCKUP_TYPES: Record<string, string[]> = { 'tee-a': SCENE_COLOURS, tank: SCENE_COLOURS };
@@ -26,7 +31,7 @@ export const DEFAULT_COMMUNITY = ['tee-a:black', 'tank:white', 'tee-a:gray', 'ta
 export const mockup = (type: string, colour: string, view: 'front' | 'back' = 'front') => `${MOCKUPS}/${type}-${colour}-${view}.webp`;
 /** A scene drawn on demand, for a colour that is not pre-rendered (its neon is DEFAULT_NEON unless listed in the config). */
 export const liveScene = (type: string, colourId: string, hex: string, view: 'front' | 'back' | 'og' = 'front') =>
-  `/api/scene/${type}/${colourId}/${hex.replace('#', '').toLowerCase().slice(0, 6)}/${view}.webp`;
+  `/api/scene/${type}/${colourId}/${hex.replace('#', '').toLowerCase().slice(0, 6)}/${view}-v${SCENE_VERSION}.webp`;
 
 function rgb(hex: string) {
   const n = parseInt(hex.replace('#', '').padEnd(6, '0').slice(0, 6), 16);
@@ -55,8 +60,8 @@ export function mockupsFor(type: string, colourId: string, hex?: string) {
   return [liveScene(type, colourId, hex, 'front'), liveScene(type, colourId, hex, 'back')];
 }
 
-const STATIC_RE = /^\/images\/scenes\/(.+)-([a-z]+)-(front|back)\.webp$/;
-const LIVE_RE = /^\/api\/scene\/([a-z-]+)\/([a-z0-9-]+)\/([0-9a-f]{6})\/(front|back|og)\.webp$/;
+const STATIC_RE = /^\/images\/scenes-v\d+\/(.+)-([a-z]+)-(front|back)\.webp$/;
+const LIVE_RE = /^\/api\/scene\/([a-z-]+)\/([a-z0-9-]+)\/([0-9a-f]{6})\/(front|back|og)(?:-v\d+)?\.webp$/;
 
 /** What a scene image shows: garment type, colour id and its neon colour. Null for the owner's own photos. */
 export function sceneInfo(src?: string | null): { type: string; colourId: string; neon: string } | null {
@@ -67,8 +72,9 @@ export function sceneInfo(src?: string | null): { type: string; colourId: string
 /** The 1200 x 630 social-sharing version of a product image. */
 export function ogImage(src?: string | null): string {
   if (!src) return SCENES.og;
+  src = cleanImage(src);
   const live = LIVE_RE.exec(src);
-  if (live) return `/api/scene/${live[1]}/${live[2]}/${live[3]}/og.webp`;
+  if (live) return `/api/scene/${live[1]}/${live[2]}/${live[3]}/og-v${SCENE_VERSION}.webp`;
   const m = STATIC_RE.exec(src);
   return m ? `${MOCKUPS}/og-${m[1]}-${m[2]}.webp` : src;
 }
@@ -94,7 +100,8 @@ export function typeFromOldImage(src: string): string | null {
  */
 export function cleanImage(src: string): string {
   if (!src || isOwnPhoto(src) || LIVE_RE.test(src)) return src;
-  if (src.startsWith(`${OLD_MOCKUPS}/`)) src = MOCKUPS + src.slice(OLD_MOCKUPS.length);
+  for (const old of OLD_MOCKUPS) if (src.startsWith(`${old}/`)) src = MOCKUPS + src.slice(old.length);
+  src = src.replace(/^\/images\/scenes-v\d+\//, `${MOCKUPS}/`);
   const m = STATIC_RE.exec(src);
   if (m) {
     if (MOCKUP_TYPES[m[1]]) return src;

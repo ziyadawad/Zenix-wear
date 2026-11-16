@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import { cardProps, facets, filterProducts, getCatalog, getCategories, parseList, type ShopQuery } from '@/lib/catalog';
 import { getDictionary } from '@/lib/i18n/dictionaries';
+import { cleanImage } from '@/lib/db/images';
 import { FITS, type Locale } from '@/lib/types';
 import { FilterSheet, FilterSidebar, SortSelect } from './Filters';
 import { ProductGrid } from './ProductGrid';
@@ -30,7 +31,7 @@ export async function ShopView({ locale, sp, title, blurb, image, base, showSubn
   return (
     <>
       <section className="relative flex h-[34vh] min-h-[230px] items-end overflow-hidden bg-black md:h-[46vh]">
-        {image && <Image src={image} alt="" fill preload fetchPriority="high" loading="eager" sizes="100vw" quality={70} className="object-cover opacity-65" />}
+        {image && <Image src={cleanImage(image)} alt="" fill preload fetchPriority="high" loading="eager" sizes="100vw" quality={70} className="object-cover opacity-65" />}
         <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/25 to-black/40" />
         <div className="container-zx relative pb-6 md:pb-10">
           <h1 className="display text-[clamp(2rem,5vw,4.2rem)]">{title}</h1>

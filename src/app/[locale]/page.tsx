@@ -5,7 +5,7 @@ import { getDictionary } from '@/lib/i18n/dictionaries';
 import { cardProps, getCatalog, getCategories, getContent, getHomeReviews, getSettings } from '@/lib/catalog';
 import type { Locale } from '@/lib/types';
 import { jsonLd, SITE_URL, CONTACT } from '@/lib/utils';
-import { SCENES } from '@/lib/db/images';
+import { SCENES, cleanImage } from '@/lib/db/images';
 import { Hero } from '@/components/home/Hero';
 import { Marquee, SectionHead } from '@/components/home/Bits';
 import { Newsletter } from '@/components/home/Newsletter';
@@ -26,7 +26,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
   const products = [...chosen, ...[...catalog].sort((a, b) => b.soldCount - a.soldCount).filter((p) => !chosen.includes(p))].slice(0, 8).map(cardProps);
   // One tile per category that has something to sell, so no tile leads to an empty page.
   const cats = categories.filter((c) => c.inMenu && catalog.some((p) => p.category === c.slug)).map((c) => ({
-    id: c.slug, label: locale === 'ar' ? c.nameAr : c.nameEn, image: c.image || SCENES.all, href: lp(`/shop/${c.slug}`),
+    id: c.slug, label: locale === 'ar' ? c.nameAr : c.nameEn, image: c.image ? cleanImage(c.image) : SCENES.all, href: lp(`/shop/${c.slug}`),
   }));
   const whyIcons = [Gem, Ruler, Truck, Repeat2];
 

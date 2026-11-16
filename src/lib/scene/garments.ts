@@ -1,8 +1,15 @@
 /**
  * Garment drawings for the product scenes, on a 1200 x 1500 canvas. Pure data: paths only, no colours.
  * Each garment has a back layer (drawn darker, behind: it shows through the neckline and armholes like the
- * inside of a real shirt), its outline, sewn bands along the edges (collar, sleeve and bottom hems, armhole
- * binding), seams, stitch lines and fabric folds (shadow and highlight pairs).
+ * inside of a real shirt), its outline, sewn bands along the edges (collar rib, sleeve and bottom hems,
+ * armhole binding), seams, contrast piping, stitch lines and fabric folds (shadow and highlight pairs).
+ *
+ * The two ZENIX products:
+ * - tee-a: athletic slim short-sleeve tee. High crew neck with a ribbed collar, RAGLAN sleeves (seams run
+ *   diagonally from the collar to the underarm) with thin contrast piping along both raglan seams and around
+ *   both sleeve hems; short sleeves that end mid-bicep. Z on the left chest.
+ * - tank: fitted athletic sleeveless top. Front: crew neck, fairly wide straps, deep armholes.
+ *   Back: RACERBACK (narrow straps meeting in the upper back). Plain, softly washed fabric. Z on the left chest.
  */
 export type GarmentType = 'tee-a' | 'tank';
 export type View = 'front' | 'back';
@@ -12,113 +19,177 @@ export type View = 'front' | 'back';
  * `inner` puts it on the back layer (the back collar seen through the front neckline).
  */
 export interface Band { d: string; w: number; rib?: boolean; tone?: number; inner?: boolean }
-/** A stitch line `dist` px inside the edge `d` (or exactly on `d` when dist is 0). */
+/** A stitch line `dist` px inside the edge `d`. */
 export interface Stitch { d: string; dist: number }
+/** Contrast piping: on the seam `d` itself (dist 0) or `dist` px inside the edge `d`. */
+export interface Piping { d: string; dist: number }
 export interface Fold { d: string; w: number; o: number; light?: boolean }
 export interface Garment {
   back: string; body: string;
-  /** Panels drawn slightly darker than the body (set-in sleeves). */
+  /** Panels drawn slightly darker than the body (raglan sleeves). */
   panels: string[];
-  bands: Band[]; stitches: Stitch[]; seams: string[]; folds: Fold[];
-  /** Where the chest (or upper back) Z print goes: top-left and width. */
-  print: { x: number; y: number; w: number };
+  bands: Band[]; stitches: Stitch[]; seams: string[]; piping: Piping[]; folds: Fold[];
+  /** Softly washed fabric (a faint, uneven mottling). */
+  washed?: boolean;
+  /** Where the Z print goes (top-left and width), or null for none. */
+  print: { x: number; y: number; w: number } | null;
 }
 
 /** Where every garment's hem meets the floor. */
 export const FLOOR = 1236;
 
-const TEE_FRONT = 'M512 292 C548 352 652 352 688 292 L862 338 C930 400 980 480 1012 560 L902 634 L866 566 C868 760 872 1000 880 1222 Q600 1244 320 1222 C328 1000 332 760 334 566 L298 634 L188 560 C220 480 270 400 338 338 Z';
-const TEE_BACK = TEE_FRONT.replace('C548 352 652 352 688 292', 'C548 304 652 304 688 292');
-const TEE_HEM = 'M320 1222 Q600 1244 880 1222';
+type Pt = [number, number];
+/** One side of a garment, from the neck point down to the hem: cubic or straight segments. */
+type Seg = { c: [Pt, Pt, Pt] } | { l: Pt };
+const mx = ([x, y]: Pt): Pt => [1200 - x, y];
+const p = ([x, y]: Pt) => `${x} ${y}`;
+
+/**
+ * A symmetric outline: the left side (neck point → hem corner), the hem across, the mirrored right side back up,
+ * then the neckline (`neckDip` sets how low its curve goes).
+ */
+function outline(start: Pt, left: Seg[], hemDip: number, neckDip: number) {
+  let d = `M${p(start)}`;
+  const pts: Pt[] = [start];
+  for (const s of left) {
+    if ('c' in s) { d += ` C${s.c.map(p).join(' ')}`; pts.push(s.c[2]); } else { d += ` L${p(s.l)}`; pts.push(s.l); }
+  }
+  d += ` Q600 ${hemDip} ${p(mx(pts[pts.length - 1]))}`;
+  // Right side: the same segments mirrored, walked backwards.
+  for (let i = left.length - 1; i >= 0; i--) {
+    const s = left[i], to = mx(pts[i]);
+    if ('c' in s) d += ` C${p(mx(s.c[1]))} ${p(mx(s.c[0]))} ${p(to)}`; else d += ` L${p(to)}`;
+  }
+  const [nx, ny] = start;
+  d += ` C${1200 - nx - 26} ${neckDip} ${nx + 26} ${neckDip} ${nx} ${ny} Z`;
+  return d;
+}
+/** The same path on the other side of the garment. */
+const mirror = (d: string) => d.replace(/(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g, (_, x, y) => `${1200 - Number(x)} ${y}`);
+
+// ---- Short-sleeve tee (raglan, athletic) -------------------------------------------------------------------
+const TEE_NECK: Pt = [532, 266];
+const TEE_SIDE: Seg[] = [
+  { c: [[478, 274], [414, 292], [366, 326]] }, // shoulder line (part of the raglan sleeve)
+  { c: [[322, 358], [284, 418], [258, 494]] }, // outer arm
+  { l: [242, 552] }, // down to the sleeve hem, mid-bicep
+  { l: [330, 590] }, // sleeve hem, across the arm
+  { c: [[346, 572], [360, 552], [374, 532]] }, // inner arm up to the underarm
+  { c: [[380, 700], [386, 900], [390, 1222]] }, // side seam, slightly tapered: athletic fit
+];
+const TEE_FRONT = outline(TEE_NECK, TEE_SIDE, 1242, 322);
+const TEE_BACK = outline(TEE_NECK, TEE_SIDE, 1242, 284);
+const TEE_HEM = 'M390 1222 Q600 1242 810 1222';
+const NECK_FRONT = 'M532 266 C558 322 642 322 668 266';
+const NECK_BACK = 'M532 266 C558 284 642 284 668 266';
+const RAGLAN_FRONT = 'M552 296 C512 356 434 446 374 532';
+const RAGLAN_BACK = 'M556 276 C506 344 430 444 374 532';
+const SLEEVE_HEM = 'M242 552 L330 590';
 
 function tee(view: View): Garment {
   const front = view === 'front';
-  const neck = front ? 'M512 292 C548 352 652 352 688 292' : 'M512 292 C548 304 652 304 688 292';
+  const neck = front ? NECK_FRONT : NECK_BACK;
+  const raglan = front ? RAGLAN_FRONT : RAGLAN_BACK;
+  const sleeve = `${raglan} C360 552 346 572 330 590 L242 552 L258 494 C284 418 322 358 366 326 C414 292 478 274 532 266 Z`;
   return {
     back: front ? TEE_BACK : TEE_FRONT,
     body: front ? TEE_FRONT : TEE_BACK,
-    panels: [
-      'M338 338 C270 400 220 480 188 560 L298 634 L334 566 C348 500 352 420 338 338 Z',
-      'M862 338 C930 400 980 480 1012 560 L902 634 L866 566 C852 500 848 420 862 338 Z',
-    ],
+    panels: [sleeve, mirror(sleeve)],
     bands: [
-      { d: neck, w: 26, rib: true, tone: -0.1 },
-      ...(front ? [{ d: 'M512 292 C548 304 652 304 688 292', w: 16, rib: true, tone: -0.1, inner: true }] : []),
-      { d: 'M188 560 L298 634', w: 30 }, { d: 'M1012 560 L902 634', w: 30 },
-      { d: TEE_HEM, w: 40 },
+      { d: neck, w: 22, rib: true, tone: -0.08 },
+      ...(front ? [{ d: NECK_BACK, w: 14, rib: true, tone: -0.08, inner: true }] : []),
+      { d: SLEEVE_HEM, w: 26 }, { d: mirror(SLEEVE_HEM), w: 26 },
+      { d: TEE_HEM, w: 38 },
     ],
     stitches: [
-      { d: neck, dist: 30 },
-      { d: 'M188 560 L298 634', dist: 26 }, { d: 'M1012 560 L902 634', dist: 26 },
-      { d: TEE_HEM, dist: 30 }, { d: TEE_HEM, dist: 40 },
-      { d: 'M512 292 L338 338', dist: 9 }, { d: 'M688 292 L862 338', dist: 9 },
+      { d: neck, dist: 26 },
+      { d: TEE_HEM, dist: 28 }, { d: TEE_HEM, dist: 38 },
+      { d: SLEEVE_HEM, dist: 33 }, { d: mirror(SLEEVE_HEM), dist: 33 },
     ],
-    seams: ['M338 338 C352 420 348 500 334 566', 'M862 338 C848 420 852 500 866 566'],
+    seams: [raglan, mirror(raglan)],
+    piping: [
+      { d: raglan, dist: 0 }, { d: mirror(raglan), dist: 0 },
+      { d: SLEEVE_HEM, dist: 27 }, { d: mirror(SLEEVE_HEM), dist: 27 },
+    ],
     folds: [
-      // Drape from the armpits towards the middle, soft verticals in the lower body, a ripple above the hem.
-      { d: 'M350 596 C412 652 456 724 474 826', w: 28, o: 0.55 },
-      { d: 'M850 596 C788 652 744 724 726 826', w: 28, o: 0.55 },
-      { d: 'M330 616 C388 672 426 742 442 840', w: 18, o: 0.5, light: true },
-      { d: 'M870 616 C812 672 774 742 758 840', w: 16, o: 0.35, light: true },
-      { d: 'M458 884 C466 984 462 1084 454 1196', w: 30, o: 0.5 },
-      { d: 'M744 884 C736 990 738 1090 748 1198', w: 30, o: 0.5 },
-      { d: 'M426 900 C432 1000 430 1092 422 1192', w: 18, o: 0.45, light: true },
-      { d: 'M778 904 C772 1000 772 1094 780 1192', w: 16, o: 0.3, light: true },
-      { d: 'M600 410 C612 560 606 720 592 880', w: 130, o: 0.14, light: true },
-      { d: 'M560 1010 C584 1090 598 1150 604 1214', w: 22, o: 0.35 },
-      { d: 'M372 1160 C468 1140 548 1168 626 1150 C706 1134 786 1156 846 1146', w: 16, o: 0.45 },
-      { d: 'M372 1138 C468 1118 548 1146 626 1128 C706 1112 786 1134 846 1124', w: 10, o: 0.35, light: true },
-      // Sleeve creases
-      { d: 'M262 468 C284 510 302 560 314 612', w: 22, o: 0.5 },
-      { d: 'M938 468 C916 510 898 560 886 612', w: 22, o: 0.5 },
-      { d: 'M240 486 C262 526 278 570 288 614', w: 12, o: 0.45, light: true },
+      // Fitted: soft tension from the underarms towards the chest, gentle verticals at the waist.
+      { d: 'M384 560 C430 590 472 616 506 650', w: 18, o: 0.45 },
+      { d: 'M816 560 C770 590 728 616 694 650', w: 18, o: 0.45 },
+      { d: 'M396 584 C440 612 478 636 508 668', w: 10, o: 0.4, light: true },
+      { d: 'M470 820 C478 930 476 1040 466 1180', w: 26, o: 0.4 },
+      { d: 'M730 820 C722 930 724 1040 734 1180', w: 26, o: 0.4 },
+      { d: 'M440 840 C446 950 444 1060 436 1180', w: 14, o: 0.35, light: true },
+      { d: 'M600 380 C610 540 606 700 594 880', w: 130, o: 0.16, light: true },
+      { d: 'M410 1150 C490 1134 560 1160 630 1144 C700 1130 760 1150 800 1142', w: 14, o: 0.4 },
+      { d: 'M410 1128 C490 1112 560 1138 630 1122 C700 1108 760 1128 800 1120', w: 9, o: 0.3, light: true },
+      // Sleeves hugging the arm
+      { d: 'M300 430 C292 470 286 510 284 548', w: 16, o: 0.4 },
+      { d: 'M900 430 C908 470 914 510 916 548', w: 16, o: 0.4 },
+      { d: 'M318 420 C310 460 304 500 302 540', w: 9, o: 0.35, light: true },
     ],
-    print: front ? { x: 700, y: 455, w: 58 } : { x: 578, y: 360, w: 44 },
+    print: front ? { x: 690, y: 420, w: 56 } : null,
   };
 }
 
-// The sleeveless tee: shoulder straps and deep armholes with binding. The back panel shows through the armholes.
-const TANK_FRONT = 'M455 255 L540 255 C552 390 648 390 660 255 L745 255 C752 400 800 500 860 560 L878 1222 Q600 1244 322 1222 L340 560 C400 500 448 400 455 255 Z';
-const TANK_BACK_LAYER = 'M455 255 L540 255 C556 300 644 300 660 255 L745 255 C758 404 808 504 870 566 L863 650 L878 1222 Q600 1244 322 1222 L337 650 L330 566 C392 504 442 404 455 255 Z';
-const TANK_BACK = 'M455 255 L540 255 C556 300 644 300 660 255 L745 255 C752 400 800 500 860 560 L878 1222 Q600 1244 322 1222 L340 560 C400 500 448 400 455 255 Z';
-const TANK_HEM = 'M322 1222 Q600 1244 878 1222';
+// ---- Sleeveless (fitted, racerback) ------------------------------------------------------------------------
+const TANK_NECK: Pt = [530, 262];
+const TANK_FRONT_SIDE: Seg[] = [
+  { l: [418, 274] }, // wide shoulder strap
+  { c: [[420, 400], [404, 520], [354, 598]] }, // deep armhole
+  { c: [[360, 760], [366, 960], [372, 1222]] }, // side seam
+];
+// Racerback: narrow straps that sweep in to a centre panel in the upper back, then out to the underarm.
+const TANK_BACK_SIDE: Seg[] = [
+  { l: [462, 266] },
+  { c: [[468, 362], [498, 440], [522, 500]] },
+  { c: [[500, 560], [424, 592], [354, 604]] },
+  { c: [[360, 760], [366, 960], [372, 1222]] },
+];
+const TANK_FRONT = outline(TANK_NECK, TANK_FRONT_SIDE, 1242, 330);
+const TANK_BACK = outline(TANK_NECK, TANK_BACK_SIDE, 1242, 290);
+const TANK_HEM = 'M372 1222 Q600 1242 828 1222';
+const ARM_FRONT = 'M418 274 C420 400 404 520 354 598';
+const ARM_BACK = 'M462 266 C468 362 498 440 522 500 C500 560 424 592 354 604';
 
 function tank(view: View): Garment {
   const front = view === 'front';
-  const neck = front ? 'M540 255 C552 390 648 390 660 255' : 'M540 255 C556 300 644 300 660 255';
-  const armL = 'M455 255 C448 400 400 500 340 560', armR = 'M745 255 C752 400 800 500 860 560';
+  const neck = front ? 'M530 262 C556 330 644 330 670 262' : 'M530 262 C556 290 644 290 670 262';
+  const arm = front ? ARM_FRONT : ARM_BACK;
   return {
-    back: front ? TANK_BACK_LAYER : TANK_FRONT.replace('C552 390 648 390 660 255', 'C556 300 644 300 660 255'),
+    // From the front, the racerback sits behind (its bigger openings stay hidden); from the back, the front
+    // panel shows through the racer cut-outs as the inside of the top.
+    back: front ? TANK_BACK : TANK_FRONT,
     body: front ? TANK_FRONT : TANK_BACK,
     panels: [],
     bands: [
-      { d: neck, w: 22, rib: true, tone: -0.1 },
-      ...(front ? [{ d: 'M540 255 C556 300 644 300 660 255', w: 14, rib: true, tone: -0.1, inner: true }] : []),
-      { d: armL, w: 20, rib: true, tone: -0.1 }, { d: armR, w: 20, rib: true, tone: -0.1 },
-      { d: 'M455 255 L540 255', w: 6, tone: -0.12 }, { d: 'M660 255 L745 255', w: 6, tone: -0.12 },
-      { d: TANK_HEM, w: 40 },
+      { d: neck, w: 20, rib: true, tone: -0.08 },
+      ...(front ? [{ d: 'M530 262 C556 290 644 290 670 262', w: 12, rib: true, tone: -0.08, inner: true }] : []),
+      { d: arm, w: 16, tone: -0.07 }, { d: mirror(arm), w: 16, tone: -0.07 },
+      { d: front ? 'M530 262 L418 274' : 'M530 262 L462 266', w: 5, tone: -0.12 },
+      { d: front ? 'M670 262 L782 274' : 'M670 262 L738 266', w: 5, tone: -0.12 },
+      { d: TANK_HEM, w: 38 },
     ],
     stitches: [
-      { d: neck, dist: 25 }, { d: armL, dist: 23 }, { d: armR, dist: 23 },
-      { d: TANK_HEM, dist: 30 }, { d: TANK_HEM, dist: 40 },
+      { d: neck, dist: 24 }, { d: arm, dist: 19 }, { d: mirror(arm), dist: 19 },
+      { d: TANK_HEM, dist: 28 }, { d: TANK_HEM, dist: 38 },
     ],
     seams: [],
+    piping: [],
     folds: [
-      { d: 'M372 610 C420 690 450 770 462 870', w: 30, o: 0.55 },
-      { d: 'M828 610 C780 690 750 770 738 870', w: 30, o: 0.55 },
-      { d: 'M352 640 C398 716 426 792 436 890', w: 16, o: 0.5, light: true },
-      { d: 'M848 640 C802 716 774 792 764 890', w: 14, o: 0.3, light: true },
-      { d: 'M460 920 C466 1010 464 1100 456 1198', w: 30, o: 0.5 },
-      { d: 'M742 920 C736 1014 736 1104 746 1200', w: 30, o: 0.5 },
-      { d: 'M430 936 C434 1026 432 1110 426 1196', w: 16, o: 0.45, light: true },
-      { d: 'M600 420 C612 580 606 740 592 900', w: 130, o: 0.14, light: true },
-      { d: 'M560 1030 C584 1100 598 1156 604 1214', w: 22, o: 0.35 },
-      { d: 'M376 1160 C470 1140 548 1168 626 1150 C706 1134 786 1156 842 1146', w: 16, o: 0.45 },
-      { d: 'M376 1138 C470 1118 548 1146 626 1128 C706 1112 786 1134 842 1124', w: 10, o: 0.35, light: true },
-      { d: 'M470 300 C480 360 486 420 490 470', w: 14, o: 0.4 },
-      { d: 'M730 300 C720 360 714 420 710 470', w: 14, o: 0.4 },
+      { d: 'M380 640 C424 700 452 770 466 860', w: 24, o: 0.45 },
+      { d: 'M820 640 C776 700 748 770 734 860', w: 24, o: 0.45 },
+      { d: 'M366 668 C404 730 430 800 440 890', w: 12, o: 0.4, light: true },
+      { d: 'M470 920 C476 1020 474 1110 464 1196', w: 26, o: 0.4 },
+      { d: 'M730 920 C724 1020 726 1110 736 1196', w: 26, o: 0.4 },
+      { d: 'M600 400 C610 570 606 740 594 900', w: 130, o: 0.15, light: true },
+      { d: 'M396 1150 C480 1134 556 1160 628 1144 C700 1130 770 1150 806 1142', w: 14, o: 0.4 },
+      { d: 'M396 1128 C480 1112 556 1138 628 1122 C700 1108 770 1128 806 1120', w: 9, o: 0.3, light: true },
+      ...(front
+        ? [{ d: 'M458 300 C462 360 462 420 456 470', w: 12, o: 0.35 }, { d: 'M742 300 C738 360 738 420 744 470', w: 12, o: 0.35 }]
+        : [{ d: 'M496 330 C504 400 516 450 532 490', w: 12, o: 0.4 }, { d: 'M704 330 C696 400 684 450 668 490', w: 12, o: 0.4 }]),
     ],
-    print: front ? { x: 680, y: 470, w: 52 } : { x: 580, y: 340, w: 40 },
+    washed: true,
+    print: front ? { x: 680, y: 410, w: 52 } : null,
   };
 }
 

@@ -2,17 +2,18 @@
 // each garment type in every colour, front and back, the Open Graph versions, and the wide banner scenes.
 // It also writes the logo assets used by /api/scene (colours added from the admin).
 //
-// Usage: npm run scenes                → public/images/scenes/*.webp
+// Usage: npm run scenes                → public/images/scenes-v<SCENE_VERSION>/*.webp (src/lib/db/images.ts)
 //        npm run scenes -- tank white  → one type and colour only (for previews)
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
 import { NEON, neonFor } from '../config/scene.config';
-import { OG_H, OG_W, SCENE_W, fabricTone, ogSceneSvg, productSceneSvg, sceneSvg, type SceneAssets, type SceneItem } from '../src/lib/scene/compose';
+import { OG_H, OG_W, SCENE_W, fabricTone, ogSceneSvg, pipingFor, productSceneSvg, sceneSvg, type SceneAssets, type SceneItem } from '../src/lib/scene/compose';
 import { FLOOR, GARMENT_TYPES, type GarmentType } from '../src/lib/scene/garments';
 import { SCENE_COLOURS, SWATCH } from '../src/lib/scene/colours';
+import { MOCKUPS } from '../src/lib/db/images';
 
-const OUT = path.join(process.cwd(), 'public', 'images', 'scenes');
+const OUT = path.join(process.cwd(), 'public', MOCKUPS);
 const [onlyType, onlyColour] = process.argv.slice(2);
 
 async function assets(): Promise<SceneAssets> {
@@ -36,7 +37,7 @@ const a = await assets();
 await fs.mkdir(OUT, { recursive: true });
 await fs.writeFile(
   path.join('src', 'lib', 'scene', 'assets.generated.ts'),
-  `// Written by scripts/render-scenes.ts from public/brand/logo-icon-full.webp and z-only.webp. Do not edit.\nimport type { SceneAssets } from './compose';\nexport const SCENE_ASSETS: SceneAssets = ${JSON.stringify(a)};\n`,
+  `// Written by scripts/render-scenes.mts from public/brand/logo-icon-full.webp and z-only.webp. Do not edit.\nimport type { SceneAssets } from './compose';\nexport const SCENE_ASSETS: SceneAssets = ${JSON.stringify(a)};\n`,
 );
 
 let n = 0;
@@ -56,7 +57,7 @@ for (const type of GARMENT_TYPES) {
 
 if (!onlyType || onlyType === 'scenes') {
   const item = (type: GarmentType, colour: string, x: number, floor: number, s: number): SceneItem => ({
-    type, view: 'front', hex: SWATCH[colour], tone: fabricTone(colour, SWATCH[colour]), neon: neonFor(colour), x, y: floor - FLOOR * s, s,
+    type, view: 'front', hex: SWATCH[colour], tone: fabricTone(colour, SWATCH[colour]), neon: neonFor(colour), piping: pipingFor(colour, SWATCH[colour]), x, y: floor - FLOOR * s, s,
   });
   // A row of garments standing on one floor, centred.
   const row = (types: GarmentType[], colours: string[], w: number, floor: number, s: number, step: number) =>

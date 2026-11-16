@@ -41,3 +41,6 @@ Thumbs.db
 desktop.ini
 .vscode/
 .idea/
+
+# Photos of the real T-shirts: design reference only. Never commit, never copy to public/.
+/design-reference/

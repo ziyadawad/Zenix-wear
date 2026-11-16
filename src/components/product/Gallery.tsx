@@ -6,12 +6,14 @@ import { fill, useI18n } from '../layout/I18nProvider';
 import { useProductState } from './ProductClient';
 import { ProductScene } from './ProductScene';
 import { cx, pName } from '@/lib/utils';
+import { displayImage } from '@/lib/db/images';
 
 export function Gallery() {
   const { t, locale } = useI18n();
   const { product: p, colorId } = useProductState();
   const color = p.colors.find((c) => c.id === colorId) ?? p.colors[0];
-  const images = color?.images ?? [];
+  // Saved paths may predate the current scenes folder: displayImage maps them (thumbnails and lightbox use them as is).
+  const images = (color?.images ?? []).map((src) => displayImage(src));
   const [index, setIndex] = useState(0);
   const [lightbox, setLightbox] = useState<number | null>(null);
   const rowRef = useRef<HTMLDivElement>(null);
@@ -54,7 +56,7 @@ export function Gallery() {
           {images.map((src, i) => (
             <li key={src}>
               <button type="button" onClick={() => setIndex(i)} aria-label={fill(t.product.imageOf, { i: i + 1, n: images.length })} aria-current={i === index} className={cx('relative block aspect-[4/5] w-full overflow-hidden border bg-surface transition-colors', i === index ? 'border-white' : 'border-transparent hover:border-line-strong')}>
-                <Image src={src} alt="" fill sizes="76px" quality={70} className="object-cover" />
+                <Image src={src} alt="" fill sizes="76px" quality={70} className="object-contain" />
               </button>
             </li>
           ))}
