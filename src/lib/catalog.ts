@@ -33,9 +33,10 @@ export async function loadProducts(where = "p.status = 'active'", params: unknow
   return rows.map((r) => toProduct(r, vmap.get(r.id) ?? [], rmap.get(r.id)?.rating ?? 0, rmap.get(r.id)?.n ?? 0));
 }
 
+// Bump a key's version when saved data changes shape (a migration): Vercel keeps this cache across deploys.
 const TTL = { revalidate: 300 };
 /** Whole catalogue, cached and invalidated on any admin edit or order. Small enough to filter in memory. */
-export const getCatalog = unstable_cache(() => loadProducts(), ['catalog-v1'], { ...TTL, tags: ['catalog'] });
+export const getCatalog = unstable_cache(() => loadProducts(), ['catalog-v2'], { ...TTL, tags: ['catalog'] });
 
 export const getProduct = async (slug: string) => (await getCatalog()).find((p) => p.slug === slug) ?? null;
 
@@ -44,7 +45,7 @@ export const getCategories = unstable_cache(
     const rows = await db.query('SELECT * FROM categories ORDER BY sort, name_en');
     return rows.map((r) => ({ slug: r.slug, nameAr: r.name_ar, nameEn: r.name_en, blurbAr: r.blurb_ar, blurbEn: r.blurb_en, image: r.image, sort: r.sort, inMenu: r.in_menu }));
   },
-  ['categories-v1'], { ...TTL, tags: ['catalog'] },
+  ['categories-v2'], { ...TTL, tags: ['catalog'] },
 );
 
 export const getShippingRates = unstable_cache(
@@ -59,7 +60,7 @@ async function readSetting<T>(key: string, fallback: T): Promise<T> {
   const rows = await db.query('SELECT value FROM settings WHERE key = $1', [key]);
   return rows[0] ? { ...fallback, ...rows[0].value } : fallback;
 }
-export const getContent = unstable_cache(() => readSetting<SiteContent>('content', DEFAULT_CONTENT), ['content-v2'], { ...TTL, tags: ['content'] });
+export const getContent = unstable_cache(() => readSetting<SiteContent>('content', DEFAULT_CONTENT), ['content-v3'], { ...TTL, tags: ['content'] });
 export const getSettings = unstable_cache(() => readSetting<SiteSettings>('site', DEFAULT_SETTINGS), ['settings-v2'], { ...TTL, tags: ['content'] });
 
 export function toReview(r: Row): Review {
@@ -70,11 +71,11 @@ export function toReview(r: Row): Review {
 }
 export const getHomeReviews = unstable_cache(
   async () => (await db.query(`SELECT * FROM reviews WHERE status = 'approved' AND on_home = true ORDER BY created_at DESC LIMIT 12`)).map(toReview),
-  ['home-reviews-v1'], { ...TTL, tags: ['reviews'] },
+  ['home-reviews-v2'], { ...TTL, tags: ['reviews'] },
 );
 export const getProductReviews = unstable_cache(
   async (productId: string) => (await db.query(`SELECT * FROM reviews WHERE status = 'approved' AND product_id = $1 ORDER BY created_at DESC LIMIT 20`, [productId])).map(toReview),
-  ['product-reviews-v1'], { ...TTL, tags: ['reviews'] },
+  ['product-reviews-v2'], { ...TTL, tags: ['reviews'] },
 );
 
 // ---- Filtering ------------------------------------------------------------------------------
