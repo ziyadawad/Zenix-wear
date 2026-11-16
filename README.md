@@ -66,7 +66,7 @@ Open **/admin/settings**. The **Launch checklist** shows what is still missing. 
 | Categories | Add/edit categories (name, short line, tile photo, order, in the menu). Each gets a page and a tab on the Shop page |
 | Promo codes | Percentage or fixed, expiry, usage limit, minimum order, first-order-only |
 | Shipping fees | Fee per governorate |
-| Homepage | Hero, announcement bar, shop banner, product order, gallery |
+| Homepage | Hero slides, shop banner, product order |
 | Reviews | Approve, hide, delete, choose which appear on the homepage |
 | Inbox | Contact messages, back-in-stock requests, newsletter emails |
 | Settings | Free-shipping threshold, payment details, social links, tracking pixels |

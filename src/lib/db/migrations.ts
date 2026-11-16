@@ -1,5 +1,5 @@
 import type { Queryable } from './index';
-import { BANNERS, CATEGORY_PRODUCT, DEFAULT_COMMUNITY, PHOTO_PRODUCTS, PLACEHOLDER, cleanImage, isOwnPhoto, photoProduct, photosFor } from './images';
+import { BANNERS, CATEGORY_PRODUCT, PHOTO_PRODUCTS, PLACEHOLDER, cleanImage, isOwnPhoto, photoProduct, photosFor } from './images';
 import LEGACY_AR from './legacy-ar.json';
 import { insertStarterCatalogue } from './seed';
 
@@ -12,6 +12,8 @@ interface Migration { id: string; up: (q: Queryable) => Promise<void> }
 // The older migrations below were written for the generated mockups. These stand-ins keep them running on a new
 // database; the last migration ('2026-11-16-real-photos') then brings every database to the real product photos.
 const SCENES = { tees: BANNERS.shortSleeve, sleeveless: BANNERS.sleeveless, all: BANNERS.shop };
+/** The homepage gallery was removed; the last migration drops its saved list. */
+const DEFAULT_COMMUNITY: string[] = [];
 const CATEGORY_MOCKUP = CATEGORY_PRODUCT;
 const MOCKUPS = '/images/scenes-v2';
 const typeFromOldImage = photoProduct, mockupType = photoProduct;
@@ -309,6 +311,13 @@ const MIGRATIONS: Migration[] = [
         for (const f of DEFAULT_COMMUNITY) if (next.community.length < 6 && !next.community.includes(f)) next.community.push(f);
         if (JSON.stringify(next) !== JSON.stringify(v)) await q.query(`UPDATE settings SET value = $1::jsonb WHERE key = 'content'`, [JSON.stringify(next)]);
       }
+    },
+  },
+  {
+    // The "#ZENIXWEAR, worn by the community" homepage gallery is gone: drop its saved photo list.
+    id: '2026-11-16-no-community-gallery',
+    up: async (q) => {
+      await q.query(`UPDATE settings SET value = value - 'community' WHERE key = 'content' AND value->'community' IS NOT NULL`);
     },
   },
 ];

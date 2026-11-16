@@ -8,7 +8,6 @@ import { Marquee, SectionHead } from '@/components/home/Bits';
 import { Newsletter } from '@/components/home/Newsletter';
 import { ReviewsSlider } from '@/components/home/ReviewsSlider';
 import { ProductCard } from '@/components/product/ProductCard';
-import { ProductPhoto } from '@/components/product/ProductPhoto';
 
 export const revalidate = 300;
 
@@ -70,22 +69,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
           <ReviewsSlider reviews={reviews} />
         </section>
       )}
-
-      {/* Community */}
-      {content.community.length > 0 && <section className="cv pb-14 md:pb-24" aria-labelledby="com-h">
-        <div className="container-zx mb-8 text-center md:mb-12">
-          <p className="latin-wide text-sm text-silver md:text-base" dir="ltr">#ZENIXWEAR</p>
-          <h2 id="com-h" className="display h-section mt-4">{t.home.community}</h2>
-          <p className="mt-3 text-sm text-muted">{t.home.communityText}</p>
-        </div>
-        <div className="grid grid-cols-3 gap-1 md:grid-cols-6">
-          {content.community.slice(0, 6).map((src, i) => (
-            <a key={src + i} href={settings.instagram || lp('/contact')} {...(settings.instagram ? { target: '_blank', rel: 'noopener noreferrer' } : {})} aria-label={`${t.home.followUs} ${i + 1}`} className="group relative block aspect-square overflow-hidden bg-surface">
-              <ProductPhoto src={src} alt="" sizes="(min-width:768px) 17vw, 33vw" />
-            </a>
-          ))}
-        </div>
-      </section>}
 
       <Newsletter />
     </>

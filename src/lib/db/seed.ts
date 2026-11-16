@@ -1,7 +1,7 @@
 import type { Queryable } from './index';
 import type { ProductColor, SiteContent, SiteSettings } from '../types';
 
-import { BANNERS, DEFAULT_COMMUNITY, photosFor } from './images';
+import { BANNERS, photosFor } from './images';
 
 /** Governorate id, Arabic, English, placeholder fee (editable in admin > Shipping). */
 export const GOVERNORATES: [string, string, string, number][] = [
@@ -88,7 +88,6 @@ export const DEFAULT_CONTENT: SiteContent = {
   ],
   shopImage: BANNERS.shop,
   bestSellerIds: [],
-  community: DEFAULT_COMMUNITY,
 };
 
 export const DEFAULT_SETTINGS: SiteSettings = {

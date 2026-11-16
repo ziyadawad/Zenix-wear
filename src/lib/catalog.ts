@@ -60,7 +60,7 @@ async function readSetting<T>(key: string, fallback: T): Promise<T> {
   const rows = await db.query('SELECT value FROM settings WHERE key = $1', [key]);
   return rows[0] ? { ...fallback, ...rows[0].value } : fallback;
 }
-export const getContent = unstable_cache(() => readSetting<SiteContent>('content', DEFAULT_CONTENT), ['content-v3'], { ...TTL, tags: ['content'] });
+export const getContent = unstable_cache(() => readSetting<SiteContent>('content', DEFAULT_CONTENT), ['content-v4'], { ...TTL, tags: ['content'] });
 export const getSettings = unstable_cache(() => readSetting<SiteSettings>('site', DEFAULT_SETTINGS), ['settings-v2'], { ...TTL, tags: ['content'] });
 
 export function toReview(r: Row): Review {

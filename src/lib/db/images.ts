@@ -25,12 +25,6 @@ export const BANNERS = {
 export const PLACEHOLDER = `${PHOTOS}/placeholder.webp`;
 
 export const photo = (product: string, colour: string, view: 'front' | 'back' = 'front') => `${PHOTOS}/${product}/${colour}-${view}.webp`;
-/** Homepage gallery default. */
-export const DEFAULT_COMMUNITY = [
-  photo('short-sleeve', 'black'), photo('sleeveless', 'white'), photo('short-sleeve', 'white'),
-  photo('sleeveless', 'black'), photo('short-sleeve', 'black', 'back'), photo('sleeveless', 'white', 'back'),
-];
-
 /** Front and back photos for one product colour, or the placeholder when that colour has no photos yet. */
 export function photosFor(product: string, colourId: string): string[] {
   return (PHOTO_PRODUCTS[product] ?? []).includes(colourId) ? [photo(product, colourId, 'front'), photo(product, colourId, 'back')] : [PLACEHOLDER];

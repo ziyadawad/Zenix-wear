@@ -251,7 +251,6 @@ const contentSchema = z.object({
   })).min(1).max(6),
   shopImage: z.union([z.literal(''), imageUrl]),
   bestSellerIds: z.array(z.string().max(100)).max(12),
-  community: z.array(imageUrl).max(6),
 });
 export async function saveContent(input: unknown): Promise<{ ok: boolean; error?: string }> {
   await requireAdmin();

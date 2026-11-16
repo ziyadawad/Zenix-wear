@@ -99,7 +99,6 @@ export interface SiteContent {
   /** Banner at the top of the shop page. */
   shopImage: string;
   bestSellerIds: string[];
-  community: string[];
 }
 export interface SiteSettings {
   freeShippingThreshold: number;

@@ -52,7 +52,6 @@ export function ContentForm({ initial, products }: { initial: SiteContent; produ
         </div>
       </Card>
 
-      <Card title="#ZENIXWEAR gallery"><ImagePicker max={6} images={v.community} onChange={(community) => up({ community })} /></Card>
 
       <div className="fixed inset-x-0 bottom-[calc(60px+env(safe-area-inset-bottom))] z-30 flex items-center justify-end gap-3 border-t border-line bg-black/95 p-2.5 lg:bottom-0 lg:start-[230px]">
         {msg && <p role="status" className={msg.ok ? 'text-sm text-success' : 'min-w-0 truncate text-sm text-[#ff9a9d]'}>{msg.text}</p>}
