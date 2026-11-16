@@ -1,11 +1,8 @@
-import Image from 'next/image';
-import Link from 'next/link';
-import { ArrowRight, Gem, Repeat2, Ruler, Truck } from 'lucide-react';
+import { Gem, Repeat2, Ruler, Truck } from 'lucide-react';
 import { getDictionary } from '@/lib/i18n/dictionaries';
-import { cardProps, getCatalog, getCategories, getContent, getHomeReviews, getSettings } from '@/lib/catalog';
+import { cardProps, getCatalog, getContent, getHomeReviews, getSettings } from '@/lib/catalog';
 import type { Locale } from '@/lib/types';
 import { jsonLd, SITE_URL, CONTACT } from '@/lib/utils';
-import { SCENES, cleanImage } from '@/lib/db/images';
 import { Hero } from '@/components/home/Hero';
 import { Marquee, SectionHead } from '@/components/home/Bits';
 import { Newsletter } from '@/components/home/Newsletter';
@@ -19,15 +16,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
   const { locale } = await params;
   const t = getDictionary(locale);
   const lp = (p: string) => `/${locale}${p}`;
-  const [catalog, content, categories, reviews, settings] = await Promise.all([getCatalog(), getContent(), getCategories(), getHomeReviews(), getSettings()]);
+  const [catalog, content, reviews, settings] = await Promise.all([getCatalog(), getContent(), getHomeReviews(), getSettings()]);
 
   // Every product on sale, the owner's picks first (Admin → Homepage), then best sellers.
   const chosen = content.bestSellerIds.map((id) => catalog.find((p) => p.id === id)).filter((p) => p != null);
   const products = [...chosen, ...[...catalog].sort((a, b) => b.soldCount - a.soldCount).filter((p) => !chosen.includes(p))].slice(0, 8).map(cardProps);
-  // One tile per category that has something to sell, so no tile leads to an empty page.
-  const cats = categories.filter((c) => c.inMenu && catalog.some((p) => p.category === c.slug)).map((c) => ({
-    id: c.slug, label: locale === 'ar' ? c.nameAr : c.nameEn, image: c.image ? cleanImage(c.image) : SCENES.all, href: lp(`/shop/${c.slug}`),
-  }));
   const whyIcons = [Gem, Ruler, Truck, Repeat2];
 
   return (
@@ -41,29 +34,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
       <Hero slides={content.hero} />
       <Marquee words={t.home.marquee} />
 
-      {/* Shop by category: one large tile per category */}
-      {cats.length > 0 && (
-        <section className="cv section container-zx" aria-labelledby="cat-h">
-          <SectionHead id="cat-h" title={t.home.shopByCategory} />
-          <div className={`grid gap-2 md:gap-3 ${cats.length > 1 ? 'md:grid-cols-2' : ''}`}>
-            {cats.map((c, i) => (
-              <Link key={c.id} href={c.href} data-reveal style={{ '--d': `${i * 90}ms` } as React.CSSProperties}
-                className="glow-card group relative block aspect-[4/3] overflow-hidden bg-surface md:aspect-[5/4]">
-                <Image src={c.image} alt="" fill sizes="(min-width:768px) 50vw, 100vw" loading="lazy" quality={70} className="zoom-img object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-5 md:p-8">
-                  <h3 className="display text-2xl md:text-4xl">{c.label}</h3>
-                  <ArrowRight size={20} strokeWidth={1.25} className="flip-rtl flex-none" />
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
       {/* The products */}
       {products.length > 0 && (
-        <section className="cv pb-14 md:pb-24 container-zx" aria-labelledby="prod-h">
+        <section className="cv pt-[clamp(3.5rem,8vw,7.5rem)] pb-14 md:pb-24 container-zx" aria-labelledby="prod-h">
           <SectionHead id="prod-h" title={t.home.products} link={{ href: lp('/shop'), label: t.home.viewAll }} />
           <div className={`grid grid-cols-2 gap-x-3 gap-y-8 md:gap-x-5 ${products.length > 2 ? 'lg:grid-cols-4' : 'mx-auto max-w-[900px]'}`}>
             {products.map((p, i) => <div key={p.id} data-reveal style={{ '--d': `${(i % 4) * 70}ms` } as React.CSSProperties}><ProductCard product={p} /></div>)}

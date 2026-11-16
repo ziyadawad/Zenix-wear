@@ -11,7 +11,7 @@ export default async function CategoriesPage() {
   const [categories, counts] = await Promise.all([getCategories(), db.query<{ category: string; n: number }>('SELECT category, count(*)::int AS n FROM products GROUP BY category')]);
   return (
     <>
-      <PageHead title="Categories" sub="Each category gets its own page (/shop/…), a menu link and a homepage tile once it has a live product." />
+      <PageHead title="Categories" sub="Each category gets its own page (/shop/…), shown as a tab on the Shop page once it has a live product." />
       <div className="space-y-4">
         {categories.map((c) => <Card key={c.slug} title={`${c.nameEn} · ${c.nameAr}`}><CategoryForm category={c} count={counts.find((x) => x.category === c.slug)?.n ?? 0} /></Card>)}
         <Card title="Add a category"><CategoryForm category={null} /></Card>

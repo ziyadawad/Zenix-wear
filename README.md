@@ -63,7 +63,7 @@ Open **/admin/settings**. The **Launch checklist** shows what is still missing. 
 | Dashboard | Sales today / 7 days / month, best sellers, low stock, launch checklist |
 | Orders | Filter, change status, print invoice, one-click WhatsApp, view transfer screenshots |
 | Products | Add/edit, photos per colour, stock per size and colour, sale prices, tags |
-| Categories | Add/edit categories (name, short line, tile photo, order, in the menu). Each gets a page, a menu link and a homepage tile |
+| Categories | Add/edit categories (name, short line, tile photo, order, in the menu). Each gets a page and a tab on the Shop page |
 | Promo codes | Percentage or fixed, expiry, usage limit, minimum order, first-order-only |
 | Shipping fees | Fee per governorate |
 | Homepage | Hero, announcement bar, shop banner, product order, gallery |

@@ -38,7 +38,7 @@ export function ContentForm({ initial, products }: { initial: SiteContent; produ
       </Card>
 
       <Card title="Shop page banner">
-        <p className="mb-3 text-xs text-muted">Category tile photos are set per category, under Categories.</p>
+        <p className="mb-3 text-xs text-muted">Each category page has its own banner, set under Categories.</p>
         <div className="max-w-[240px]"><ImagePicker max={1} label="Upload" images={v.shopImage ? [v.shopImage] : []} onChange={(a) => up({ shopImage: a[0] ?? '' })} /></div>
       </Card>
 

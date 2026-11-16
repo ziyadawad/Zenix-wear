@@ -13,7 +13,7 @@ const en = {
   home: {
     shopNow: 'Shop now', scroll: 'Scroll',
     marquee: ['ZENIX WEAR', 'FOCUS', 'PUSH', 'RISE'],
-    shopByCategory: 'Shop by Category', explore: 'Explore',
+    explore: 'Explore',
     viewAll: 'View all', products: 'Our T-Shirts',
     why: 'Why ZENIX',
     whyItems: [
@@ -105,7 +105,7 @@ const ar: Dictionary = {
   home: {
     shopNow: 'اتسوق دلوقتي', scroll: 'انزل',
     marquee: ['ZENIX WEAR', 'FOCUS', 'PUSH', 'RISE'],
-    shopByCategory: 'اتسوق بالقسم', explore: 'شوف',
+    explore: 'شوف',
     viewAll: 'شوف الكل', products: 'تيشيرتاتنا',
     why: 'ليه ZENIX',
     whyItems: [

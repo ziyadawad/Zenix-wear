@@ -36,7 +36,7 @@ export function CategoryForm({ category, count }: { category: Category | null; c
 
   return (
     <form onSubmit={save} className="grid gap-3 sm:grid-cols-[160px_1fr]">
-      <div><p className="label">Tile photo</p><ImagePicker max={1} label="Upload" images={v.image ? [v.image] : []} onChange={(a) => up({ image: a[0] ?? '' })} /></div>
+      <div><p className="label">Banner photo (top of the category page)</p><ImagePicker max={1} label="Upload" images={v.image ? [v.image] : []} onChange={(a) => up({ image: a[0] ?? '' })} /></div>
       <div className="grid gap-3 sm:grid-cols-2">
         <div><label className="label" htmlFor={`${id}-ar`}>Name (Arabic)</label><input id={`${id}-ar`} className="field" dir="rtl" value={v.nameAr} onChange={(e) => up({ nameAr: e.target.value })} required maxLength={80} /></div>
         <div><label className="label" htmlFor={`${id}-en`}>Name (English)</label><input id={`${id}-en`} className="field" value={v.nameEn} onChange={(e) => up({ nameEn: e.target.value })} required maxLength={80} /></div>
