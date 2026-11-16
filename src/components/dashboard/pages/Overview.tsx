@@ -3,7 +3,7 @@ import { BarChart3, Banknote, CalendarRange, Clock, Receipt, ShoppingBag, Trendi
 import { usePage } from '../data';
 import { useShell } from '../App';
 import { L } from '../i18n';
-import { BarChart, Big, Card, DataList, Delta, Empty, Note, Progress, Row, StatusPill, Waiting, Warn, ago, egp, hhmm, isoDayLabel, num, ordersN } from '../ui';
+import { BarChart, Big, Card, DataList, Delta, Empty, Note, Progress, Row, StatusPill, Waiting, Warn, ago, egp, hhmm, isoDayLabel, num, ordersN, Amount } from '../ui';
 import { OrderPanel } from './Orders';
 import { ProfitBreakdown, type Profit } from './Money';
 
@@ -26,26 +26,26 @@ export function OverviewPage() {
   ));
 
   return (
-    <div className="grid gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4">
       <Card title={L('مبيعات النهارده', "Today's sales")} icon={Banknote} stale={today.stale} onOpen={t ? todayList : undefined} className="xl:col-span-2">
         {t ? (
           <>
-            <Big>{egp(t.sales)}</Big>
+            <Big><Amount n={t.sales} /></Big>
             <div className="mt-3 flex flex-col gap-1"><Delta now={t.sales} before={t.yesterday.sales} label={L('مقارنة بإمبارح لنفس الساعة', 'vs yesterday, same time')} /><Delta now={t.sales} before={t.lastWeek.sales} label={L('مقارنة بنفس اليوم الأسبوع اللي فات', 'vs same day last week')} /></div>
           </>
         ) : <Waiting failed={today.stale} />}
       </Card>
-      <Card title={L('أوردرات النهارده', "Today's orders")} icon={ShoppingBag} stale={today.stale} onOpen={t ? todayList : undefined}>
+      <Card title={L('أوردرات النهارده', "Today's orders")} icon={ShoppingBag} chip="violet" stale={today.stale} onOpen={t ? todayList : undefined}>
         {t ? (t.orders ? <><Big>{num(t.orders)}</Big><div className="mt-3"><Delta now={t.orders} before={t.yesterday.orders} label={L('مقارنة بإمبارح', 'vs yesterday')} /></div></> : <Empty text={noOrdersToday} icon={ShoppingBag} />) : <Waiting failed={today.stale} />}
       </Card>
       <Card title={L('متوسط الأوردر', 'Average order')} icon={Receipt} stale={today.stale} onOpen={t ? todayList : undefined}>
-        {t ? <><Big>{egp(t.aov)}</Big><Note>{L('مبيعات النهارده ÷ عدد الأوردرات', "Today's sales ÷ number of orders")}</Note></> : <Waiting failed={today.stale} />}
+        {t ? <><Big><Amount n={t.aov} /></Big><Note>{L('مبيعات النهارده ÷ عدد الأوردرات', "Today's sales ÷ number of orders")}</Note></> : <Waiting failed={today.stale} />}
       </Card>
 
-      <Card title={L('محتاج تأكيد', 'Needs confirming')} icon={Clock} stale={pending.stale} tone={p && p.overdue > 0 ? 'bad' : 'neutral'}
+      <Card title={L('محتاج تأكيد', 'Needs confirming')} icon={Clock} chip={p && p.overdue > 0 ? 'red' : 'amber'} stale={pending.stale} tone={p && p.overdue > 0 ? 'bad' : 'neutral'}
         onOpen={p ? () => open(L('أوردرات محتاجة تأكيد', 'Orders to confirm'), (
           <DataList rows={p.list} rowKey={(o) => o.id} onRow={(o) => openOrder(o.id, o.number)} empty={L('مفيش أوردرات مستنية تأكيد', 'No orders waiting')} rowTone={(o) => (o.hours > p.limitHours ? 'bad' : undefined)}
-            cols={[{ label: L('رقم', 'No.'), cell: (o) => o.number }, { label: L('مستني', 'Waiting'), cell: (o) => <span className={o.hours > p.limitHours ? 'text-[#ff8a8e]' : ''}>{o.hours > p.limitHours && '⚠ '}{ago(o.created_at)}</span> }, { label: L('العميل', 'Customer'), cell: (o) => o.name, main: true }, { label: L('الإجمالي', 'Total'), cell: (o) => egp(o.total) }]} />
+            cols={[{ label: L('رقم', 'No.'), cell: (o) => o.number }, { label: L('مستني', 'Waiting'), cell: (o) => <span className={o.hours > p.limitHours ? 'd-bad' : ''}>{o.hours > p.limitHours && '⚠ '}{ago(o.created_at)}</span> }, { label: L('العميل', 'Customer'), cell: (o) => o.name, main: true }, { label: L('الإجمالي', 'Total'), cell: (o) => egp(o.total) }]} />
         )) : undefined}>
         {p ? (
           <>
@@ -67,16 +67,16 @@ export function OverviewPage() {
         )) : undefined}>
         {m ? (
           <div className="grid gap-4 sm:grid-cols-[auto_1fr] sm:items-end sm:gap-8">
-            <div><Big>{egp(m.sales)}</Big><Note>{ordersN(m.orders)}</Note></div>
+            <div><Big><Amount n={m.sales} /></Big><Note>{ordersN(m.orders)}</Note></div>
             <Progress value={m.sales} max={m.target} label={L('التقدم ناحية تارجت الشهر', 'Progress to monthly target')} />
           </div>
         ) : <Waiting failed={month.stale} />}
       </Card>
 
-      <Card title={L('صافي الربح الشهر ده', 'Net profit this month')} icon={TrendingUp} stale={profit.stale} className="md:col-span-2 xl:col-span-1" onOpen={profit.data ? () => open(L('صافي الربح الشهر ده', 'Net profit this month'), <ProfitBreakdown p={profit.data!} />) : undefined}>
+      <Card title={L('صافي الربح الشهر ده', 'Net profit this month')} icon={TrendingUp} chip="green" stale={profit.stale} className="md:col-span-2 xl:col-span-1" onOpen={profit.data ? () => open(L('صافي الربح الشهر ده', 'Net profit this month'), <ProfitBreakdown p={profit.data!} />) : undefined}>
         {profit.data ? (
           <>
-            <Big tone={profit.data.net >= 0 ? 'good' : 'bad'}>{profit.data.net < 0 ? '−' : ''}{egp(Math.abs(profit.data.net))}</Big>
+            <Big tone={profit.data.net >= 0 ? 'good' : 'bad'}><Amount n={profit.data.net} /></Big>
             <Note>{L('المبيعات المتسلمة − تكلفة البضاعة − الشحن − المصاريف', 'Delivered sales − cost of goods − shipping − expenses')}</Note>
           </>
         ) : <Waiting failed={profit.stale} />}

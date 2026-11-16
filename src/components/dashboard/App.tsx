@@ -1,7 +1,7 @@
 'use client';
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { Boxes, ChevronLeft, ChevronRight, ExternalLink, LayoutDashboard, LogOut, Maximize, RefreshCw, Settings, Shirt, ShoppingCart, Users, Wallet } from 'lucide-react';
+import { Boxes, ExternalLink, LayoutDashboard, LogOut, Maximize, RefreshCw, Settings, Shirt, ShoppingCart, Users, Wallet } from 'lucide-react';
 import type { DashLang } from '@/lib/dashboard/lang';
 import { L, setDashLang } from './i18n';
 import { LangToggle } from './LangToggle';
@@ -52,7 +52,7 @@ export function DashboardApp({ logout, lang }: { logout: () => Promise<void>; la
     go(pages[(i + dir + pages.length) % pages.length].id as PageId);
   }, [page, pages, go]);
 
-  // ---- TV mode: fullscreen, pages rotate, arrows move, Esc or F leaves -----------------------------
+  // ---- TV mode: fullscreen, pages rotate on their own, keyboard arrows move, Esc or F leaves ---------
   const exitTv = useCallback(() => { setTv(false); if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); }, []);
   const enterTv = useCallback(() => { setPanel(null); setTv(true); root.current?.requestFullscreen?.().catch(() => {}); }, []);
   useEffect(() => {
@@ -86,25 +86,24 @@ export function DashboardApp({ logout, lang }: { logout: () => Promise<void>; la
 
   return (
     <ShellCtx.Provider value={shell}>
-      <div ref={root} className={`min-h-svh overflow-x-clip bg-ink ${tv ? 'overflow-y-auto' : ''}`}>
-        <header className="dash-header sticky top-0 z-40 bg-ink/90 backdrop-blur">
-          <span className="ambient-strip bottom-0" aria-hidden="true" />
-          <div className="mx-auto flex h-14 max-w-[1500px] items-center justify-between gap-3 px-4 md:h-16 md:px-6">
+      <div ref={root} className={`dash-app min-h-svh overflow-x-clip ${tv ? 'overflow-y-auto' : ''}`}>
+        <header className="dash-headbar sticky top-0 z-40">
+          <div className="mx-auto flex h-16 max-w-[1500px] items-center justify-between gap-3 px-4 md:px-6">
             <div className="flex min-w-0 items-center gap-3">
               <Image src="/brand/wordmark.webp" alt="ZENIX WEAR" width={592} height={56} priority className="h-auto w-[112px] md:w-[150px]" />
               <span className="hidden text-[13px] text-muted sm:inline">{L('داش بورد', 'Dashboard')}</span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="me-1 hidden text-[12px] text-muted lg:inline" aria-live="polite">{updatedText}</span>
+              <span className="dash-pill dash-pill-quiet me-1 !hidden !cursor-default lg:!inline-flex" aria-live="polite"><span className="dash-live" aria-hidden="true" />{updatedText}</span>
               <LangToggle lang={lang} />
-              <button type="button" onClick={() => window.dispatchEvent(new Event('dash:refresh'))} aria-label={L('حدّث دلوقتي', 'Refresh now')} title={L('حدّث دلوقتي', 'Refresh now')} className="flex size-10 items-center justify-center text-muted hover:text-white"><RefreshCw size={18} /></button>
+              <button type="button" onClick={() => window.dispatchEvent(new Event('dash:refresh'))} aria-label={L('حدّث دلوقتي', 'Refresh now')} title={L('حدّث دلوقتي', 'Refresh now')} className="dash-pill !px-0"><RefreshCw size={16} /></button>
               {tv ? (
-                <button type="button" onClick={exitTv} className="h-10 border border-line-strong px-3 text-[13px]">{L('اخرج من وضع الشاشة', 'Exit TV mode')}</button>
+                <button type="button" onClick={exitTv} className="dash-pill">{L('اخرج من وضع الشاشة', 'Exit TV mode')}</button>
               ) : (
                 <>
-                  <button type="button" onClick={enterTv} className="hidden h-10 items-center gap-1.5 border border-line-strong px-3 text-[13px] hover:border-white md:flex"><Maximize size={15} />{L('وضع الشاشة', 'TV mode')}</button>
-                  <a href="/admin/orders" className="flex size-10 items-center justify-center text-muted hover:text-white" aria-label={L('الإدارة: المنتجات والمحتوى', 'Admin: products and content')} title={L('الإدارة', 'Admin')}><Settings size={18} /></a>
-                  <form action={logout}><button className="flex h-10 items-center gap-1.5 px-2 text-[13px] text-muted hover:text-white"><LogOut size={17} className="flip-rtl" /><span className="hidden sm:inline">{L('خروج', 'Log out')}</span></button></form>
+                  <button type="button" onClick={enterTv} className="dash-pill !hidden md:!inline-flex"><Maximize size={14} />{L('وضع الشاشة', 'TV mode')}</button>
+                  <a href="/admin/orders" className="dash-pill dash-pill-quiet !px-0" aria-label={L('الإدارة: المنتجات والمحتوى', 'Admin: products and content')} title={L('الإدارة', 'Admin')}><Settings size={16} /></a>
+                  <form action={logout}><button className="dash-pill dash-pill-quiet" aria-label={L('خروج', 'Log out')}><LogOut size={15} className="flip-rtl" /><span className="hidden sm:inline">{L('خروج', 'Log out')}</span></button></form>
                 </>
               )}
             </div>
@@ -116,7 +115,7 @@ export function DashboardApp({ logout, lang }: { logout: () => Promise<void>; la
                 const on = p.id === page;
                 return (
                   <button key={p.id} role="tab" aria-selected={on} type="button" onClick={() => go(p.id as PageId)}
-                    className={`dash-tab -mb-px flex min-h-12 flex-none items-center gap-2 px-3.5 text-[14px] transition-colors ${on ? 'text-white' : 'text-muted hover:text-white'}`}>
+                    className="dash-tab -mb-px flex min-h-12 flex-none items-center gap-2 px-4 text-[14px] transition-colors">
                     <Icon size={16} strokeWidth={1.5} aria-hidden="true" />{L(p.title, p.titleEn)}
                   </button>
                 );
@@ -125,10 +124,10 @@ export function DashboardApp({ logout, lang }: { logout: () => Promise<void>; la
           </div>
         </header>
 
-        <main className="mx-auto max-w-[1500px] px-3 py-4 pb-[calc(env(safe-area-inset-bottom)+40px)] md:px-6 md:py-6">
-          <div className="mb-4 flex items-center justify-between gap-3">
+        <main className="mx-auto max-w-[1500px] px-4 py-4 pb-[calc(env(safe-area-inset-bottom)+40px)] md:px-6 md:py-6">
+          <div className="mb-4 flex items-center justify-between gap-3 md:mb-6">
             <h1 className="text-xl font-semibold md:text-2xl">{title}</h1>
-            <span className="text-[12px] text-muted lg:hidden">{updatedText}</span>
+            <span className="dash-pill dash-pill-quiet !h-8 !cursor-default lg:!hidden"><span className="dash-live" aria-hidden="true" />{updatedText}</span>
           </div>
           <Current key={page} />
           {!tv && (
@@ -139,12 +138,6 @@ export function DashboardApp({ logout, lang }: { logout: () => Promise<void>; la
           )}
         </main>
 
-        {tv && (
-          <div className="fixed bottom-4 start-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rtl:translate-x-1/2">
-            <button type="button" onClick={() => step(-1)} aria-label={L('الصفحة اللي قبل', 'Previous page')} className="flex size-12 items-center justify-center rounded-full border border-line-strong bg-black/80"><ChevronRight size={22} /></button>
-            <button type="button" onClick={() => step(1)} aria-label={L('الصفحة اللي بعد', 'Next page')} className="flex size-12 items-center justify-center rounded-full border border-line-strong bg-black/80"><ChevronLeft size={22} /></button>
-          </div>
-        )}
         {panel && <Panel title={panel.title} onClose={shell.close}>{panel.body}</Panel>}
       </div>
     </ShellCtx.Provider>

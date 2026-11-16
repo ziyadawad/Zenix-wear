@@ -15,15 +15,15 @@ export default async function DashboardLogin({ searchParams }: { searchParams: P
   const lang = await dashLang();
   const t = (ar: string, en: string) => tr(lang, ar, en);
   return (
-    <main className="dash-login relative flex min-h-svh items-center justify-center p-4">
+    <main className="relative flex min-h-svh items-center justify-center p-4">
       <div className="absolute end-4 top-4"><LangToggle lang={lang} /></div>
-      <div className="w-full max-w-[360px]">
+      <div className="dash-login-card w-full max-w-[400px] p-6 md:p-8">
         {/* Same turning Z and ring as the homepage hero (stops with reduced motion). */}
         <div className="logo-glow mx-auto w-[170px]"><OrbitMark hero sizes="170px" /></div>
         <h1 className="mt-6 text-center text-lg font-medium">{t('داش بورد ZENIX', 'ZENIX Dashboard')}</h1>
         {ownerLoginConfigured()
           ? <DashboardLoginForm next={next} lang={lang} />
-          : <p role="alert" className="mt-6 border border-[#e5484d]/60 p-4 text-sm text-[#ff8a8e]">{t('الداش بورد لسه متظبطتش. ضيف DASHBOARD_PASSWORD و DASHBOARD_SESSION_SECRET في Vercel ← Settings ← Environment Variables، وبعدين اعمل Redeploy.', 'The dashboard is not set up yet. Add DASHBOARD_PASSWORD and DASHBOARD_SESSION_SECRET in Vercel → Settings → Environment Variables, then redeploy.')}</p>}
+          : <p role="alert" className="dash-item dash-item-bad d-bad mt-6 p-4 text-sm">{t('الداش بورد لسه متظبطتش. ضيف DASHBOARD_PASSWORD و DASHBOARD_SESSION_SECRET في Vercel ← Settings ← Environment Variables، وبعدين اعمل Redeploy.', 'The dashboard is not set up yet. Add DASHBOARD_PASSWORD and DASHBOARD_SESSION_SECRET in Vercel → Settings → Environment Variables, then redeploy.')}</p>}
       </div>
     </main>
   );

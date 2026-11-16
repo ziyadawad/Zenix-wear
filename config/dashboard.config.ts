@@ -69,13 +69,7 @@ export const DASHBOARD_CONFIG = {
     { id: 'cancelled', label: 'اتلغى', labelEn: 'Cancelled', tone: 'bad' }, // اتلغى (المخزون بيرجع لوحده)
   ],
 
-  colors: {
-    good: '#3bb273', // أخضر: فلوس داخلة / اتسلم / تمام
-    bad: '#e5484d', // أحمر: مشكلة / فلوس خارجة / متأخر / خلصان
-    warn: '#e9bd67', // أصفر: محتاج انتباه
-    info: '#94c0ff', // أزرق: في السكة
-    neutral: '#a1a1a1', // رمادي: عادي
-  },
+  // ألوان الداش بورد كلها في ملف واحد: src/components/dashboard/dashboard.css (أول جزء في الملف)
 } as const;
 
 export type DashboardPageId = (typeof DASHBOARD_CONFIG.pages)[number]['id'];

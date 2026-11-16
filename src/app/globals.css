@@ -299,18 +299,4 @@ html.js [data-reveal].in { opacity: 1; transform: none; }
 .tab-active { border-color: transparent !important; position: relative; }
 .tab-active::after { content: ''; position: absolute; inset-inline: 0; bottom: -1px; height: 2px; background: var(--ambient); box-shadow: 0 0 10px var(--glow-2); }
 
-/* ---- Dashboard ---------------------------------------------------------------- */
-:root { --chart-bar: color-mix(in srgb, var(--color-accent-2) 70%, #2a2a3a); --chart-today: var(--color-accent-1); --chart-hover: var(--color-accent-3); }
-.dash-login { background: radial-gradient(60% 45% at 50% 30%, color-mix(in srgb, var(--color-accent-2) 16%, transparent) 0%, transparent 70%), radial-gradient(50% 35% at 50% 100%, color-mix(in srgb, var(--color-accent-1) 10%, transparent), transparent 70%), var(--color-black); }
-.dash-header { position: relative; }
-.dash-card { position: relative; background: linear-gradient(180deg, var(--color-surface), color-mix(in srgb, var(--color-surface) 70%, var(--color-black))); border: 1px solid var(--color-line); border-radius: 8px; transition: border-color 0.3s, box-shadow 0.4s var(--ease-lux); }
-.dash-card-bad { border-color: rgb(229 72 77 / 0.75); }
-@media (hover: hover) { .dash-card-open:hover { border-color: transparent; box-shadow: var(--glow-card); } }
-.dash-card-open:focus-visible { outline: none; box-shadow: var(--focus-ring); }
-.dash-icon { color: var(--color-accent-1); }
-.dash-bar { background: var(--ambient); box-shadow: 0 0 10px var(--glow-2); }
-[dir='rtl'] .dash-bar { background: linear-gradient(270deg, var(--color-accent-1), var(--color-accent-2) 50%, var(--color-accent-3)); }
-.dash-chip-on { background: #fff; border-color: #fff; color: var(--color-black); box-shadow: 0 0 16px -2px var(--glow-2); }
-.dash-tab { position: relative; }
-.dash-tab[aria-selected='true']::after { content: ''; position: absolute; inset-inline: 0; bottom: 0; height: 2px; background: var(--ambient); box-shadow: 0 0 10px var(--glow-2); }
-.dash-check { accent-color: var(--color-accent-2); }
+/* The dashboard has its own styles and colour tokens: src/components/dashboard/dashboard.css */

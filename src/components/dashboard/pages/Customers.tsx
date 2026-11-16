@@ -20,8 +20,8 @@ export function CustomersPage() {
   const noOrders = L('لسه مفيش أوردرات الشهر ده', 'No orders this month yet');
 
   return (
-    <div className="grid gap-3 md:gap-4 lg:grid-cols-2">
-      <Card title={L('عملاء الشهر: جداد ولا راجعين', 'Customers this month: new vs returning')} icon={UserPlus} stale={nvr.stale}>
+    <div className="grid gap-4 md:gap-6 lg:grid-cols-2">
+      <Card title={L('عملاء الشهر: جداد ولا راجعين', 'Customers this month: new vs returning')} icon={UserPlus} chip="green" stale={nvr.stale}>
         {nvr.data ? (all ? (
           <div className="grid grid-cols-2 gap-3">
             <div><p className="mb-1.5 text-[12px] text-muted">{L('جداد (أول أوردر)', 'New (first order)')}</p><Big>{num(nvr.data.new)}</Big><Note>{pct(nvr.data.new / all)}</Note></div>
@@ -33,13 +33,13 @@ export function CustomersPage() {
         onOpen={govs.data?.length ? () => open(L('المحافظات الشهر ده', 'Governorates this month'), <DataList rows={govs.data!} rowKey={(g) => g.name} cols={[{ label: L('المحافظة', 'Governorate'), cell: (g) => g.name, main: true }, { label: L('أوردرات', 'Orders'), cell: (g) => num(g.orders) }, { label: L('مبيعات', 'Sales'), cell: (g) => egp(g.sales) }]} />) : undefined}>
         {govs.data ? <RankBars rows={govs.data.slice(0, 6).map((g) => ({ key: g.name, label: g.name, value: g.orders, text: `${ordersN(g.orders)} · ${egp(g.sales)}` }))} empty={noOrders} /> : <Waiting failed={govs.stale} />}
       </Card>
-      <Card title={L('أحسن العملاء', 'Top customers')} icon={Crown} stale={top.stale}>
+      <Card title={L('أحسن العملاء', 'Top customers')} icon={Crown} chip="violet" stale={top.stale}>
         {top.data ? (
           <DataList rows={top.data} rowKey={(c) => c.phone} onRow={openCustomer} empty={L('لسه مفيش عملاء', 'No customers yet')}
             cols={[{ label: L('العميل', 'Customer'), cell: (c) => c.name, main: true }, { label: L('الموبايل', 'Phone'), cell: (c) => <span dir="ltr">{c.phone}</span> }, { label: L('أوردرات', 'Orders'), cell: (c) => num(c.orders) }, { label: L('دفع', 'Spent'), cell: (c) => egp(c.spent) }]} />
         ) : <Waiting failed={top.stale} />}
       </Card>
-      <Card title={L('عملاء خلي بالك منهم', 'Customers to watch')} icon={ShieldAlert} stale={flagged.stale} tone={flagged.data?.length ? 'bad' : 'neutral'}>
+      <Card title={L('عملاء خلي بالك منهم', 'Customers to watch')} icon={ShieldAlert} chip="red" stale={flagged.stale} tone={flagged.data?.length ? 'bad' : 'neutral'}>
         {flagged.data ? (
           flagged.data.length ? (
             <DataList rows={flagged.data} rowKey={(c) => c.phone} onRow={openCustomer} rowTone={() => 'bad'}

@@ -5,7 +5,7 @@ import { DASHBOARD_CONFIG as C } from '../../../../config/dashboard.config';
 import { act, useDetail, usePage } from '../data';
 import { useShell } from '../App';
 import { L, dashLang } from '../i18n';
-import { Big, Card, DataList, Empty, Note, Offline, Row, Waiting, Warn, categoryName, egp, isoDayLabel, num, pieces, toneText, walletName, when } from '../ui';
+import { Big, Card, DataList, Empty, Note, Offline, Row, Waiting, Warn, categoryName, egp, isoDayLabel, num, pieces, toneText, walletName, when, Amount } from '../ui';
 
 export type Profit = { sales: number; delivered: number; cogs: number; missingCostPieces: number; shipping: number; expenses: number; net: number };
 type WalletCard = { id: string; name: string; balance: number; inToday: number; outToday: number; last: { amount: number; note: string; created_at: string } | null };
@@ -40,12 +40,12 @@ export function MoneyPage() {
   const wallets = sec<WalletCard[]>('wallets'), profit = sec<Profit>('profit'), expenses = sec<Expenses>('expenses');
 
   return (
-    <div className="grid gap-3 md:gap-4">
+    <div className="grid gap-4 md:gap-6">
       {wallets.data ? (
-        <div className="grid gap-3 sm:grid-cols-2 md:gap-4 xl:grid-cols-5">
+        <div className="grid gap-4 sm:grid-cols-2 md:gap-6 xl:grid-cols-5">
           {wallets.data.map((w) => (
             <Card key={w.id} title={w.name} icon={Wallet} stale={wallets.stale} onOpen={() => open(w.name, <WalletPanel id={w.id} />)}>
-              <Big tone={w.balance < 0 ? 'bad' : 'neutral'}>{w.balance < 0 ? '−' : ''}{egp(Math.abs(w.balance))}</Big>
+              <Big tone={w.balance < 0 ? 'bad' : 'neutral'}><Amount n={w.balance} /></Big>
               <div className="mt-3 grid grid-cols-2 gap-2 text-[12px]">
                 <p><span className="block text-muted">{L('دخل النهارده', 'In today')}</span><span className={toneText.good}>+{egp(w.inToday)}</span></p>
                 <p><span className="block text-muted">{L('طلع النهارده', 'Out today')}</span><span className={w.outToday ? toneText.bad : 'text-muted'}>−{egp(w.outToday)}</span></p>
@@ -56,11 +56,11 @@ export function MoneyPage() {
         </div>
       ) : <Card title={L('المحافظ', 'Wallets')} icon={Wallet} stale={wallets.stale}><Waiting failed={wallets.stale} /></Card>}
 
-      <div className="grid gap-3 md:gap-4 lg:grid-cols-2 lg:items-start">
-        <Card title={L('ربح الشهر ده', 'Profit this month')} icon={TrendingUp} stale={profit.stale} onOpen={profit.data ? () => open(L('صافي الربح الشهر ده', 'Net profit this month'), <ProfitBreakdown p={profit.data!} />) : undefined}>
+      <div className="grid gap-4 md:gap-6 lg:grid-cols-2 lg:items-start">
+        <Card title={L('ربح الشهر ده', 'Profit this month')} icon={TrendingUp} chip="green" stale={profit.stale} onOpen={profit.data ? () => open(L('صافي الربح الشهر ده', 'Net profit this month'), <ProfitBreakdown p={profit.data!} />) : undefined}>
           {profit.data ? <ProfitBreakdown p={profit.data} /> : <Waiting failed={profit.stale} />}
         </Card>
-        <div className="grid gap-3 md:gap-4">
+        <div className="grid gap-4 md:gap-6">
           <Card title={L('سجّل مصروف', 'Add an expense')} icon={Receipt}><ExpenseForm /></Card>
           <Card title={L('حركة فلوس', 'Move money')} icon={ArrowLeftRight}><MoveForm /></Card>
         </div>
@@ -93,7 +93,7 @@ export function MoneyPage() {
 function DeleteExpense({ id }: { id: string }) {
   const [busy, setBusy] = useState(false);
   return (
-    <button type="button" disabled={busy} aria-label={L('امسح المصروف', 'Delete expense')} className="flex size-10 items-center justify-center text-muted hover:text-[#ff8a8e]"
+    <button type="button" disabled={busy} aria-label={L('امسح المصروف', 'Delete expense')} className="flex size-10 items-center justify-center text-muted hover:text-[var(--d-red)]"
       onClick={async () => { if (!confirm(L('تمسح المصروف ده؟ الفلوس هترجع للمحفظة.', 'Delete this expense? The money goes back to the wallet.'))) return; setBusy(true); const r = await act('expenseDelete', { id }); setBusy(false); if (r.ok) window.dispatchEvent(new Event('dash:refresh')); else alert(r.error); }}>
       <Trash2 size={16} />
     </button>
@@ -166,7 +166,7 @@ function WalletPanel({ id }: { id: string }) {
   const [month, setMonth] = useState('');
   const r = range === 'pick' ? month : range;
   const d = useDetail<WalletDetail>('wallet', { id, range: r });
-  const btn = (k: string, label: string) => <button type="button" onClick={() => setRange(k)} aria-pressed={range === k} className={`min-h-10 flex-none rounded-md border px-3 text-sm ${range === k ? 'dash-chip-on' : 'border-line-strong'}`}>{label}</button>;
+  const btn = (k: string, label: string) => <button type="button" onClick={() => setRange(k)} aria-pressed={range === k} className={`dash-choice min-h-10 flex-none px-4 text-sm ${range === k ? 'dash-chip-on' : ''}`}>{label}</button>;
   return (
     <div className="space-y-4">
       <div className="no-scrollbar flex gap-1.5 overflow-x-auto">{btn('today', L('النهارده', 'Today'))}{btn('7d', L('٧ أيام', '7 days'))}{btn('month', L('الشهر ده', 'This month'))}{btn('pick', L('شهر معين', 'Pick a month'))}</div>
@@ -176,8 +176,8 @@ function WalletPanel({ id }: { id: string }) {
           <dl><Row k={L('الرصيد أول الفترة', 'Opening balance')} v={egp(d.data.opening)} /><Row k={L('الرصيد آخر الفترة', 'Closing balance')} v={<strong>{egp(d.data.closing)}</strong>} /></dl>
           {!d.data.days.length && <Empty text={L('مفيش حركة في الفترة دي', 'No movements in this period')} />}
           {d.data.days.map((day) => (
-            <section key={day.day} className="overflow-hidden rounded-md border border-line">
-              <header className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-raised px-3 py-2 text-sm">
+            <section key={day.day} className="overflow-hidden rounded-xl border border-[var(--d-border)]">
+              <header className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--d-border)] bg-[var(--d-raised)] px-3 py-2 text-sm">
                 <strong>{isoDayLabel(day.day)}</strong>
                 <span className="text-[12px] text-muted">{L('أول اليوم', 'Start')} {egp(day.opening)} {L('←', '→')} {L('آخر اليوم', 'End')} <span className="text-white">{egp(day.closing)}</span></span>
               </header>
@@ -189,7 +189,7 @@ function WalletPanel({ id }: { id: string }) {
                   </li>
                 ))}
               </ul>
-              <p className="flex justify-between border-t border-line px-3 py-1.5 text-[12px]"><span className={toneText.good}>{L('دخل', 'In')} +{egp(day.in)}</span><span className={toneText.bad}>{L('طلع', 'Out')} −{egp(day.out)}</span></p>
+              <p className="flex justify-between border-t border-[var(--d-border)] px-3 py-1.5 text-[12px]"><span className={toneText.good}>{L('دخل', 'In')} +{egp(day.in)}</span><span className={toneText.bad}>{L('طلع', 'Out')} −{egp(day.out)}</span></p>
             </section>
           ))}
         </>

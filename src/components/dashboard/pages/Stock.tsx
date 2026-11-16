@@ -5,7 +5,7 @@ import { Boxes, CheckCircle2, CircleDollarSign, Package, Tag } from 'lucide-reac
 import { act, useDetail, usePage } from '../data';
 import { useShell } from '../App';
 import { L } from '../i18n';
-import { Big, Card, DataList, Empty, Note, Offline, Waiting, Warn, egp, num, pieces, sizeLabel, toneText, when } from '../ui';
+import { Big, Card, DataList, Empty, Note, Offline, Waiting, Warn, egp, num, pieces, sizeLabel, toneText, when, Amount } from '../ui';
 
 type Product = { id: string; slug: string; name: string; image: string | null; live: boolean; price: number; cost: number | null; min: number; sizes: string[]; colors: { id: string; name: string; hex: string; cells: (number | null)[] }[]; total: number; low: number; out: number };
 type Totals = { pieces: number; atCost: number; atPrice: number; piecesWithoutCost: number };
@@ -23,13 +23,13 @@ export function StockPage() {
   const lowCount = (products.data ?? []).reduce((a, p) => a + p.low, 0);
 
   return (
-    <div className="grid gap-3 md:gap-4">
-      <div className="grid gap-3 sm:grid-cols-3 md:gap-4">
-        <Card title={L('القطع في المخزن', 'Pieces in stock')} icon={Boxes} stale={totals.stale}>{totals.data ? <Big>{num(totals.data.pieces)}</Big> : <Waiting failed={totals.stale} />}</Card>
+    <div className="grid gap-4 md:gap-6">
+      <div className="grid gap-4 sm:grid-cols-3 md:gap-6">
+        <Card title={L('القطع في المخزن', 'Pieces in stock')} icon={Boxes} chip="violet" stale={totals.stale}>{totals.data ? <Big>{num(totals.data.pieces)}</Big> : <Waiting failed={totals.stale} />}</Card>
         <Card title={L('قيمة المخزون بالتكلفة', 'Stock value at cost')} icon={CircleDollarSign} stale={totals.stale}>
-          {totals.data ? <><Big>{egp(totals.data.atCost)}</Big>{totals.data.piecesWithoutCost > 0 && <Note className="!text-[#e9bd67]">⚠ {L(`${pieces(totals.data.piecesWithoutCost)} من غير سعر تكلفة`, `${pieces(totals.data.piecesWithoutCost)} without a cost price`)}</Note>}</> : <Waiting failed={totals.stale} />}
+          {totals.data ? <><Big><Amount n={totals.data.atCost} /></Big>{totals.data.piecesWithoutCost > 0 && <Note className="!text-[var(--d-amber)]">⚠ {L(`${pieces(totals.data.piecesWithoutCost)} من غير سعر تكلفة`, `${pieces(totals.data.piecesWithoutCost)} without a cost price`)}</Note>}</> : <Waiting failed={totals.stale} />}
         </Card>
-        <Card title={L('قيمة المخزون بسعر البيع', 'Stock value at price')} icon={Tag} stale={totals.stale}>{totals.data ? <Big>{egp(totals.data.atPrice)}</Big> : <Waiting failed={totals.stale} />}</Card>
+        <Card title={L('قيمة المخزون بسعر البيع', 'Stock value at price')} icon={Tag} stale={totals.stale}>{totals.data ? <Big><Amount n={totals.data.atPrice} /></Big> : <Waiting failed={totals.stale} />}</Card>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -38,12 +38,12 @@ export function StockPage() {
       </div>
 
       {!products.data ? <Card title={L('المنتجات', 'Products')} icon={Package} stale={products.stale}><Waiting failed={products.stale} /></Card> : (
-        <div className="grid gap-3 md:gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+        <div className="grid gap-4 md:gap-6 lg:grid-cols-2 2xl:grid-cols-3">
           {list.map((p) => (
             <Card key={p.id} title={p.name} icon={Package} tone={p.low ? 'bad' : 'neutral'} onOpen={() => open(p.name, <StockPanel product={p} />)}
-              action={<span className={`rounded-sm border px-1.5 py-0.5 text-[11px] ${p.live ? 'border-line-strong text-silver' : 'border-line text-muted'}`}>{p.live ? L('معروض', 'Live') : L('مخفي', 'Hidden')}</span>}>
+              action={<span className={`rounded-lg border px-1.5 py-0.5 text-[11px] ${p.live ? 'border-[var(--d-border-strong)] text-silver' : 'border-[var(--d-border)] text-muted'}`}>{p.live ? L('معروض', 'Live') : L('مخفي', 'Hidden')}</span>}>
               <div className="mb-3 flex items-center gap-3">
-                <span className="relative h-16 w-[52px] flex-none overflow-hidden rounded-sm bg-raised">{p.image && <Image src={p.image} alt="" fill sizes="52px" className="object-cover" />}</span>
+                <span className="relative h-16 w-[52px] flex-none overflow-hidden rounded-lg bg-[var(--d-raised)]">{p.image && <Image src={p.image} alt="" fill sizes="52px" className="object-cover" />}</span>
                 <p className="min-w-0 flex-1 text-[13px] text-muted">{L('الإجمالي', 'Total')}: <span className="font-semibold text-white">{pieces(p.total)}</span><br />{L('الحد الأدنى', 'Minimum')}: {num(p.min)}</p>
               </div>
               <Grid p={p} />
@@ -66,10 +66,10 @@ function Grid({ p }: { p: Product }) {
         <tbody>
           {p.colors.map((c) => (
             <tr key={c.id}>
-              <th className="text-start text-[12px] font-normal"><span className="inline-flex items-center gap-1.5"><span className="size-3 flex-none rounded-full border border-line-strong" style={{ background: c.hex }} />{c.name}</span></th>
+              <th className="text-start text-[12px] font-normal"><span className="inline-flex items-center gap-1.5"><span className="size-3 flex-none rounded-full border border-[var(--d-border-strong)]" style={{ background: c.hex }} />{c.name}</span></th>
               {c.cells.map((n, i) => {
                 const low = n != null && n < p.min;
-                return <td key={i} className={`h-9 rounded-sm border tabular-nums ${n == null ? 'border-transparent text-muted' : low ? 'border-[#e5484d] font-semibold text-[#ff8a8e]' : 'border-line'}`} title={low ? L('محتاج نزوّد', 'Needs restocking') : undefined}>{n == null ? '–' : num(n)}</td>;
+                return <td key={i} className={`dash-cell h-9 tabular-nums ${n == null ? '!border-transparent text-muted' : low ? 'dash-cell-low' : ''}`} title={low ? L('محتاج نزوّد', 'Needs restocking') : undefined}>{n == null ? '–' : num(n)}</td>;
               })}
             </tr>
           ))}
@@ -103,7 +103,7 @@ function StockPanel({ product: p }: { product: Product }) {
   return (
     <div className="space-y-6">
       <Grid p={p} />
-      <form onSubmit={submit} className="space-y-3 rounded-md border border-line p-3">
+      <form onSubmit={submit} className="space-y-3 rounded-xl border border-[var(--d-border)] p-3">
         <h3 className="text-sm font-medium">{L('عدّل المخزون', 'Adjust stock')}</h3>
         <div className="grid grid-cols-2 gap-2">
           <label className="text-[12px] text-muted">{L('اللون', 'Colour')}<select className="field mt-1" value={form.colorId} onChange={(e) => setForm({ ...form, colorId: e.target.value })}>{p.colors.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>

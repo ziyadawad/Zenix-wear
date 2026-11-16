@@ -26,9 +26,9 @@ export function DashboardLoginForm({ next, lang }: { next: string; lang: DashLan
         </div>
       </div>
       {state?.error && (
-        <div id="login-error" role="alert" className="rounded-md border border-danger/60 bg-danger/10 px-3 py-2.5 text-sm text-[#ff8a8e]">
+        <div id="login-error" role="alert" className="dash-item dash-item-bad d-bad px-3 py-2.5 text-sm">
           <p className="font-medium">{state.error}</p>
-          {state.hint && <p className="mt-0.5 text-[13px] text-[#ffb3b5]">{state.hint}</p>}
+          {state.hint && <p className="mt-0.5 text-[13px] opacity-85">{state.hint}</p>}
         </div>
       )}
       <button className="btn btn-primary w-full" disabled={pending}>{pending ? t('لحظة…', 'One moment…') : t('ادخل', 'Log in')}</button>

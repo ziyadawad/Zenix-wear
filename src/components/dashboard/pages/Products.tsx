@@ -24,11 +24,11 @@ export function ProductsPage() {
   const slowTitle = L('الأبطأ في البيع الشهر ده', 'Slowest sellers this month');
 
   return (
-    <div className="grid gap-3 md:gap-4 lg:grid-cols-2">
-      <Card title={bestTitle} icon={TrendingUp} stale={best.stale} onOpen={best.data?.length ? table(bestTitle, best.data) : undefined}>
+    <div className="grid gap-4 md:gap-6 lg:grid-cols-2">
+      <Card title={bestTitle} icon={TrendingUp} chip="green" stale={best.stale} onOpen={best.data?.length ? table(bestTitle, best.data) : undefined}>
         {best.data ? <RankBars rows={best.data.map((r) => ({ key: r.id, label: r.name, value: r.pieces, text: `${pieces(r.pieces)} · ${egp(r.money)}` }))} empty={noSales} /> : <Waiting failed={best.stale} />}
       </Card>
-      <Card title={slowTitle} icon={TrendingDown} stale={slow.stale} onOpen={slow.data?.length ? table(slowTitle, slow.data) : undefined}>
+      <Card title={slowTitle} icon={TrendingDown} chip="amber" stale={slow.stale} onOpen={slow.data?.length ? table(slowTitle, slow.data) : undefined}>
         {slow.data ? (
           <RankBars rows={slow.data.map((r) => ({ key: r.id, label: r.name, value: r.pieces, text: `${r.pieces ? pieces(r.pieces) : L('ولا قطعة', 'none sold')} · ${L('في المخزن', 'in stock')} ${num(r.stock ?? 0)}`, tone: r.pieces ? undefined : 'bad' as const }))} empty={L('لسه مفيش منتجات', 'No products yet')} />
         ) : <Waiting failed={slow.stale} />}
@@ -39,7 +39,7 @@ export function ProductsPage() {
       <Card title={L('أكتر الألوان بيعًا', 'Top colours')} icon={Palette} stale={colors.stale} onOpen={colors.data?.length ? counts(L('الألوان الشهر ده', 'Colours this month'), colors.data) : undefined}>
         {colors.data ? <RankBars rows={colors.data.map((r) => ({ key: r.label, label: r.label, value: r.pieces, text: pieces(r.pieces) }))} empty={noSales} /> : <Waiting failed={colors.stale} />}
       </Card>
-      <Card title={L('نسبة المرتجع لكل منتج', 'Return rate per product')} icon={Undo2} stale={returns.stale}
+      <Card title={L('نسبة المرتجع لكل منتج', 'Return rate per product')} icon={Undo2} chip="red" stale={returns.stale}
         onOpen={returns.data?.length ? () => open(L('نسبة المرتجع لكل منتج', 'Return rate per product'), (
           <DataList rows={returns.data!} rowKey={(r) => r.id} rowTone={(r) => (rate(r) >= 0.15 ? 'bad' : undefined)}
             cols={[{ label: L('المنتج', 'Product'), cell: (r) => r.name, main: true }, { label: L('رجع', 'Returned'), cell: (r) => num(r.returned ?? 0) }, { label: L('من', 'Of'), cell: (r) => num(r.closed ?? 0) }, { label: L('النسبة', 'Rate'), cell: (r) => pct(rate(r)) }]} />
@@ -50,7 +50,7 @@ export function ProductsPage() {
             : <p className={`flex items-center gap-2 py-6 text-sm ${toneText.good}`}><CheckCircle2 size={18} aria-hidden="true" />{L('مفيش مرتجعات', 'No returns')}</p>
         ) : <Waiting failed={returns.stale} />}
       </Card>
-      <Card title={L('أكواد الخصم', 'Promo codes')} icon={TicketPercent} stale={promos.stale}>
+      <Card title={L('أكواد الخصم', 'Promo codes')} icon={TicketPercent} chip="violet" stale={promos.stale}>
         {promos.data ? (
           <DataList rows={promos.data} rowKey={(p) => p.code} empty={L('مفيش أكواد خصم', 'No promo codes')}
             cols={[

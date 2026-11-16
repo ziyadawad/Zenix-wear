@@ -24,12 +24,12 @@ export function OrdersPage() {
   const days = (n: number) => L(`${num(n)} يوم`, `${num(n)} ${n === 1 ? 'day' : 'days'}`);
 
   return (
-    <div className="grid gap-3 md:gap-4">
-      <Card title={L('الأوردرات حسب الحالة', 'Orders by status')} icon={ListChecks} stale={counts.stale}>
+    <div className="grid gap-4 md:gap-6">
+      <Card title={L('الأوردرات حسب الحالة', 'Orders by status')} icon={ListChecks} chip="violet" stale={counts.stale}>
         {counts.data ? (
           <ul className="grid grid-cols-2 gap-2 xs:grid-cols-4 lg:grid-cols-7">
             {C.orderStatuses.map((s) => (
-              <li key={s.id} className="rounded-md border border-line bg-ink p-3">
+              <li key={s.id} className="rounded-xl border border-[var(--d-border)] bg-white/[.02] p-3">
                 <p className={`text-[13px] ${toneText[s.tone as Tone]}`}>{L(s.label, s.labelEn)}</p>
                 <p className="mt-1 text-2xl font-semibold tabular-nums">{num(counts.data![s.id] ?? 0)}</p>
               </li>
@@ -38,21 +38,21 @@ export function OrdersPage() {
         ) : <Waiting failed={counts.stale} />}
       </Card>
 
-      <div className="grid gap-3 md:gap-4 lg:grid-cols-[2fr_1fr]">
-        <Card title={L('أوردرات متأخرة', 'Late orders')} icon={AlertTriangle} stale={late.stale} tone={late.data?.length ? 'bad' : 'neutral'}>
+      <div className="grid gap-4 md:gap-6 lg:grid-cols-[2fr_1fr]">
+        <Card title={L('أوردرات متأخرة', 'Late orders')} icon={AlertTriangle} chip="red" stale={late.stale} tone={late.data?.length ? 'bad' : 'neutral'}>
           {late.data ? (
             late.data.length ? (
               <DataList rows={late.data} rowKey={(o) => o.id} onRow={openOrder} rowTone={() => 'bad'}
                 cols={[
                   { label: L('رقم', 'No.'), cell: (o) => o.number }, { label: L('الحالة', 'Status'), cell: (o) => <StatusPill status={o.status} /> },
                   { label: L('العميل', 'Customer'), cell: (o) => `${o.name} · ${o.governorate ?? ''}`, main: true },
-                  { label: L('متأخر', 'Late by'), cell: (o) => <span className="text-[#ff8a8e]">⚠ {days(Math.floor(o.days))}</span> }, { label: L('الإجمالي', 'Total'), cell: (o) => egp(o.total) },
+                  { label: L('متأخر', 'Late by'), cell: (o) => <span className="d-bad">⚠ {days(Math.floor(o.days))}</span> }, { label: L('الإجمالي', 'Total'), cell: (o) => egp(o.total) },
                 ]} />
             ) : <Empty text={L('مفيش أوردرات متأخرة', 'No late orders')} icon={CheckCircle2} tone="good" />
           ) : <Waiting failed={late.stale} />}
           <Note>{L(`متأخر = اتأكد ومتشحنش بعد ${num(C.late.confirmedDays)} يوم، أو اتشحن ومتسلمش بعد ${num(C.late.shippedDays)} أيام.`, `Late = confirmed but not shipped after ${num(C.late.confirmedDays)} days, or shipped but not delivered after ${num(C.late.shippedDays)} days.`)}</Note>
         </Card>
-        <Card title={L('الإلغاء والمرتجع الشهر ده', 'Cancelled & returned this month')} icon={Undo2} stale={rates.stale}
+        <Card title={L('الإلغاء والمرتجع الشهر ده', 'Cancelled & returned this month')} icon={Undo2} chip="red" stale={rates.stale}
           onOpen={rates.data ? () => open(L('الإلغاء والمرتجع الشهر ده', 'Cancelled & returned this month'), <dl><Row k={L('أوردرات الشهر', 'Orders this month')} v={num(rates.data!.total)} /><Row k={L('اتلغى', 'Cancelled')} v={`${num(rates.data!.cancelled)} (${pct(rates.data!.cancelRate)})`} tone="bad" /><Row k={L('مرتجع', 'Returned')} v={`${num(rates.data!.returned)} (${pct(rates.data!.returnRate)})`} tone="bad" /></dl>) : undefined}>
           {rates.data ? (
             <div className="grid grid-cols-2 gap-3">
@@ -63,7 +63,7 @@ export function OrdersPage() {
         </Card>
       </div>
 
-      <Card title={L('آخر الأوردرات', 'Latest orders')} icon={ListOrdered} stale={latest.stale}>
+      <Card title={L('آخر الأوردرات', 'Latest orders')} icon={ListOrdered} chip="violet" stale={latest.stale}>
         <label className="relative mb-4 block">
           <span className="sr-only">{L('دوّر برقم الأوردر أو الموبايل', 'Search by order number or phone')}</span>
           <Search size={16} className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted" aria-hidden="true" />
@@ -144,7 +144,7 @@ export function OrderPanel({ id }: { id: string }) {
         <div className="grid grid-cols-2 gap-1.5 xs:grid-cols-4">
           {C.orderStatuses.map((s) => (
             <button key={s.id} type="button" disabled={busy || s.id === o.status} aria-pressed={s.id === o.status} onClick={() => change(s.id)}
-              className={`min-h-11 rounded-md border px-2 text-sm transition-colors ${s.id === o.status ? 'dash-chip-on' : 'border-line-strong hover:border-white disabled:opacity-50'}`}>{L(s.label, s.labelEn)}</button>
+              className={`dash-choice min-h-11 px-2 text-sm transition-colors ${s.id === o.status ? 'dash-chip-on' : 'disabled:opacity-50'}`}>{L(s.label, s.labelEn)}</button>
           ))}
         </div>
         {msg && <p className={`mt-2 text-sm ${toneText[msg.tone]}`} role="status">{msg.text}</p>}
@@ -152,10 +152,10 @@ export function OrderPanel({ id }: { id: string }) {
 
       <section>
         <h3 className="mb-2 text-[13px] font-medium text-silver">{L('المنتجات', 'Items')} ({pieces(o.items.reduce((a, i) => a + i.qty, 0))})</h3>
-        <ul className="divide-y divide-line rounded-md border border-line">
+        <ul className="divide-y divide-line rounded-xl border border-[var(--d-border)]">
           {o.items.map((i, x) => (
             <li key={x} className="flex items-center gap-3 p-2.5 text-sm">
-              <span className="relative h-14 w-11 flex-none overflow-hidden rounded-sm bg-raised"><Image src={displayImage(i.image)} alt="" fill sizes="44px" className="object-cover" /></span>
+              <span className="relative h-14 w-11 flex-none overflow-hidden rounded-lg bg-[var(--d-raised)]"><Image src={displayImage(i.image)} alt="" fill sizes="44px" className="object-cover" /></span>
               <span className="min-w-0 flex-1"><span className="block truncate">{en ? i.nameEn ?? i.nameAr : i.nameAr}</span><span className="block text-[12px] text-muted">{L('مقاس', 'Size')} {i.size} · {en ? i.colorEn ?? i.colorAr : i.colorAr} · {pieces(i.qty)}</span></span>
               <span className="flex-none tabular-nums">{egp(i.price * i.qty)}</span>
             </li>
@@ -176,7 +176,7 @@ export function OrderPanel({ id }: { id: string }) {
           <Row k={L('الاسم', 'Name')} v={o.name} /><Row k={L('الموبايل', 'Phone')} v={<span dir="ltr">{o.phone}{o.altPhone ? ` / ${o.altPhone}` : ''}</span>} />
           <Row k={L('المحافظة', 'Governorate')} v={`${o.governorate} · ${o.city}`} /><Row k={L('العنوان', 'Address')} v={o.address} />
         </dl>
-        {o.notes && <p className="mt-2 border-s-2 border-line-strong ps-3 text-sm text-silver">{L('ملاحظات', 'Notes')}: {o.notes}</p>}
+        {o.notes && <p className="mt-2 border-s-2 border-[var(--d-border-strong)] ps-3 text-sm text-silver">{L('ملاحظات', 'Notes')}: {o.notes}</p>}
       </section>
 
       <section>
@@ -190,7 +190,7 @@ export function OrderPanel({ id }: { id: string }) {
         <h3 className="mb-2 text-[13px] font-medium text-silver">{L('تاريخ الحالة', 'Status history')}</h3>
         <ol className="space-y-2">
           {[...o.history].reverse().map((h, x) => (
-            <li key={x} className="flex flex-wrap items-center justify-between gap-2 border-b border-line/60 pb-2 text-sm last:border-0">
+            <li key={x} className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--d-border)]/60 pb-2 text-sm last:border-0">
               <span className="flex items-center gap-2"><StatusPill status={h.status} />{h.note && <span className="text-[12px] text-muted">{h.note}</span>}</span>
               <span className="text-[12px] text-muted">{when(h.at)} · {h.by ?? (x === o.history.length - 1 ? L('العميل (من الموقع)', 'Customer (website)') : L('الإدارة', 'Admin'))}</span>
             </li>

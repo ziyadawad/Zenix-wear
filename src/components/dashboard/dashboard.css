@@ -1,0 +1,158 @@
+/* =====================================================================================
+   DASHBOARD COLOURS: every dashboard colour is a token in this one block.
+   Change a value here and the whole dashboard (all pages, panels, the login page) follows.
+   Loaded only by the dashboard (src/app/dashboard/layout.tsx): the store never uses these.
+   ===================================================================================== */
+.dash-app {
+  /* Background: deep near-black with a faint violet glow at the top and blue in the bottom corner */
+  --d-bg: #07070c;
+  --d-glow-top: rgb(123 92 255 / 0.16);
+  --d-glow-corner: rgb(61 217 255 / 0.09);
+
+  /* Glass cards */
+  --d-card: rgb(18 18 26 / 0.8);        /* #12121A at ~80% */
+  --d-card-solid: #12121a;
+  --d-raised: #191924;                  /* inputs, rows, skeletons */
+  --d-border: rgb(255 255 255 / 0.06);
+  --d-border-strong: rgb(255 255 255 / 0.14);
+  --d-radius: 16px;
+
+  /* Text (muted #A7A7B5 on #12121A ≈ 7.6:1, WCAG AA) */
+  --d-text: #ffffff;
+  --d-muted: #a7a7b5;
+
+  /* Brand light: ice blue → violet → magenta */
+  --d-blue: #3dd9ff;
+  --d-violet: #7b5cff;
+  --d-magenta: #e040fb;
+  --d-gradient: linear-gradient(90deg, var(--d-blue), var(--d-violet) 55%, var(--d-magenta));
+
+  /* Meaning colours (card chips, numbers, pills) */
+  --d-amber: #ffb547;   /* needs confirming / attention */
+  --d-green: #2ee59d;   /* profit / good / up */
+  --d-red: #ff5c7a;     /* problems / out of stock / down */
+  --d-gray: #a7a7b5;    /* no change */
+
+  /* Bars and charts */
+  --d-track: rgb(255 255 255 / 0.05);
+  --d-grid: rgb(255 255 255 / 0.06);
+}
+
+/* ---- Page ------------------------------------------------------------------------------------- */
+.dash-app {
+  color: var(--d-text);
+  background:
+    radial-gradient(70% 45% at 50% -8%, var(--d-glow-top), transparent 70%),
+    radial-gradient(45% 40% at 100% 100%, var(--d-glow-corner), transparent 70%),
+    var(--d-bg);
+  background-attachment: fixed;
+}
+.dash-headbar { background: color-mix(in srgb, var(--d-bg) 78%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--d-border); }
+
+/* Rounded pills: language, refresh, TV mode, live "Updated" time */
+.dash-pill {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 36px; min-width: 36px; padding-inline: 12px;
+  border-radius: 999px; border: 1px solid var(--d-border-strong); background: rgb(255 255 255 / 0.03);
+  font-size: 12px; color: var(--d-text); transition: border-color 0.25s, background-color 0.25s;
+}
+.dash-pill:hover { border-color: rgb(255 255 255 / 0.32); background: rgb(255 255 255 / 0.06); }
+.dash-pill-quiet { color: var(--d-muted); }
+.dash-live { width: 7px; height: 7px; border-radius: 50%; background: var(--d-green); box-shadow: 0 0 8px var(--d-green); }
+
+/* Top tabs: gradient underline and a softly glowing icon on the active tab */
+.dash-tab { position: relative; color: var(--d-muted); }
+.dash-tab:hover { color: var(--d-text); }
+.dash-tab[aria-selected='true'] { color: var(--d-text); }
+.dash-tab[aria-selected='true'] svg { color: var(--d-blue); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--d-blue) 70%, transparent)); }
+.dash-tab[aria-selected='true']::after {
+  content: ''; position: absolute; inset-inline: 10px; bottom: 0; height: 2px; border-radius: 2px;
+  background: var(--d-gradient); box-shadow: 0 0 10px color-mix(in srgb, var(--d-violet) 60%, transparent);
+}
+
+/* ---- Cards ------------------------------------------------------------------------------------ */
+.dash-card {
+  position: relative; isolation: isolate; border-radius: var(--d-radius); border: 1px solid var(--d-border);
+  background: var(--d-card); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  transition: box-shadow 0.35s ease, border-color 0.35s ease;
+}
+/* On hover the thin border becomes a soft blue → violet gradient with a faint glow. */
+.dash-card::before {
+  content: ''; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; pointer-events: none; opacity: 0;
+  background: linear-gradient(135deg, var(--d-blue), var(--d-violet));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask-composite: exclude;
+  transition: opacity 0.35s ease;
+}
+@media (hover: hover) {
+  .dash-card:hover::before { opacity: 1; }
+  .dash-card:hover { border-color: transparent; box-shadow: 0 0 24px -8px color-mix(in srgb, var(--d-violet) 55%, transparent), 0 0 40px -18px color-mix(in srgb, var(--d-blue) 50%, transparent); }
+}
+.dash-card-bad { border-color: color-mix(in srgb, var(--d-red) 60%, transparent); }
+.dash-card-open:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--d-bg), 0 0 0 4px var(--d-blue); }
+
+/* The coloured chip around each card's icon. --chip is set per card type. */
+.dash-chip {
+  display: inline-flex; flex: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 10px;
+  color: var(--chip); background: color-mix(in srgb, var(--chip) 14%, transparent); border: 1px solid color-mix(in srgb, var(--chip) 28%, transparent);
+}
+.chip-blue { --chip: var(--d-blue); } .chip-violet { --chip: var(--d-violet); } .chip-amber { --chip: var(--d-amber); }
+.chip-green { --chip: var(--d-green); } .chip-red { --chip: var(--d-red); }
+
+/* Text colours by meaning */
+.d-good { color: var(--d-green); } .d-bad { color: var(--d-red); } .d-warn { color: var(--d-amber); } .d-info { color: var(--d-blue); } .d-neutral { color: var(--d-muted); }
+
+/* Big numbers: the currency smaller and lighter next to the number */
+.dash-cur { font-size: 0.5em; font-weight: 500; color: var(--d-muted); margin-inline-start: 0.3em; letter-spacing: 0; }
+
+/* Change vs before: coloured pills (green up, red down, gray no change) */
+.dash-delta { display: inline-flex; align-items: center; gap: 4px; border-radius: 999px; padding: 2px 9px; font-size: 12px; line-height: 1.5; width: fit-content; }
+.dash-delta-good { color: var(--d-green); background: color-mix(in srgb, var(--d-green) 12%, transparent); }
+.dash-delta-bad { color: var(--d-red); background: color-mix(in srgb, var(--d-red) 12%, transparent); }
+.dash-delta-neutral { color: var(--d-gray); background: rgb(255 255 255 / 0.06); }
+
+/* Status pills */
+.dash-status { display: inline-block; white-space: nowrap; border-radius: 999px; padding: 1px 10px; font-size: 12px; border: 1px solid; }
+.dash-status-good { color: var(--d-green); border-color: color-mix(in srgb, var(--d-green) 45%, transparent); background: color-mix(in srgb, var(--d-green) 8%, transparent); }
+.dash-status-bad { color: var(--d-red); border-color: color-mix(in srgb, var(--d-red) 50%, transparent); background: color-mix(in srgb, var(--d-red) 8%, transparent); }
+.dash-status-warn { color: var(--d-amber); border-color: color-mix(in srgb, var(--d-amber) 45%, transparent); background: color-mix(in srgb, var(--d-amber) 8%, transparent); }
+.dash-status-info { color: var(--d-blue); border-color: color-mix(in srgb, var(--d-blue) 40%, transparent); background: color-mix(in srgb, var(--d-blue) 7%, transparent); }
+.dash-status-neutral { color: var(--d-muted); border-color: var(--d-border-strong); }
+
+/* Progress and ranking bars: rounded, gradient fill with a soft glow, very dark track */
+.dash-track { background: var(--d-track); border-radius: 999px; overflow: hidden; }
+.dash-bar { background: var(--d-gradient); border-radius: 999px; box-shadow: 0 0 10px color-mix(in srgb, var(--d-violet) 55%, transparent); }
+[dir='rtl'] .dash-bar { background: linear-gradient(270deg, var(--d-blue), var(--d-violet) 55%, var(--d-magenta)); }
+
+/* Chart tooltip card */
+.dash-tip { border-radius: 12px; border: 1px solid var(--d-border-strong); background: color-mix(in srgb, var(--d-card-solid) 94%, transparent); backdrop-filter: blur(8px); box-shadow: 0 10px 30px -10px rgb(0 0 0 / 0.8); }
+
+/* Lists, rows, panels */
+.dash-item { border-radius: 12px; border: 1px solid var(--d-border); background: rgb(255 255 255 / 0.02); }
+.dash-item-bad { border-color: color-mix(in srgb, var(--d-red) 55%, transparent); }
+.dash-table thead tr { border-bottom: 1px solid var(--d-border); }
+.dash-table tbody tr { border-bottom: 1px solid var(--d-border); }
+.dash-table tbody tr.dash-row-open:hover { background: rgb(255 255 255 / 0.03); }
+.dash-table tbody tr.dash-row-bad { background: color-mix(in srgb, var(--d-red) 7%, transparent); }
+.dash-panel { background: color-mix(in srgb, var(--d-card-solid) 97%, transparent); backdrop-filter: blur(16px); border-inline-start: 1px solid var(--d-border); }
+.dash-scrim { background: rgb(0 0 0 / 0.6); }
+.dash-skeleton { background: var(--d-raised); border-radius: 8px; }
+.dash-empty-icon { border-radius: 12px; border: 1px solid var(--d-border-strong); background: rgb(255 255 255 / 0.03); }
+
+/* Buttons inside cards (filters, status choices) */
+.dash-app .dash-choice { border-radius: 999px; border: 1px solid var(--d-border-strong); }
+.dash-app .dash-choice:hover { border-color: rgb(255 255 255 / 0.4); }
+.dash-chip-on { background: #fff; border-color: #fff !important; color: var(--d-bg); box-shadow: 0 0 16px -2px color-mix(in srgb, var(--d-violet) 60%, transparent); }
+.dash-check { accent-color: var(--d-violet); }
+.dash-app .field { border-radius: 12px; background: var(--d-raised); border-color: var(--d-border-strong); }
+.dash-app .btn { border-radius: 999px; }
+
+/* Stock grid cells */
+.dash-cell { border-radius: 8px; border: 1px solid var(--d-border); }
+.dash-cell-low { border-color: var(--d-red); color: var(--d-red); font-weight: 600; background: color-mix(in srgb, var(--d-red) 8%, transparent); }
+
+/* Login */
+.dash-login-card { border-radius: 20px; border: 1px solid var(--d-border); background: var(--d-card); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-card, .dash-card::before, .dash-pill { transition: none; }
+}
